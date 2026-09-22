@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Violet Voltage: guitarras e equipamentos. Turn Up Your Tone. Loja acadêmica com pagamentos demonstrativos."
+    />
+    <title>Finalizar pedido | Violet Voltage</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <script type="module" src="/js/app.js"></script>
+  </head>
+  <body>
+    <div id="header"></div>
+    <main id="main">
+      <div class="container page-wrap">
+        <div class="breadcrumb">
+          <a href="/carrinho.html">Carrinho</a> / Checkout
+        </div>
+        <h1 class="page-title">Quase pronto para tocar.</h1>
+        <div id="checkout-content">
+          <div class="cart-layout">
+            <section class="panel">
+              <div class="notice">
+                Ambiente acadêmico. Pagamentos demonstrativos: nenhuma cobrança
+                será realizada.
+              </div>
+              <form id="checkout-form">
+                <div class="field">
+                  <label for="endereco">Endereço completo de entrega</label
+                  ><input
+                    id="endereco"
+                    name="endereco"
+                    type="text"
+                    required
+                    minlength="5"
+                    maxlength="500"
+                    autocomplete="street-address"
+                  />
+                </div>
+                <div class="field">
+                  <label for="entrega">Forma de entrega</label
+                  ><select id="entrega" name="entrega">
+                    <option value="padrao">Entrega padrão — R$ 25,00</option>
+                    <option value="expressa">
+                      Entrega expressa — R$ 45,00
+                    </option>
+                    <option value="retirada">Retirada — grátis</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="pagamento">Pagamento demonstrativo</label
+                  ><select id="pagamento" name="pagamento">
+                    <option value="pix">Pix (simulado)</option>
+                    <option value="cartao">Cartão (simulado)</option>
+                    <option value="boleto">Boleto (simulado)</option>
+                  </select>
+                  <p class="form-help">
+                    Não solicitamos dados de cartão nem comprovantes de
+                    pagamento.
+                  </p>
+                </div>
+                <button type="submit" class="full">
+                  Confirmar pedido demonstrativo
+                </button>
+              </form>
+            </section>
+            <aside class="panel" id="checkout-summary">
+              <div class="loading">Calculando…</div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </main>
+    <div id="footer"></div>
+  </body>
+</html>

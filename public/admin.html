@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Violet Voltage: guitarras e equipamentos. Turn Up Your Tone. Loja acadêmica com pagamentos demonstrativos."
+    />
+    <title>Administração | Violet Voltage</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <script type="module" src="/js/app.js"></script>
+  </head>
+  <body>
+    <div id="header"></div>
+    <main id="main">
+      <div class="container page-wrap" id="admin-content">
+        <div class="breadcrumb"><a href="/">Início</a> / Administração</div>
+        <h1 class="page-title">Nos bastidores do som.</h1>
+        <p class="lead">
+          Gerencie produtos, clientes e pedidos da Violet Voltage.
+        </p>
+        <div id="stats" class="stats"></div>
+        <div class="admin-tabs" role="tablist" aria-label="Administração">
+          <button
+            id="tab-products"
+            role="tab"
+            aria-controls="admin-panel"
+            aria-selected="true"
+            data-tab="products"
+          >
+            Produtos</button
+          ><button
+            id="tab-customers"
+            role="tab"
+            aria-controls="admin-panel"
+            aria-selected="false"
+            class="secondary"
+            data-tab="customers"
+          >
+            Clientes</button
+          ><button
+            id="tab-orders"
+            role="tab"
+            aria-controls="admin-panel"
+            aria-selected="false"
+            class="secondary"
+            data-tab="orders"
+          >
+            Pedidos
+          </button>
+        </div>
+        <section
+          class="panel"
+          id="admin-panel"
+          role="tabpanel"
+          aria-labelledby="tab-products"
+        >
+          <div class="loading">Verificando acesso…</div>
+        </section>
+      </div>
+    </main>
+    <div id="footer"></div>
+  </body>
+</html>

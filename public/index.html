@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Violet Voltage: guitarras e equipamentos. Turn Up Your Tone. Loja acadêmica com pagamentos demonstrativos."
+    />
+    <title>Equipamentos para o seu próximo som | Violet Voltage</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <script type="module" src="/js/app.js"></script>
+  </head>
+  <body>
+    <div id="header"></div>
+    <main id="main">
+      <section class="hero">
+        <div class="container hero-inner">
+          <div>
+            <span class="eyebrow">Para quem vive de volume</span>
+            <h1>Seu som.<br />Sua atitude.<br /><em>Sem limites.</em></h1>
+            <p>
+              Da primeira nota ao próximo palco. Encontre o equipamento que dá
+              voz ao seu estilo.
+            </p>
+            <a class="button" href="#catalogo"
+              >Explore os equipamentos <span aria-hidden="true">↗</span></a
+            >
+            <div class="hero-foot">TURN UP YOUR TONE.</div>
+          </div>
+          <img
+            class="hero-art"
+            src="/assets/hero.svg"
+            alt="Ilustração original de uma guitarra violeta"
+          />
+        </div>
+      </section>
+      <section class="benefits" aria-label="Informações da loja">
+        <div class="container benefit-grid">
+          <div class="benefit">
+            <div class="benefit-icon" aria-hidden="true">◇</div>
+            <div>
+              <b>Seu setup, sua identidade</b
+              ><span>Equipamentos para cada estilo</span>
+            </div>
+          </div>
+          <div class="benefit">
+            <div class="benefit-icon" aria-hidden="true">↗</div>
+            <div>
+              <b>Do estúdio ao palco</b
+              ><span>Entrega padrão, expressa ou retirada</span>
+            </div>
+          </div>
+          <div class="benefit">
+            <div class="benefit-icon" aria-hidden="true">ϟ</div>
+            <div>
+              <b>Experimente a jornada</b
+              ><span>Compra acadêmica, sem cobrança real</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="section container" id="catalogo">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Encontre o seu próximo som</span>
+            <h2>O palco é seu.</h2>
+            <p>Explore nossa seleção e monte seu setup.</p>
+          </div>
+        </div>
+        <div class="chips" id="categories" aria-label="Categorias"></div>
+        <div class="catalog-layout">
+          <aside class="filters">
+            <h3>Refine sua busca</h3>
+            <form id="filters">
+              <div class="field">
+                <label for="q">Buscar equipamento</label
+                ><input
+                  id="q"
+                  name="q"
+                  type="search"
+                  placeholder="O que você procura?"
+                />
+              </div>
+              <div class="field">
+                <label for="marca">Marca</label
+                ><input
+                  id="marca"
+                  name="marca"
+                  type="text"
+                  placeholder="Todas as marcas"
+                />
+              </div>
+              <div class="field">
+                <label for="modelo">Modelo</label
+                ><input
+                  id="modelo"
+                  name="modelo"
+                  type="text"
+                  placeholder="Nome do modelo"
+                />
+              </div>
+              <div class="field">
+                <label for="min">Preço mínimo (R$)</label
+                ><input
+                  id="min"
+                  name="min"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0,00"
+                />
+              </div>
+              <div class="field">
+                <label for="max">Preço máximo (R$)</label
+                ><input
+                  id="max"
+                  name="max"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Sem limite"
+                />
+              </div>
+              <button type="submit" class="button">Aplicar filtros</button
+              ><button type="button" class="text-button" id="clear-filters">
+                Limpar filtros
+              </button>
+            </form>
+          </aside>
+          <div>
+            <p class="catalog-meta" id="catalog-count" aria-live="polite">
+              Carregando equipamentos…
+            </p>
+            <div class="product-grid" id="products">
+              <div class="loading">Preparando seu próximo som…</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <div id="footer"></div>
+  </body>
+</html>

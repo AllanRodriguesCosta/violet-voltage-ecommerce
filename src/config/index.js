@@ -1,0 +1,27 @@
+import "dotenv/config";
+import { randomBytes } from "node:crypto";
+export function configuration(env = process.env) {
+  const production = env.NODE_ENV === "production";
+  const memory = env.DEV_MEMORY_STORAGE === "true";
+  if (production && memory)
+    throw new Error("Armazenamento em memória proibido em produção.");
+  if (!memory && !env.AZURE_STORAGE_CONNECTION_STRING)
+    throw new Error(
+      "Configure o Azure ou habilite DEV_MEMORY_STORAGE=true no desenvolvimento.",
+    );
+  if (!memory && (!env.JWT_SECRET || env.JWT_SECRET.length < 32))
+    throw new Error("Configure JWT_SECRET com pelo menos 32 caracteres.");
+  return {
+    production,
+    memory,
+    port: Number(env.PORT || 3000),
+    connection: env.AZURE_STORAGE_CONNECTION_STRING,
+    secret: env.JWT_SECRET || randomBytes(48).toString("hex"),
+  };
+}
+export const tableNames = {
+  products: "AllanRibeiroProdutos",
+  customers: "AllanRibeiroClientes",
+  orders: "AllanRibeiroPedidos",
+};
+export const containerName = "allan-ribeiro-produtos";

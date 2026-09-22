@@ -2,6 +2,24 @@ export const money = (cents) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
     cents / 100,
   );
+export function productImage(product) {
+  if (product?.blobName) {
+    return (
+      product.imageUrl ||
+      `/api/images/${encodeURIComponent(product.id || product.rowKey)}`
+    );
+  }
+  if (product?.imageUrl) return product.imageUrl;
+  const fallbacks = {
+    Guitarras: "/assets/product.svg",
+    Pedais: "/assets/pedal.svg",
+    Amplificadores: "/assets/amp.svg",
+    Cabos: "/assets/accessory.svg",
+    Correias: "/assets/accessory.svg",
+    Acessórios: "/assets/accessory.svg",
+  };
+  return fallbacks[product?.categoria] || "/assets/product.svg";
+}
 export const escapeHtml = (value) =>
   String(value ?? "").replace(
     /[&<>"']/g,
@@ -124,7 +142,7 @@ export async function shell() {
   document.querySelector("#header").innerHTML =
     `<a class="skip" href="#main">Pular para o conteúdo</a><div class="announcement">VIOLET VOLTAGE · EQUIPAMENTO CERTO. SEU SOM, MAIS ALTO.</div><header class="site-header"><div class="header-inner"><a class="brand" href="/" aria-label="Violet Voltage, início"><span class="brand-mark" aria-hidden="true">ϟ</span><span class="brand-words">VIOLET VOLTAGE<small>TURN UP YOUR TONE</small></span></a><button class="menu-button" id="menu" aria-controls="navigation" aria-expanded="false">Menu ☰</button><nav class="nav" id="navigation" aria-label="Navegação principal"><a href="/#catalogo">Equipamentos</a><a href="/minha-conta.html" id="account-link">Minha conta</a><a href="/admin.html" id="admin-link" hidden>Administração</a><a href="/login.html" id="login-link">Entrar</a><a class="cart-link" href="/carrinho.html">Carrinho <span class="badge" id="cart-count">0</span></a></nav></div></header>`;
   document.querySelector("#footer").innerHTML =
-    `<footer class="footer"><div class="container footer-inner"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">ϟ</span><span class="brand-words">VIOLET VOLTAGE<small>TURN UP YOUR TONE</small></span></a><p>Seu próximo som começa aqui.<br>Guitarras, equipamentos e possibilidades.</p><p class="footer-note">Projeto acadêmico · Pagamentos simulados<br>© ${new Date().getFullYear()} Violet Voltage</p></div></footer>`;
+    `<footer class="footer"><div class="container footer-inner"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">ϟ</span><span class="brand-words">VIOLET VOLTAGE<small>TURN UP YOUR TONE</small></span></a><p>Seu próximo som começa aqui.<br>Guitarras, equipamentos e possibilidades.</p><p class="footer-note">Projeto acadêmico<br>© ${new Date().getFullYear()} Violet Voltage</p></div></footer>`;
   document.querySelector("#menu").onclick = () => {
     const nav = document.querySelector("#navigation");
     nav.classList.toggle("open");
@@ -159,7 +177,7 @@ export function ordersHTML(orders, admin = false) {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .map(
       (o) =>
-        `<details class="order"><summary><strong>Pedido ${escapeHtml(o.id.slice(0, 8).toUpperCase())}</strong><span class="status">${escapeHtml(o.status)}</span> ${money(o.totalCents)}<br><span class="muted small">${new Date(o.createdAt).toLocaleString("pt-BR")} · Ver detalhes</span></summary><p class="small">Número completo: ${escapeHtml(o.id)}</p><ul>${o.itens.map((i) => `<li>${i.quantidade} × ${escapeHtml(i.nome)} — ${money(i.priceCents * i.quantidade)}</li>`).join("")}</ul><p class="small">Subtotal: ${money(o.subtotalCents)} · Frete: ${money(o.freteCents)}</p><p class="small">Pagamento demonstrativo: ${escapeHtml(o.pagamento)} · Entrega: ${escapeHtml(o.entrega)}</p><p class="small">Endereço: ${escapeHtml(o.endereco)}</p>${admin ? `<label for="status-${o.id}">Status do pedido</label><select class="order-status" id="status-${o.id}" data-order="${o.id}">${["Recebido", "Em preparação", "Enviado", "Concluído", "Cancelado"].map((s) => `<option${o.status === s ? " selected" : ""}>${s}</option>`).join("")}</select>` : ""}</details>`,
+        `<details class="order"><summary><strong>Pedido ${escapeHtml(o.id.slice(0, 8).toUpperCase())}</strong><span class="status">${escapeHtml(o.status)}</span> ${money(o.totalCents)}<br><span class="muted small">${new Date(o.createdAt).toLocaleString("pt-BR")} · Ver detalhes</span></summary><p class="small">Número completo: ${escapeHtml(o.id)}</p><ul>${o.itens.map((i) => `<li>${i.quantidade} × ${escapeHtml(i.nome)} — ${money(i.priceCents * i.quantidade)}</li>`).join("")}</ul><p class="small">Subtotal: ${money(o.subtotalCents)} · Frete: ${money(o.freteCents)}</p><p class="small">Pagamento: ${escapeHtml(o.pagamento)} · Entrega: ${escapeHtml(o.entrega)}</p><p class="small">Endereço: ${escapeHtml(o.endereco)}</p>${admin ? `<label for="status-${o.id}">Status do pedido</label><select class="order-status" id="status-${o.id}" data-order="${o.id}">${["Recebido", "Em preparação", "Enviado", "Concluído", "Cancelado"].map((s) => `<option${o.status === s ? " selected" : ""}>${s}</option>`).join("")}</select>` : ""}</details>`,
     )
     .join("");
 }

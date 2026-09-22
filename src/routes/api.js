@@ -121,7 +121,6 @@ export function apiRouter(storage, config) {
       data: {
         status: "ok",
         storage: config.memory ? "memory-development" : "azure",
-        payment: "demonstrativo",
       },
     }),
   );

@@ -67,7 +67,9 @@ $env:DEV_MEMORY_STORAGE='true'
 npm run seed
 ```
 
-Abra `http://localhost:3000`. Em memória, `npm run seed` adiciona oito produtos e mantém o servidor rodando no mesmo processo. Reiniciar apaga produtos, clientes, imagens e pedidos desse modo. O comando `npm start` inicia uma loja vazia em memória; `npm run dev` reinicia ao alterar o backend, também perdendo os dados voláteis. Não rode dois servidores na mesma porta.
+Antes do seed, coloque as 22 imagens PNG em `seed-assets/produtos-violet-voltage/`, mantendo as subpastas e nomes do manifesto em `src/services/seed-products.js`. Essa pasta é ignorada pelo Git. Não é necessária para `npm start` nem para os testes automatizados.
+
+Abra `http://localhost:3000`. Em memória, `npm run seed` carrega 22 produtos e suas 22 imagens e mantém o servidor rodando no mesmo processo. Reiniciar apaga produtos, clientes, imagens e pedidos desse modo. O comando `npm start` inicia uma loja vazia em memória; `npm run dev` reinicia ao alterar o backend, também perdendo os dados voláteis. Não rode dois servidores na mesma porta.
 
 O segredo de sessão local é aleatório, temporário, gerado somente em memória e nunca impresso. Sem `ADMIN_*`, não há administrador padrão nem senha fixa; cadastro público sempre cria `customer`. Para testar o painel, configure as três variáveis administrativas abaixo e reinicie. Testes automatizados criam seus próprios usuários e segredos descartáveis em memória, sem gravar ou exibir senhas.
 
@@ -109,7 +111,13 @@ No painel, cadastre um produto e clique em **Imagem**. Ao substituir, o novo blo
 
 ### Seed opcional
 
-Com Azure configurado, execute `npm run seed` uma vez para adicionar os produtos genéricos. O comando encerra após o seed, preserva IDs existentes e não sobrescreve alterações. Para iniciar, execute `npm start`. O seed não é executado automaticamente em produção; execute-o conscientemente na conta desejada. Marcas fictícias, sem parcerias comerciais reais.
+Com Azure configurado e as imagens disponíveis localmente, execute `npm run seed` em um terminal privado no seu computador. O comando envia as 22 imagens ao contêiner `allan-ribeiro-produtos`, cadastra ou atualiza `demo-001` a `demo-022` e encerra. A aplicação publicada usa o proxy `/api/images/:id` para ler os blobs; não precisa dos arquivos locais. Para iniciar o servidor, execute `npm start`. O seed não roda automaticamente no build ou na inicialização.
+
+O manifesto em `src/services/seed-products.js` contém as correspondências entre imagem, marca, produto, preço em centavos e estoque. Os preços foram definidos para fins acadêmicos, sem pesquisa de mercado; estoques iniciais entre 5 e 30. As guitarras usam a marca fictícia Violet Voltage. As demais marcas seguem a identificação fornecida pelo usuário, sem indicação de parceria comercial.
+
+O seed pré-valida a leitura e a assinatura PNG das 22 imagens antes de alterar produtos ou blobs. Localiza registros pela RowKey em todas as partições, atualiza os oito IDs antigos e cria os demais; preserva a PartitionKey e `createdAt` existentes e renova `updatedAt`. Repetições mantêm 22 IDs únicos e 22 nomes de blob determinísticos em `seed/violet-voltage/demo-NNN.png`. A URL inclui uma versão derivada do conteúdo para atualizar o cache quando uma fonte muda.
+
+Executar novamente restaura os dados, imagens, preços, estoque e estado ativo definidos no manifesto para os IDs reservados ao seed. Produtos manuais com outros IDs, seus blobs e imagens manuais anteriormente associadas a produtos seed não são excluídos. O seed não remove nenhum blob. Caso já existam dois registros com a mesma RowKey do seed, a execução para antes das gravações e pede revisão. Falhas remotas durante uploads/gravações não têm transação global; corrigir a conexão e repetir completa os mesmos IDs sem criar novos produtos. Veja `seed-assets/README.md`.
 
 ## API
 
@@ -155,7 +163,7 @@ npm run lint
 npm test
 ```
 
-Os testes não usam Azure real. Cobrem validação, configuração de produção, seed idempotente, autenticação, autorização, cookie, CRUD, filtros, checkout, concorrência, imagens e páginas via HTTP. Consulte `VALIDACAO.md` para resultados observados e limites da verificação manual.
+Os testes não usam Azure real nem dependem das imagens privadas. Fixtures PNG temporárias cobrem o seed de 22 produtos, atualização de partições antigas, preservação de registros e blobs manuais, idempotência, pré-validação e URLs de imagem por HTTP. O contrato do adaptador Azure é exercitado com clientes substitutos em memória, sem conexão externa. Também cobrem validação, produção, autenticação, autorização, cookie, CRUD, filtros, checkout, concorrência, imagens, páginas e ausência de avisos de pagamento nos arquivos públicos. Consulte `VALIDACAO.md` para resultados observados e limites da verificação manual.
 
 ## Publicação no Render — um Web Service
 

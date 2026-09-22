@@ -1,6 +1,6 @@
 import { configuration } from "../src/config/index.js";
 import { AzureStorage, MemoryStorage } from "../src/repositories/storage.js";
-import { seed } from "../src/services/seed.js";
+import { seed, SeedInputError } from "../src/services/seed.js";
 import { createApp } from "../src/app.js";
 import { bootstrapAdmin } from "../src/services/bootstrap.js";
 try {
@@ -9,9 +9,9 @@ try {
     ? new MemoryStorage()
     : new AzureStorage(config.connection);
   await storage.init();
-  const count = await seed(storage);
+  const result = await seed(storage);
   console.log(
-    `Seed concluído: ${count} produtos adicionados, sem sobrescrever registros.`,
+    `Seed concluído: ${result.created} produtos criados, ${result.updated} atualizados e ${result.uploaded} imagens enviadas. Total do catálogo seed: ${result.total}. Produtos manuais preservados.`,
   );
   if (config.memory) {
     await bootstrapAdmin(storage);
@@ -21,9 +21,11 @@ try {
       ),
     );
   }
-} catch {
+} catch (error) {
   console.error(
-    "Não foi possível executar o seed. Verifique a configuração e a conexão.",
+    error instanceof SeedInputError
+      ? error.message
+      : "Não foi possível concluir o seed. Verifique a configuração e a conexão. Uma falha remota pode interromper a carga; corrija a causa e execute novamente para completar os mesmos IDs.",
   );
   process.exitCode = 1;
 }

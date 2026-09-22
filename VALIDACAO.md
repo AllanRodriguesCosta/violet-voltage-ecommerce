@@ -1,72 +1,67 @@
-# Validação realizada
+# Validação do catálogo com imagens
 
-Data: 21/09/2026. Ambiente: Windows, Node.js 24.11.1, armazenamento em memória. Nenhuma chamada a uma conta Azure real ou ao deploy do Render foi realizada.
+Atualização: 21/09/2026. Ambiente local: Windows, Node.js 24.11.1, armazenamento em memória. Nenhuma operação Git, conexão com Azure real ou publicação no Render foi realizada nesta atualização.
 
-## Resultados finais
+## Resultados
 
 | Verificação | Resultado observado |
 | --- | --- |
-| Instalação npm | Concluída; auditoria automática: 0 vulnerabilidades conhecidas |
-| `npm run lint` | Código de saída 0; sem erros ou avisos de lint |
-| `npm test` | 17 testes aprovados, 0 falhas |
-| `npm start` | Servidor iniciou na porta 3001 e foi encerrado após o teste |
-| `npm run seed` | Servidor demonstrativo na porta 3000, com 8 produtos |
-| `/api/health` | HTTP 200; `status: ok`, `storage: memory-development` |
-| Páginas e arquivos estáticos | Nove páginas servidas; 14 referências únicas dos HTML conferidas, nenhuma quebrada |
-| Página desconhecida | HTTP 404 com página amigável |
-| Console do navegador | Nenhum erro ou aviso capturado nas páginas públicas inspecionadas |
-| Segredos persistentes | Apenas `.env.example`, com campos secretos vazios; nenhum `.env` criado |
-| Git | Nenhum comando Git executado durante o desenvolvimento |
+| `npm run lint` | Aprovado, saída 0 |
+| `npm test` | 24 testes aprovados; 0 falhas |
+| `npm run seed` em memória | 22 produtos criados; 22 imagens enviadas ao adaptador |
+| Imagens de origem | 22 arquivos PNG válidos pelo cabeçalho; 3.281.878 bytes no total |
+| `/api/health` | HTTP 200; `{ "status": "ok", "storage": "memory-development" }`; campo `payment` removido |
+| Catálogo | 22 produtos; IDs `demo-001` a `demo-022` |
+| Proxy de imagens | 22 respostas HTTP 200, `image/png`, conteúdo idêntico ao arquivo original em disco |
+| Busca final em `public/` | Nenhuma ocorrência de `demonstr`, `simulad` ou `nenhuma cobrança` |
+| Console do navegador | Nenhum erro/aviso capturado nas telas percorridas |
+| Segredos | Nenhuma connection string ou credencial real utilizada, incluída em arquivo ou impressa |
+| Arquivos privados | `seed-assets/produtos-violet-voltage/` incluído em `.gitignore`; originais preservados |
 
-## Cobertura automatizada
+## Seed e testes automatizados
 
-- Validação de produto, e-mail, quantidades, categorias, payload e valores monetários.
-- Recusa de memória em produção, necessidade de configuração Azure e nomes dos recursos.
-- Seed idempotente.
-- Cadastro, login, cookie HttpOnly/SameSite e Secure em produção, logout e desativação de sessão após exclusão lógica.
-- Bloqueio de acesso anônimo, papel customer sem privilégios administrativos e origem externa recusada.
-- Limite de tentativas de autenticação.
-- CRUD de produtos e clientes, filtros e alterações de status.
-- Checkout ignora preços enviados pelo cliente, preserva snapshots, valida estoque, evita duplicação com requestId e impede duas compras da última unidade no processo.
-- Compensação do estoque ao simular falha de gravação de pedido.
-- Upload rejeita conteúdo incompatível e tamanho excessivo; substituição e exclusão limpam o blob do produto no adaptador em memória.
-- Histórico próprio e preservação de pedidos depois de excluir produto/cliente.
+- Manifesto de 22 itens, seis categorias, IDs e caminhos únicos; estoques entre 5 e 30 e preços em centavos inteiros.
+- Atualização dos oito IDs antigos em partições diferentes, sem criar duplicatas; preservação de `createdAt` e PartitionKey, atualização de `updatedAt`.
+- Criação dos demais 14 registros, com nomes de blob determinísticos, MIME PNG e versão de URL derivada do conteúdo.
+- Segunda execução mantém 22 produtos e 22 nomes de blob, atualizando os mesmos IDs.
+- Produtos manuais e blobs manuais permanecem intactos, inclusive imagens antigas associadas a um produto seed.
+- Pasta ausente, arquivo final ausente e PNG inválido são rejeitados antes de qualquer upload/cadastro.
+- Duplicações antigas de uma RowKey entre partições são detectadas antes das gravações.
+- Os 22 produtos e as 22 imagens continuam acessíveis por HTTP após repetir o seed.
+- O contrato do adaptador Azure foi exercitado com clientes substitutos em memória. Isso não é validação de conectividade com Azure real.
+- Os testes usam fixtures PNG temporárias e não dependem das imagens privadas ignoradas pelo Git.
+- Mantidos os testes de autenticação, autorização, cookies, rate limit, CRUD, uploads administrativos, checkout, estoque, concorrência, compensação, idempotência de pedidos e páginas.
 
-## Navegador e responsividade
-
-Inspeção visual e medição de largura do DOM:
+## Navegador
 
 | Tela | Larguras verificadas | Resultado |
 | --- | --- | --- |
-| Home/catálogo | 360, 768, 1280 px | Sem transbordamento horizontal; imagens carregadas |
-| Produto | 360 px | Sem transbordamento; campos rotulados |
-| Carrinho | 360, 768, 1280 px | Quantidade e subtotal atualizados; layout ajustado para tablet |
-| Login | 360 px | Campos rotulados; sem transbordamento |
-| Cadastro | 360 px | Campos rotulados; sem transbordamento |
-| 404 | 768 px | Página amigável sem transbordamento |
+| Catálogo | 360, 768, 1280 px | 22 cartões; sem transbordamento; imagens com `contain` e centralizadas |
+| Produto | 360, 768, 1280 px | Guitarra inteira, carregada e centralizada; sem transbordamento |
+| Carrinho | 360, 768, 1280 px | Miniaturas carregadas com `contain`; sem transbordamento |
+| Checkout autenticado | 360, 768, 1280 px | Campos, resumo e opções Pix/Cartão/Boleto sem avisos removidos; sem transbordamento |
 
-Também foram exercitados o menu móvel, filtro por categoria, abertura de detalhes, adição ao carrinho, mudança de quantidade e redirecionamento do checkout para login. Nenhuma imagem quebrada ou campo sem label foi encontrado nas telas auditadas. A verificação é básica, não uma certificação completa WCAG.
+Foram exercitados filtro por categoria, detalhes da guitarra, adição ao carrinho, exigência de login, cadastro temporário, seleção de retirada/Pix, confirmação do pedido, carrinho limpo após confirmação, histórico com detalhes e logout. A confirmação mostrou **Pedido realizado com sucesso.** O histórico mostrou **Pagamento: pix**. A conta de teste foi criada somente na memória local, com senha aleatória não impressa. Não houve cobrança ou gateway financeiro.
 
-As rotas e regras autenticadas de checkout, conta e administração foram testadas por HTTP. Não foi realizada uma sessão visual autenticada completa do painel e do checkout no navegador, pois não foi configurada uma credencial persistente de demonstração. Os testes geram valores aleatórios descartáveis somente em memória e não imprimem senhas ou tokens.
+As imagens do painel administrativo receberam miniatura na listagem e prévia no formulário de substituição, com tamanhos reservados, fundo claro, `contain` e centralização. O acesso administrativo e upload continuam cobertos pela suíte HTTP; não foi realizada sessão visual com administrador nesta atualização.
 
-## Comandos executados
+## Arquivos alterados/criados nesta atualização
 
-- Inspeção: `Get-ChildItem`, `Get-Content`, `rg --files`, `node --version`, `npm --version`.
-- `npm install` (a primeira tentativa encontrou bloqueio no cache; a segunda, autorizada, concluiu).
-- `npm install --save-dev eslint@^10 prettier@^3` para versão suportada do lint e formatação.
-- `node scripts/create-pages.js` durante a criação inicial. O gerador temporário foi removido; os HTML finais são arquivos estáticos editáveis.
-- `npx prettier --write ...` nos arquivos JavaScript, CSS, HTML e configurações criados.
-- `npm run lint` e `npm test`, com correções e nova execução após falhas encontradas.
-- `node scripts/seed.js`, depois `npm run seed`, com `DEV_MEMORY_STORAGE=true` e porta 3000.
-- `npm start`, com `DEV_MEMORY_STORAGE=true` e porta 3001, somente para verificar a inicialização padrão.
-- Requisições locais por `Invoke-RestMethod` e `fetch` do Node para saúde, páginas e referências.
-- Scripts Node locais de edição/verificação e controles do navegador para inspeção visual.
+- `.gitignore`.
+- `src/services/seed.js` e novo `src/services/seed-products.js`.
+- `scripts/seed.js` e `src/routes/api.js`.
+- As nove páginas `public/*.html`: metadados; home e checkout também tiveram textos revisados.
+- `public/js/app.js`, `public/js/common.js`, `public/js/admin.js`.
+- `public/css/style.css`, `public/css/ui.css`.
+- `tests/application.test.js`, novo `tests/seed.test.js` e novo `tests/helpers/seed-fixture.js`.
+- `README.md`, `seed-assets/README.md`, `VALIDACAO.md`.
 
-## Pendências externas e limites
+Os PNGs originais não foram editados nem copiados para `public`. Nenhuma dependência nova foi necessária. Não houve pesquisa externa de preços.
 
-- Preencher as variáveis Azure e administrativas no ambiente privado; não há administrador padrão.
-- Validar criação dos três recursos Table e do contêiner, persistência, ETags e upload/proxy contra uma conta Azure real.
-- O adaptador Azure está implementado, mas os testes de integração usam memória. Não foi emulado o serviço Azure.
-- Publicar manualmente no Render conforme README; ainda não existe URL pública implantada.
-- Conferir as telas autenticadas com as credenciais configuradas e fazer uma compra de demonstração após o deploy.
-- Memória é volátil. Transações entre tabelas/partições Azure não são atômicas; falhas de rede/processo podem precisar de conciliação. Cancelamento não repõe estoque automaticamente. Essas limitações estão detalhadas no README.
+## Pendências externas
+
+Para realizar o upload real, mantenha a pasta de imagens no computador, configure `AZURE_STORAGE_CONNECTION_STRING` e `JWT_SECRET` privadamente, defina `DEV_MEMORY_STORAGE=false` e execute `npm run seed`. A aplicação publicada deve usar a mesma conta Storage. Veja `seed-assets/README.md` para os comandos completos.
+
+Ainda dependem das credenciais externas: criação/consulta dos recursos reais, permissões, persistência e upload/proxy no Azure e conferência do catálogo no Render. Os recursos permanecem `AllanRibeiroProdutos`, `AllanRibeiroClientes`, `AllanRibeiroPedidos` e `allan-ribeiro-produtos`.
+
+O seed não roda automaticamente. Atualizações de Table e Blob não têm transação global: falhas remotas durante a carga exigem corrigir a causa e repetir o comando, que reutiliza os mesmos IDs. Reexecutar o seed restaura preços, estoque, imagens e dados dos IDs reservados; não altera produtos manuais com outros IDs.

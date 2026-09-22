@@ -2,6 +2,7 @@ import {
   api,
   send,
   money,
+  productImage,
   escapeHtml as esc,
   bindForm,
   toast,
@@ -35,7 +36,7 @@ export async function adminPage(user) {
       ["Produtos ativos", s.produtos],
       ["Clientes ativos", s.clientes],
       ["Pedidos", s.pedidos],
-      ["Volume demonstrativo", money(s.totalCents)],
+      ["Volume de pedidos", money(s.totalCents)],
     ]
       .map(
         ([label, value]) =>
@@ -48,7 +49,7 @@ export async function adminPage(user) {
     items = await api(tab === "products" ? "/products" : `/admin/${tab}`);
     if (tab === "orders") {
       panel.innerHTML =
-        '<h2>Pedidos</h2><p class="form-help">Alterar o status não realiza cobrança nem restitui estoque automaticamente. Cancelamentos precisam de conferência manual do estoque.</p>' +
+        '<h2>Pedidos</h2><p class="form-help">Alterar o status não restitui estoque automaticamente. Cancelamentos precisam de conferência manual do estoque.</p>' +
         ordersHTML(items, true);
       panel.querySelectorAll("[data-order]").forEach(
         (select) =>
@@ -72,7 +73,7 @@ export async function adminPage(user) {
       );
       return;
     }
-    panel.innerHTML = `<div class="admin-toolbar"><h2>${tab === "products" ? "Equipamentos" : "Clientes"}</h2><button id="new-record">+ ${tab === "products" ? "Cadastrar produto" : "Cadastrar cliente"}</button></div><div id="editor"></div>${items.length ? `<div class="table-wrap"><table><thead><tr><th>${tab === "products" ? "Produto" : "Cliente"}</th><th>${tab === "products" ? "Preço" : "Contato"}</th><th>${tab === "products" ? "Estoque" : "Papel"}</th><th>Ações</th></tr></thead><tbody>${items.map((i) => `<tr><td><strong>${esc(tab === "products" ? i.modelo : i.nome)}</strong><small>${esc(tab === "products" ? i.marca : i.email)}</small></td><td>${tab === "products" ? money(i.priceCents) : esc(i.telefone || "—")}</td><td>${tab === "products" ? i.estoque : esc(i.role)}</td><td><button class="secondary" data-edit="${i.id}">Editar</button>${tab === "products" ? `<button class="secondary" data-image="${i.id}">Imagem</button>` : `<button class="secondary" data-history="${i.id}">Compras</button>`}${i.role === "admin" ? "" : `<button class="danger" data-delete="${i.id}">Excluir</button>`}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">Nenhum registro cadastrado.</div>'}`;
+    panel.innerHTML = `<div class="admin-toolbar"><h2>${tab === "products" ? "Equipamentos" : "Clientes"}</h2><button id="new-record">+ ${tab === "products" ? "Cadastrar produto" : "Cadastrar cliente"}</button></div><div id="editor"></div>${items.length ? `<div class="table-wrap"><table><thead><tr><th>${tab === "products" ? "Produto" : "Cliente"}</th><th>${tab === "products" ? "Preço" : "Contato"}</th><th>${tab === "products" ? "Estoque" : "Papel"}</th><th>Ações</th></tr></thead><tbody>${items.map((i) => `<tr><td>${tab === "products" ? `<div class="admin-product"><img src="${esc(productImage(i))}" alt="${esc(i.marca + " " + i.modelo)}" loading="lazy"><div><strong>${esc(i.modelo)}</strong><small>${esc(i.marca)}</small></div></div>` : `<strong>${esc(i.nome)}</strong><small>${esc(i.email)}</small>`}</td><td>${tab === "products" ? money(i.priceCents) : esc(i.telefone || "—")}</td><td>${tab === "products" ? i.estoque : esc(i.role)}</td><td><button class="secondary" data-edit="${i.id}">Editar</button>${tab === "products" ? `<button class="secondary" data-image="${i.id}">Imagem</button>` : `<button class="secondary" data-history="${i.id}">Compras</button>`}${i.role === "admin" ? "" : `<button class="danger" data-delete="${i.id}">Excluir</button>`}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">Nenhum registro cadastrado.</div>'}`;
     document.querySelector("#new-record").onclick = () => edit();
     panel
       .querySelectorAll("[data-edit]")
@@ -151,7 +152,7 @@ export async function adminPage(user) {
   }
   function imageEditor(item) {
     const editor = document.querySelector("#editor");
-    editor.innerHTML = `<form id="image-form" class="admin-form"><h3>Imagem de ${esc(item.modelo)}</h3><p class="form-help">JPEG, PNG ou WebP, até 5 MB. Use apenas imagens próprias ou licenciadas. A imagem anterior será substituída.</p><div class="field"><label for="image">Escolher imagem</label><input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp" required></div><button type="submit">Enviar imagem</button></form>`;
+    editor.innerHTML = `<form id="image-form" class="admin-form"><h3>Imagem de ${esc(item.modelo)}</h3><img class="image-preview" src="${esc(productImage(item))}" alt="Imagem atual de ${esc(item.modelo)}"><p class="form-help">JPEG, PNG ou WebP, até 5 MB. Use apenas imagens próprias ou licenciadas. A imagem anterior será substituída.</p><div class="field"><label for="image">Escolher imagem</label><input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp" required></div><button type="submit">Enviar imagem</button></form>`;
     bindForm(document.querySelector("#image-form"), async (_data, form) => {
       const file = form.elements.image.files[0];
       if (file.size > 5 * 1024 * 1024)

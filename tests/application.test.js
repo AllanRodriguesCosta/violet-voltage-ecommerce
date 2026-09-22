@@ -13,6 +13,7 @@ import { productInput, email, integer } from "../src/utils/validation.js";
 import { calculate, placeOrder } from "../src/services/checkout.js";
 import { bootstrapAdmin } from "../src/services/bootstrap.js";
 import { seed } from "../src/services/seed.js";
+import { seedFixture } from "./helpers/seed-fixture.js";
 const sample = {
   marca: "Teste",
   modelo: "Modelo",
@@ -69,11 +70,33 @@ test("checkout ignora preços do cliente e rejeita duplicados, inativos e excess
     ),
   );
 });
-test("seed é idempotente e preserva registros", async () => {
+test("seed é idempotente e preserva registros", async (t) => {
   const storage = new MemoryStorage();
-  assert.equal(await seed(storage), 8);
-  assert.equal(await seed(storage), 0);
-  assert.equal((await storage.list("products")).length, 8);
+  const options = await seedFixture(t);
+  await storage.create("products", {
+    ...sample,
+    partitionKey: "guitarras",
+    rowKey: "manual",
+    ativo: true,
+  });
+  const manual = await storage.get("products", "guitarras", "manual");
+  assert.deepEqual(await seed(storage, options), {
+    created: 22,
+    updated: 0,
+    uploaded: 22,
+    total: 22,
+  });
+  assert.deepEqual(await seed(storage, options), {
+    created: 0,
+    updated: 22,
+    uploaded: 22,
+    total: 22,
+  });
+  assert.equal((await storage.list("products")).length, 23);
+  assert.deepEqual(
+    await storage.get("products", "guitarras", "manual"),
+    manual,
+  );
 });
 test("falha ao persistir pedido compensa o estoque", async () => {
   const storage = new MemoryStorage();

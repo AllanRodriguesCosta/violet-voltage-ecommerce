@@ -3,6 +3,7 @@ import {
   api,
   send,
   money,
+  productImage,
   escapeHtml as esc,
   addCart,
   getCart,
@@ -58,7 +59,7 @@ async function catalog() {
         ? products
             .map(
               (p) =>
-                `<article class="product-card"><a class="product-image" href="/produto.html?id=${p.id}"><span class="product-category">${esc(p.categoria)}</span><img src="${esc(p.imageUrl)}" alt="${esc(p.marca + " " + p.modelo)}" loading="lazy"></a><div class="product-content"><span class="product-brand">${esc(p.marca)}</span><h3><a href="/produto.html?id=${p.id}">${esc(p.modelo)}</a></h3><div class="price">${money(p.priceCents)}</div><small>${p.estoque > 0 ? "Disponível para seu próximo setup" : "Estoque esgotado"}</small><button data-add="${p.id}" ${p.estoque < 1 ? "disabled" : ""}>${p.estoque > 0 ? "+ Adicionar ao carrinho" : "Indisponível"}</button></div></article>`,
+                `<article class="product-card"><a class="product-image" href="/produto.html?id=${p.id}"><span class="product-category">${esc(p.categoria)}</span><img src="${esc(productImage(p))}" alt="${esc(p.marca + " " + p.modelo)}" loading="lazy"></a><div class="product-content"><span class="product-brand">${esc(p.marca)}</span><h3><a href="/produto.html?id=${p.id}">${esc(p.modelo)}</a></h3><div class="price">${money(p.priceCents)}</div><small>${p.estoque > 0 ? "Disponível para seu próximo setup" : "Estoque esgotado"}</small><button data-add="${p.id}" ${p.estoque < 1 ? "disabled" : ""}>${p.estoque > 0 ? "+ Adicionar ao carrinho" : "Indisponível"}</button></div></article>`,
             )
             .join("")
         : empty("Nenhum equipamento encontrado.");
@@ -100,7 +101,7 @@ async function detail() {
       `/products/${encodeURIComponent(new URLSearchParams(location.search).get("id") || "")}`,
     );
     container.className = "detail-grid";
-    container.innerHTML = `<img class="detail-image" src="${esc(p.imageUrl)}" alt="${esc(p.marca + " " + p.modelo)}"><section class="detail-info"><span class="eyebrow">${esc(p.categoria)} · ${esc(p.marca)}</span><h1>${esc(p.modelo)}</h1><p class="lead">${esc(p.descricao)}</p><span class="price">${money(p.priceCents)}</span><p class="small muted">Pagamento demonstrativo, sem cobrança real.</p><p class="stock">${p.estoque ? `${p.estoque} unidade(s) em estoque` : "Produto esgotado"}</p><form id="add-product"><div class="field quantity"><label for="quantidade">Quantidade</label><input id="quantidade" name="quantidade" type="number" value="1" min="1" max="${Math.min(99, p.estoque)}" required ${p.estoque ? "" : "disabled"}></div><button type="submit" ${p.estoque ? "" : "disabled"}>Adicionar ao carrinho</button></form></section>`;
+    container.innerHTML = `<img class="detail-image" src="${esc(productImage(p))}" alt="${esc(p.marca + " " + p.modelo)}"><section class="detail-info"><span class="eyebrow">${esc(p.categoria)} · ${esc(p.marca)}</span><h1>${esc(p.modelo)}</h1><p class="lead">${esc(p.descricao)}</p><span class="price">${money(p.priceCents)}</span><p class="stock">${p.estoque ? `${p.estoque} unidade(s) em estoque` : "Produto esgotado"}</p><form id="add-product"><div class="field quantity"><label for="quantidade">Quantidade</label><input id="quantidade" name="quantidade" type="number" value="1" min="1" max="${Math.min(99, p.estoque)}" required ${p.estoque ? "" : "disabled"}></div><button type="submit" ${p.estoque ? "" : "disabled"}>Adicionar ao carrinho</button></form></section>`;
     bindForm(document.querySelector("#add-product"), (data) =>
       addCart(p, Number(data.quantidade)),
     );
@@ -138,7 +139,7 @@ async function cartPage() {
     const invalid = items.some(
       (i) => !i.product || i.quantidade > i.product.estoque,
     );
-    container.innerHTML = `<div class="cart-layout"><section class="panel">${items.map((i) => `<article class="cart-item"><img src="${esc(i.product?.imageUrl || "/assets/product.svg")}" alt="${esc(i.product?.modelo || "Produto indisponível")}"><div><h3>${esc(i.product ? `${i.product.marca} ${i.product.modelo}` : "Produto removido ou indisponível")}</h3>${!i.product || i.quantidade > i.product.estoque ? '<p class="field-error">Ajuste a quantidade ou remova este item.</p>' : ""}<span class="small muted">${money(i.product?.priceCents || 0)} por unidade</span><div class="cart-actions"><label for="qty-${i.id}" class="small">Qtd.</label><input id="qty-${i.id}" type="number" min="1" max="${Math.min(99, i.product?.estoque || 1)}" value="${i.quantidade}" data-qty="${i.id}" aria-label="Quantidade de ${esc(i.product?.modelo || "produto")}"><button class="text-button" data-remove="${i.id}">Remover</button></div></div><span class="price">${money((i.product?.priceCents || 0) * i.quantidade)}</span></article>`).join("")}</section><aside class="panel"><h2>Resumo do setup</h2><div class="summary-line"><span>Subtotal</span><strong>${money(subtotal(items))}</strong></div><p class="small muted">Entrega calculada no checkout. Preços e estoque serão conferidos novamente.</p><a class="button full" href="/checkout.html" ${invalid ? 'aria-disabled="true" tabindex="-1"' : ""}>Continuar para checkout</a><p class="form-help">Pagamento exclusivamente demonstrativo.</p></aside></div>`;
+    container.innerHTML = `<div class="cart-layout"><section class="panel">${items.map((i) => `<article class="cart-item"><img src="${esc(productImage(i.product))}" alt="${esc(i.product?.modelo || "Produto indisponível")}"><div><h3>${esc(i.product ? `${i.product.marca} ${i.product.modelo}` : "Produto removido ou indisponível")}</h3>${!i.product || i.quantidade > i.product.estoque ? '<p class="field-error">Ajuste a quantidade ou remova este item.</p>' : ""}<span class="small muted">${money(i.product?.priceCents || 0)} por unidade</span><div class="cart-actions"><label for="qty-${i.id}" class="small">Qtd.</label><input id="qty-${i.id}" type="number" min="1" max="${Math.min(99, i.product?.estoque || 1)}" value="${i.quantidade}" data-qty="${i.id}" aria-label="Quantidade de ${esc(i.product?.modelo || "produto")}"><button class="text-button" data-remove="${i.id}">Remover</button></div></div><span class="price">${money((i.product?.priceCents || 0) * i.quantidade)}</span></article>`).join("")}</section><aside class="panel"><h2>Resumo do setup</h2><div class="summary-line"><span>Subtotal</span><strong>${money(subtotal(items))}</strong></div><p class="small muted">Entrega calculada no checkout. Preços e estoque serão conferidos novamente.</p><a class="button full" href="/checkout.html" ${invalid ? 'aria-disabled="true" tabindex="-1"' : ""}>Continuar para checkout</a></aside></div>`;
     const checkout = container.querySelector("[aria-disabled]");
     if (checkout)
       checkout.onclick = (e) => {
@@ -198,7 +199,7 @@ async function checkout() {
       form.elements.entrega.value === "retirada" &&
       !form.elements.endereco.value
     )
-      form.elements.endereco.value = "Retirada na loja (demonstração)";
+      form.elements.endereco.value = "Retirada na loja";
     refresh();
   };
   refresh();
@@ -211,7 +212,7 @@ async function checkout() {
     });
     setCart([]);
     document.querySelector("#checkout-content").innerHTML =
-      `<div class="panel narrow confirmation" role="status"><div class="success-icon" aria-hidden="true">✓</div><h2>Seu som está a caminho!</h2><p class="lead">Pedido demonstrativo confirmado. Nenhum valor foi cobrado.</p><p class="small">Número do pedido</p><p class="order-number">${esc(order.id)}</p><p class="price">${money(order.totalCents)}</p><a href="/minha-conta.html" class="button">Acompanhar minhas compras</a></div>`;
+      `<div class="panel narrow confirmation" role="status"><div class="success-icon" aria-hidden="true">✓</div><h2>Seu som está a caminho!</h2><p class="lead">Pedido realizado com sucesso.</p><p class="small">Número do pedido</p><p class="order-number">${esc(order.id)}</p><p class="price">${money(order.totalCents)}</p><a href="/minha-conta.html" class="button">Acompanhar minhas compras</a></div>`;
   });
 }
 function authentication() {

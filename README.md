@@ -1,136 +1,85 @@
 # Violet Voltage
 
-**Turn Up Your Tone** — e-commerce acadêmico de guitarras e equipamentos, com interface em português brasileiro. “Histórico de locações” foi interpretado como **histórico de compras**, conforme a orientação do professor. Nenhuma compra cobra dinheiro real.
+**Turn Up Your Tone** — loja acadêmica de instrumentos, preparada para portfólio. Sem cobranças, entregas ou vendas reais.
 
-## Tecnologias e arquitetura
+## Voltar ao ar
 
-Node.js 24, Express 5, JavaScript ES modules, HTML/CSS e JavaScript puro no navegador. Azure Table Storage (`@azure/data-tables`) persiste produtos, clientes e pedidos; Azure Blob Storage (`@azure/storage-blob`) recebe imagens. Autenticação própria com bcrypt, JWT em cookie HttpOnly, cookie-parser, Helmet e express-rate-limit. Upload com Multer em memória. Testes com `node:test`, lint com ESLint.
+Siga [o guia Supabase + Render](docs/COLOCAR-NO-AR.md). O backend agora usa PostgreSQL e não depende do servidor do professor. O seed reconstrói os 22 produtos e imagens; sem exportação do banco antigo, clientes e pedidos anteriores não podem ser recuperados pelo código.
 
-Um único processo Express serve API e arquivos de `public`. Controllers não distinguem memória de Azure: ambos implementam `list`, `get`, `create`, `save`, `upload`, `blob` e `removeBlob`. A criação do pedido fica em um serviço separado; validação e autorização são compartilhadas.
+## Arquitetura
 
-```text
-src/
-  app.js                 Express, segurança e erros
-  server.js              Inicialização e porta
-  config/                Ambiente e nomes Azure
-  controllers/           Projeções de respostas públicas
-  middleware/auth.js     Autenticação, administrador e projeção pública
-  repositories/storage.js Adaptadores Azure e memória
-  routes/api.js          Rotas REST e handlers
-  services/              Checkout, bootstrap de administrador e seed
-  utils/validation.js    Regras de entrada
-public/
-  index.html             Home e catálogo
-  produto.html           Detalhes
-  carrinho.html          Carrinho
-  checkout.html          Checkout e confirmação
-  login.html             Login
-  cadastro.html          Cadastro
-  minha-conta.html       Perfil e compras
-  admin.html             Painel administrativo
-  404.html               Página não encontrada
-  css/                   Identidade visual e responsividade
-  js/                    Módulos de interface
-  assets/                SVGs originais locais
-scripts/                 Execução do seed opcional
-seed-assets/README.md    Orientações para imagens próprias/licenciadas
-tests/                   Testes de regras e integração HTTP
-.env.example             Somente exemplos públicos e campos vazios
-.gitignore               Proteção de ambiente, dependências e arquivos locais
-AGENTS.md                Convenções técnicas
-render.yaml              Serviço único no Render
-```
+Node.js 24, Express 5, JavaScript ES modules e frontend HTML/CSS/JavaScript sem frameworks. Um serviço Express atende páginas e API. Autenticação própria com bcrypt e JWT em cookie HttpOnly; não exige Supabase Auth nem chaves Supabase no navegador.
 
-## Funcionalidades
+PostgreSQL persiste produtos, clientes, pedidos e imagens no schema privado `violet_voltage`. Registros usam JSONB para preservar o contrato dos repositórios, com chaves e versões em colunas e restrições SQL. Esta migração não remodela todo o domínio em tabelas relacionais. As imagens usam `bytea`: as 22 fontes atuais somam aproximadamente 3,28 MB. A rota `/api/images/:id` serve os arquivos sem expor a conexão.
 
-- Catálogo pesquisável por texto, marca, modelo, categoria e intervalo de preço.
-- CRUD administrativo de produtos e clientes, resumo de indicadores, histórico de cada cliente, consulta de pedidos e edição de status.
-- Cadastro, login, logout, edição de nome/telefone/endereço e histórico de compras. E-mail é a chave de acesso e permanece imutável; não há recuperação de senha por e-mail nesta demonstração.
-- Carrinho em localStorage contendo somente IDs e quantidades. Tokens nunca são armazenados no localStorage.
-- Checkout autenticado, snapshots de itens, preço atual e estoque validados no backend; subtotal, frete e total em centavos inteiros.
-- Pix, cartão e boleto **simulados**, sem coletar dados de cartão. Entrega padrão: R$ 25; expressa: R$ 45; retirada: grátis. Na retirada, use a indicação de retirada no campo de endereço.
-- Upload/substituição de JPEG, PNG e WebP até 5 MB; MIME e assinatura básica conferidos no servidor, nomes aleatórios vinculados ao produto. Os SVGs locais não passam pela rota de upload.
-- Interface responsiva, labels, foco visível, navegação por teclado, mensagens próximas aos campos, carregamento, listas vazias e confirmação de exclusão.
+Checkout recalcula valores em centavos no servidor. Estoque e pedido são gravados em transação serializável com rollback e tentativas limitadas em conflitos de serialização. Atualizações usam versões para detectar concorrência; pedidos possuem unicidade por cliente e `requestId`.
 
-## Execução local sem Azure
+| Caminho | Responsabilidade |
+| --- | --- |
+| `src/app.js`, `src/server.js` | Express, segurança e inicialização |
+| `src/config/index.js` | Ambiente |
+| `src/repositories/factory.js` | Seleção de PostgreSQL ou memória |
+| `src/repositories/postgres.js` | Consultas parametrizadas, imagens e transações |
+| `migrations/001-postgres.sql` | Estrutura idempotente, sem apagar registros |
+| `src/routes/api.js` | API ativa |
+| `src/services/` | Checkout, administrador e seed |
+| `public/` | Interface |
+| `tests/` | Regras, HTTP e PostgreSQL via PGlite |
 
-Requisitos: Node.js 24 e npm. Instale as dependências:
+O adaptador Azure e seus testes permanecem como legado; a fábrica ativa não o seleciona. Nenhuma credencial Azure é necessária.
+
+## Execução
+
+Instale com `npm ci`, configure `.env` a partir de `.env.example` conforme o guia e execute:
 
 ```powershell
-npm ci
+$env:DEV_MEMORY_STORAGE='false'
+npm run db:migrate
+npm run seed
+npm start
 ```
 
-Sem criar `.env`, habilite explicitamente o modo volátil no terminal PowerShell:
+O seed exige os 22 PNGs locais descritos em `seed-assets/README.md`. Em PostgreSQL ele termina após a carga. Não execute em todo deploy: repetir restaura preços, estoques e dados de `demo-001` a `demo-022`.
+
+Para demonstração temporária sem banco:
 
 ```powershell
+$env:NODE_ENV='development'
 $env:DEV_MEMORY_STORAGE='true'
 npm run seed
 ```
 
-Antes do seed, coloque as 22 imagens PNG em `seed-assets/produtos-violet-voltage/`, mantendo as subpastas e nomes do manifesto em `src/services/seed-products.js`. Essa pasta é ignorada pelo Git. Não é necessária para `npm start` nem para os testes automatizados.
+Em memória, o próprio seed abre `http://localhost:3000`; reiniciar apaga todos os dados. Produção proíbe memória e não faz fallback silencioso.
 
-Abra `http://localhost:3000`. Em memória, `npm run seed` carrega 22 produtos e suas 22 imagens e mantém o servidor rodando no mesmo processo. Reiniciar apaga produtos, clientes, imagens e pedidos desse modo. O comando `npm start` inicia uma loja vazia em memória; `npm run dev` reinicia ao alterar o backend, também perdendo os dados voláteis. Não rode dois servidores na mesma porta.
-
-O segredo de sessão local é aleatório, temporário, gerado somente em memória e nunca impresso. Sem `ADMIN_*`, não há administrador padrão nem senha fixa; cadastro público sempre cria `customer`. Para testar o painel, configure as três variáveis administrativas abaixo e reinicie. Testes automatizados criam seus próprios usuários e segredos descartáveis em memória, sem gravar ou exibir senhas.
-
-## Configuração de ambiente
-
-O projeto contém `.env.example`, não contém `.env`. Se desejar, copie o exemplo para `.env` e preencha localmente, em um editor privado. `.gitignore` foi criado antes do exemplo e ignora `.env`, `.env.*`, liberando apenas `.env.example`. Não inclua arquivos de ambiente, connection strings, chaves, SAS ou senhas em commits, screenshots, chats ou logs.
+## Ambiente
 
 | Variável | Uso |
 | --- | --- |
-| `NODE_ENV` | `development` local; `production` no Render |
-| `PORT` | 3000 por padrão; o servidor respeita a porta do Render |
-| `DEV_MEMORY_STORAGE` | `true` somente no desenvolvimento; `false` para Azure |
-| `AZURE_STORAGE_CONNECTION_STRING` | Connection string real da conta Storage com acesso a Table e Blob |
-| `JWT_SECRET` | Segredo privado aleatório com pelo menos 32 caracteres para Azure/produção |
-| `ADMIN_EMAIL` | E-mail escolhido para o administrador |
-| `ADMIN_PASSWORD` | Senha privada de 12 a 72 caracteres, até 72 bytes UTF-8 |
-| `ADMIN_NAME` | Nome do administrador |
+| `NODE_ENV` | `development` local, `production` no Render |
+| `PORT` | 3000 por padrão; Render fornece sua porta |
+| `DEV_MEMORY_STORAGE` | `false` para PostgreSQL |
+| `DATABASE_URL` | URI privada do Session pooler |
+| `DATABASE_SSL` | `true`; produção exige TLS e validação do certificado |
+| `DATABASE_CA_CERT` | CA PEM opcional; aceita quebras reais ou `\n` |
+| `JWT_SECRET` | Segredo aleatório privado, pelo menos 32 caracteres |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | Configure os três para criar/atualizar o administrador |
 
-Preencha as três variáveis `ADMIN_*` em conjunto. O bootstrap cria ou atualiza esse usuário em cada inicialização, incluindo senha e papel. Para acessar: `/login.html`, depois `/admin.html`. Não há credencial embutida. O cadastro de clientes exige senha de 10 a 72 caracteres, limitada também a 72 bytes pelo bcrypt.
+Senha administrativa: 12 a 72 caracteres e até 72 bytes UTF-8. Bootstrap reaplica o administrador em cada inicialização. Login em `/login.html`, painel em `/admin.html`. Sem senha padrão; cadastro público sempre cria cliente. Nunca publique `.env` ou conexões privadas.
 
-## Azure: recursos e conexão
+## Funcionalidades e API
 
-Use uma conta Storage com endpoints de Blob e Table, normalmente StorageV2. Obtenha a connection string pelo portal Azure e configure-a apenas no ambiente privado. A conta precisa permitir criação das tabelas/contêiner e operações de leitura/escrita. Se houver firewall de rede, permita o acesso do ambiente de execução conforme as regras da sua conta.
+Catálogo com filtros, carrinho, cadastro/login/perfil, histórico próprio, checkout demonstrativo e painel com produtos, imagens, clientes, pedidos e indicadores. Upload PNG/JPEG/WebP até 5 MB. Fretes em centavos: padrão 2500, expresso 4500, retirada zero.
 
-Recursos fixos, sem nomes genéricos:
-
-- `AllanRibeiroProdutos`: PartitionKey inicialmente categoria normalizada; RowKey UUID. A categoria pode mudar e a partição original permanece estável, evitando migração não atômica. Seed usa IDs determinísticos `demo-*`.
-- `AllanRibeiroClientes`: PartitionKey `cliente`; RowKey e-mail normalizado. UUID público, perfil, hash de senha, papel, ativo e datas.
-- `AllanRibeiroPedidos`: PartitionKey UUID do cliente; RowKey UUID do pedido; itens JSON com snapshots, preços em centavos, entrega, endereço, status e data.
-- Contêiner `allan-ribeiro-produtos`: imagens de produtos. Nenhum outro contêiner é criado.
-
-Ao iniciar, as tabelas e o contêiner são criados se não existirem, sem limpar os dados. Produtos só são incluídos pelo painel ou pelo seed opcional. Confirme `/api/health`: `storage` deve ser `azure`. **Produção recusa `DEV_MEMORY_STORAGE=true` e não faz fallback silencioso.**
-
-### Imagens privadas
-
-O contêiner permanece privado. Cada produto armazena `blobName` e `imageUrl`. A URL é `/api/images/:id`, um proxy de leitura que resolve apenas o blob do produto ativo; não aceita um caminho de blob fornecido pelo visitante, nem expõe connection string ou SAS. Assim a interface funciona mesmo com acesso público de blobs desabilitado. O proxy usa cache de 5 minutos e envia o tipo da imagem.
-
-No painel, cadastre um produto e clique em **Imagem**. Ao substituir, o novo blob é gravado, a referência é atualizada com ETag e só depois o antigo é removido. Na exclusão do produto, o registro fica inativo para preservar histórico, e seu blob é removido. Não são feitas exclusões por prefixo ou de arquivos de outros produtos.
-
-### Seed opcional
-
-Com Azure configurado e as imagens disponíveis localmente, execute `npm run seed` em um terminal privado no seu computador. O comando envia as 22 imagens ao contêiner `allan-ribeiro-produtos`, cadastra ou atualiza `demo-001` a `demo-022` e encerra. A aplicação publicada usa o proxy `/api/images/:id` para ler os blobs; não precisa dos arquivos locais. Para iniciar o servidor, execute `npm start`. O seed não roda automaticamente no build ou na inicialização.
-
-O manifesto em `src/services/seed-products.js` contém as correspondências entre imagem, marca, produto, preço em centavos e estoque. Os preços foram definidos para fins acadêmicos, sem pesquisa de mercado; estoques iniciais entre 5 e 30. As guitarras usam a marca fictícia Violet Voltage. As demais marcas seguem a identificação fornecida pelo usuário, sem indicação de parceria comercial.
-
-O seed pré-valida a leitura e a assinatura PNG das 22 imagens antes de alterar produtos ou blobs. Localiza registros pela RowKey em todas as partições, atualiza os oito IDs antigos e cria os demais; preserva a PartitionKey e `createdAt` existentes e renova `updatedAt`. Repetições mantêm 22 IDs únicos e 22 nomes de blob determinísticos em `seed/violet-voltage/demo-NNN.png`. A URL inclui uma versão derivada do conteúdo para atualizar o cache quando uma fonte muda.
-
-Executar novamente restaura os dados, imagens, preços, estoque e estado ativo definidos no manifesto para os IDs reservados ao seed. Produtos manuais com outros IDs, seus blobs e imagens manuais anteriormente associadas a produtos seed não são excluídos. O seed não remove nenhum blob. Caso já existam dois registros com a mesma RowKey do seed, a execução para antes das gravações e pede revisão. Falhas remotas durante uploads/gravações não têm transação global; corrigir a conexão e repetir completa os mesmos IDs sem criar novos produtos. Veja `seed-assets/README.md`.
-
-## API
-
-Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..." } }`. `field` é opcional.
+Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..." } }`, campo `field` opcional.
 
 | Método | Rota | Acesso |
 | --- | --- | --- |
-| GET | `/api/health` | Público |
-| POST | `/api/auth/register`, `/api/auth/login`, `/api/auth/logout` | Público; login/cadastro limitados |
+| GET | `/api/health` | Público; consulta o banco, 503 se indisponível |
+| POST | `/api/auth/register`, `/api/auth/login`, `/api/auth/logout` | Público |
 | GET | `/api/auth/me` | Autenticado |
 | GET | `/api/products`, `/api/products/:id`, `/api/images/:id` | Público |
 | PATCH | `/api/profile` | Autenticado |
-| GET / POST | `/api/orders` | Histórico próprio / checkout autenticado |
+| GET / POST | `/api/orders` | Histórico próprio / checkout |
 | GET | `/api/admin/summary` | Admin |
 | POST | `/api/admin/products` | Admin |
 | PATCH / DELETE | `/api/admin/products/:id` | Admin |
@@ -140,41 +89,24 @@ Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..."
 | GET | `/api/admin/orders` | Admin |
 | PATCH | `/api/admin/orders/:id` | Admin, campo `status` |
 
-Filtros de produtos: `q`, `marca`, `modelo`, `categoria`, `min`, `max` (intervalo em centavos). Checkout recebe `items: [{id, quantidade}]`, `pagamento`, `entrega`, `endereco` e `requestId` exclusivo. Valores monetários enviados pelo navegador são ignorados. Repetir `requestId` do mesmo cliente devolve o pedido já registrado.
+Filtros: `q`, `marca`, `modelo`, `categoria`, `min`, `max` (centavos). Checkout: `items: [{id, quantidade}]`, `pagamento`, `entrega`, `endereco`, `requestId`. Valores enviados pelo navegador são ignorados; repetir um pedido persistido com o mesmo identificador devolve esse pedido.
 
-## Segurança e limites reais
+## Limites
 
-- JWT HS256 de 8 horas em cookie HttpOnly, SameSite=Lax e Secure em produção; o backend relê o cliente para aplicar desativação e papel atuais. Logout expira o cookie; não existe lista de revogação de tokens anteriormente copiados.
-- Proteção de origem em mutações, Helmet/CSP com recursos locais, limite de payload, rate limit de 30 tentativas por 15 minutos compartilhado entre login e cadastro por IP. O proxy do Render é confiado em um salto; adapte se houver outra topologia.
-- Exclusão de cliente é lógica: inativa o acesso, limpa perfil e hash, mas preserva e-mail como chave/tombstone e histórico dos pedidos, incluindo o endereço snapshot. Não equivale a um fluxo completo de apagamento de dados pessoais.
-- Azure Table não oferece transação única envolvendo produtos de partições diferentes e pedidos de outra tabela. O serviço serializa checkout/edição de estoque no processo, usa ETags contra concorrência externa e tenta compensar estoque em falhas. Queda do processo, falha de rede ambígua ou falha na compensação pode exigir conciliação manual. **Use uma única instância** nesta demonstração; não é garantia financeira/distribuída de exatamente uma execução.
-- Idempotência cobre pedidos já persistidos no mesmo processo/fluxo de serviço. Uma arquitetura distribuída de alta disponibilidade exigiria reservas duráveis e reconciliação.
-- Cancelar pedido altera apenas o status; não devolve estoque automaticamente. O administrador confere e ajusta o estoque manualmente para evitar dupla reposição.
-- Consulta de tabelas é simples, em memória após listagem; sem paginação ou índices adicionais. Indicadores não representam faturamento real. Adequado ao volume acadêmico, não a um catálogo massivo.
-- Upload verifica MIME, tamanho e assinatura inicial, sem decodificação completa/antivírus. Falhas de rede na limpeza de blobs podem exigir revisão de arquivos órfãos.
-- `/api/health` confirma processo iniciado e modo de armazenamento; não faz uma nova leitura Azure a cada chamada.
-- Memória, rate limit e sessão com segredo temporário não persistem ao reiniciar. Produção usa somente Azure, sem arquivos locais persistentes.
-- Nenhum gateway, frete real, envio de e-mail, recuperação de senha ou integração fiscal foi incluído.
+- JWT de 8 horas, HttpOnly, SameSite=Lax e Secure em produção, com papel e cliente relidos no servidor. Logout expira o cookie, sem lista de revogação.
+- Helmet, proteção de origem e limites de payload/autenticação. Não exponha `violet_voltage` pela Data API do Supabase.
+- Exclusões lógicas preservam histórico; não equivalem a um fluxo completo de apagamento de dados pessoais.
+- Cancelar pedido não repõe estoque automaticamente. Consultas ainda listam registros e filtram em memória, adequadas ao pequeno catálogo.
+- Upload valida MIME e assinatura básica. Substituição administrativa de imagem não é uma transação global; falhas de limpeza podem deixar arquivos órfãos.
+- Sem gateway, frete real, recuperação de senha, e-mail ou integração fiscal. Uma instância é suficiente para a demonstração.
 
-## Testes e qualidade
+## Validação e evolução
 
 ```powershell
 npm run lint
 npm test
 ```
 
-Os testes não usam Azure real nem dependem das imagens privadas. Fixtures PNG temporárias cobrem o seed de 22 produtos, atualização de partições antigas, preservação de registros e blobs manuais, idempotência, pré-validação e URLs de imagem por HTTP. O contrato do adaptador Azure é exercitado com clientes substitutos em memória, sem conexão externa. Também cobrem validação, produção, autenticação, autorização, cookie, CRUD, filtros, checkout, concorrência, imagens, páginas e ausência de avisos de pagamento nos arquivos públicos. Consulte `VALIDACAO.md` para resultados observados e limites da verificação manual.
+Testes usam dados descartáveis e PostgreSQL local em WASM (PGlite), sem credenciais cloud ou PNGs privados. Cobrem seed, versões, rollback e integração HTTP; não substituem a conexão TCP/TLS com Supabase. Resultados em `VALIDACAO.md`.
 
-## Publicação no Render — um Web Service
-
-1. O usuário prepara manualmente o repositório remoto e envia os arquivos do projeto. Nenhuma operação Git é necessária durante a execução da aplicação.
-2. No Render, crie **New → Web Service**, conecte seu repositório e selecione a branch desejada. Alternativamente use um Blueprint com `render.yaml`.
-3. Runtime: Node; Node 24; Root Directory: raiz do projeto; Build Command: `npm ci`; Start Command: `npm start`.
-4. Configure `NODE_ENV=production` e `DEV_MEMORY_STORAGE=false`.
-5. Configure `AZURE_STORAGE_CONNECTION_STRING`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` exclusivamente em Environment no painel. O Blueprint pode gerar `JWT_SECRET`. Não coloque valores secretos no YAML.
-6. Health Check Path: `/api/health`. Mantenha uma única instância. Não crie Static Site separado, banco SQL ou disco persistente. Express escuta `0.0.0.0` e `process.env.PORT`.
-7. Publique e abra `/api/health` pela URL HTTPS. Confira `storage: "azure"`. A inicialização deve criar somente os recursos listados acima.
-8. Faça login como administrador e cadastre um produto com imagem; crie um cliente de teste, simule uma compra e confira estoque/pedido no Azure. Essa validação externa depende das suas credenciais e não foi executada automaticamente.
-9. Se quiser o catálogo de demonstração, rode o seed opcional com as mesmas variáveis Azure em um ambiente privado autorizado. Não adicione seed ao build/start.
-
-Referências oficiais: [Express no Render](https://render.com/docs/deploy-node-express-app), [health checks](https://render.com/docs/health-checks), [cliente Azure Table](https://learn.microsoft.com/en-us/javascript/api/%40azure/data-tables/tableclient?view=azure-node-latest).
+Prioridades: publicação; depois apresentação profissional, aparência e acessibilidade; depois agentes. A transcrição enviada demonstra criação de um CRM com ferramentas de IA, Supabase e deploy. Ela não exige reescrever este projeto em Next.js nem trocar sua autenticação.

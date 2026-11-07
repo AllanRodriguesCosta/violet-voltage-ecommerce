@@ -116,14 +116,21 @@ export function apiRouter(storage, config) {
     }
     return u;
   }
-  r.get("/health", (_req, res) =>
-    res.json({
+  r.get("/health", async (_req, res) => {
+    try {
+      await storage.ping?.();
+    } catch {
+      return res
+        .status(503)
+        .json({ error: { message: "Armazenamento indisponível." } });
+    }
+    return res.json({
       data: {
         status: "ok",
-        storage: config.memory ? "memory-development" : "azure",
+        storage: config.memory ? "memory-development" : "postgresql",
       },
-    }),
-  );
+    });
+  });
   r.post("/auth/register", limited, async (req, res) => {
     const u = await createCustomer(req.body);
     sign(res, u);

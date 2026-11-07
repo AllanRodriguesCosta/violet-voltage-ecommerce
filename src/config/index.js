@@ -5,17 +5,31 @@ export function configuration(env = process.env) {
   const memory = env.DEV_MEMORY_STORAGE === "true";
   if (production && memory)
     throw new Error("Armazenamento em memória proibido em produção.");
-  if (!memory && !env.AZURE_STORAGE_CONNECTION_STRING)
+  if (!memory && !env.DATABASE_URL)
     throw new Error(
-      "Configure o Azure ou habilite DEV_MEMORY_STORAGE=true no desenvolvimento.",
+      "Configure DATABASE_URL ou habilite DEV_MEMORY_STORAGE=true no desenvolvimento.",
     );
   if (!memory && (!env.JWT_SECRET || env.JWT_SECRET.length < 32))
     throw new Error("Configure JWT_SECRET com pelo menos 32 caracteres.");
+  if (production && env.DATABASE_SSL === "false")
+    throw new Error("Produção exige TLS para PostgreSQL.");
+  if (!memory) {
+    let url;
+    try {
+      url = new URL(env.DATABASE_URL);
+    } catch {
+      throw new Error("DATABASE_URL inválida.");
+    }
+    if (!["postgres:", "postgresql:"].includes(url.protocol))
+      throw new Error("DATABASE_URL deve usar PostgreSQL.");
+  }
   return {
     production,
     memory,
     port: Number(env.PORT || 3000),
-    connection: env.AZURE_STORAGE_CONNECTION_STRING,
+    databaseUrl: env.DATABASE_URL,
+    databaseSsl: env.DATABASE_SSL !== "false",
+    databaseCa: env.DATABASE_CA_CERT,
     secret: env.JWT_SECRET || randomBytes(48).toString("hex"),
   };
 }

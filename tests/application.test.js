@@ -30,13 +30,13 @@ test("validação de valores, e-mail e produto", () => {
   assert.throws(() => productInput({ ...sample, categoria: "Inválida" }));
   assert.deepEqual(productInput(sample), sample);
 });
-test("produção exige Azure e segredo forte", () => {
+test("produção exige PostgreSQL e segredo forte; nomes Azure legados preservados", () => {
   assert.throws(() =>
     configuration({ NODE_ENV: "production", DEV_MEMORY_STORAGE: "true" }),
   );
   assert.throws(() => configuration({ NODE_ENV: "production" }));
   assert.throws(() =>
-    configuration({ AZURE_STORAGE_CONNECTION_STRING: "test" }),
+    configuration({ DATABASE_URL: "postgresql://localhost/violet" }),
   );
   assert.equal(configuration({ DEV_MEMORY_STORAGE: "true" }).memory, true);
   assert.deepEqual(Object.values(tableNames), [

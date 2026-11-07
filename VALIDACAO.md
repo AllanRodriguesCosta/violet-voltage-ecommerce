@@ -1,3 +1,15 @@
+# Migração PostgreSQL — 07/11/2026
+
+- `npm run lint`: aprovado, saída 0.
+- `npm test`: 28 testes aprovados, zero falhas. Execução com permissão de rede local para os testes HTTP.
+- PostgreSQL via PGlite: migração repetível, 22 produtos/imagens, atualização por versão, conflitos e rollback de estoque/pedido e imagem.
+- Integração HTTP com esse adaptador: autenticação, cookie HttpOnly, autorização, imagem binária, checkout e histórico.
+- TLS configurado com validação de certificado; credenciais nunca registradas.
+- Dependências atualizadas sem troca de versões principais. Auditoria após atualização: três alertas moderados na cadeia de desenvolvimento ESLint/minimatch; não aplicado `audit fix --force`.
+- Supabase/Render reais ainda não verificados: dependem da criação do projeto e configuração privada de conexão. PGlite não verifica transporte TCP/TLS, persistência cloud ou concorrência entre várias instâncias.
+- Nenhuma operação Git, publicação externa, alteração visual ou integração de agente nesta etapa. As observações visuais abaixo são históricas.
+
+---
 # Validação do catálogo com imagens
 
 Atualização: 21/09/2026. Ambiente local: Windows, Node.js 24.11.1, armazenamento em memória. Nenhuma operação Git, conexão com Azure real ou publicação no Render foi realizada nesta atualização.
@@ -65,3 +77,4 @@ Para realizar o upload real, mantenha a pasta de imagens no computador, configur
 Ainda dependem das credenciais externas: criação/consulta dos recursos reais, permissões, persistência e upload/proxy no Azure e conferência do catálogo no Render. Os recursos permanecem `AllanRibeiroProdutos`, `AllanRibeiroClientes`, `AllanRibeiroPedidos` e `allan-ribeiro-produtos`.
 
 O seed não roda automaticamente. Atualizações de Table e Blob não têm transação global: falhas remotas durante a carga exigem corrigir a causa e repetir o comando, que reutiliza os mesmos IDs. Reexecutar o seed restaura preços, estoque, imagens e dados dos IDs reservados; não altera produtos manuais com outros IDs.
+

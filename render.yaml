@@ -14,8 +14,10 @@ services:
         value: "24"
       - key: DEV_MEMORY_STORAGE
         value: "false"
-      - key: AZURE_STORAGE_CONNECTION_STRING
+      - key: DATABASE_URL
         sync: false
+      - key: DATABASE_SSL
+        value: "true"
       - key: JWT_SECRET
         generateValue: true
       - key: ADMIN_EMAIL

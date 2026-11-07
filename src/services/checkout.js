@@ -32,6 +32,9 @@ export function exclusive(fn) {
   return next;
 }
 export async function placeOrder(storage, user, body) {
+  if (storage.transaction && !storage.inTransaction) {
+    return storage.transaction((scoped) => placeOrder(scoped, user, body));
+  }
   return exclusive(async () => {
     const requestId = text(body.requestId, "requestId", 16, 100);
     if (!/^[a-zA-Z0-9-]+$/.test(requestId))
@@ -78,6 +81,8 @@ export async function placeOrder(storage, user, body) {
       await storage.create("orders", order);
       return order;
     } catch (error) {
+      // PostgreSQL reverte estoque e pedido juntos, sem compensação manual.
+      if (storage.inTransaction) throw error;
       for (const { p, quantidade } of changed) {
         try {
           const current = await storage.get(

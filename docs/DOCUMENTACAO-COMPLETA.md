@@ -41,7 +41,7 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `public/js/app.js` | Entrada: tema, cabeçalho, minicarrinho, busca e carregamento da página |
 | `public/js/theme-init.js`, `theme.js` | Tema aplicado antes da primeira pintura; seletores claro, escuro e automático |
 | `public/js/motion.js`, `quickview.js` | Voo até o carrinho, voltar ao topo, sombra do cabeçalho e visualização rápida |
-| `public/js/pages/` | Home, catálogo, favoritos, produto, carrinho, checkout, conta e acesso |
+| `public/js/pages/` | Home, catálogo, montador de setup, favoritos, produto, carrinho, checkout, conta e acesso |
 | `public/js/components.js`, `drawer.js`, `search.js`, `icons.js` | Cards, minicarrinho e aviso de item adicionado, sugestões de busca e ícones SVG |
 | `public/js/admin.js` | Painel administrativo |
 | `public/fonts/` | Fonte Geist (licença OFL) servida pelo próprio site |
@@ -89,6 +89,17 @@ ao campo (`aria-invalid` e `aria-describedby`), valida ao sair de um campo
 preenchido e leva o foco ao primeiro erro. O cabeçalho tem a altura reservada
 antes do JavaScript e o rodapé começa abaixo da dobra, o que zera o deslocamento
 de layout medido.
+
+### Descoberta e conversão
+
+`setup.html` guia a montagem de um setup em seis etapas por categoria (seleção
+única para guitarra, amplificador e correia; múltipla para efeitos, cabos e
+acessórios). O resumo mostra total, parcelas e progresso de frete grátis com as
+mesmas regras do servidor, e a URL (`?itens=`) recria o setup em outro
+aparelho, ignorando itens esgotados ou inexistentes. Na página do produto,
+"Compre junto" sugere o item mais acessível de categorias complementares. A busca
+corrige termos sem resultado pela palavra mais próxima do catálogo (distância de
+edição com transposição) e guarda as cinco últimas buscas neste navegador.
 
 ### Catálogo e produto
 

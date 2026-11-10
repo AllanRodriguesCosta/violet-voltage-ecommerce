@@ -1,5 +1,5 @@
 import { icon } from "../icons.js";
-import { catalogProducts, searchProducts, categories, escapeHtml as esc } from "../common.js";
+import { catalogProducts, searchProducts, correctQuery, rememberSearch, categories, escapeHtml as esc } from "../common.js";
 import { productCard, skeletonCards, bindCards, categoryInfo, emptyState, errorState } from "../components.js";
 
 const presets = [
@@ -31,7 +31,12 @@ export default async function catalog() {
     max: initial.get("max") || "",
     estoque: initial.get("estoque") === "1",
     sort: sorters[initial.get("sort")] ? initial.get("sort") : "default",
+    exato: initial.get("exato") === "1",
   };
+  // Termo efetivamente usado: o digitado ou a correção ("Você quis dizer") quando ele não acha nada.
+  let activeQuery = state.q;
+  let corrected = null;
+  if (state.q) rememberSearch(state.q);
   let products = [];
   let showAllBrands = false;
   search.value = state.q;
@@ -45,7 +50,7 @@ export default async function catalog() {
     const min = reais(state.min);
     const max = reais(state.max);
     const priceOk = min === null || max === null || min <= max;
-    return searchProducts(products, state.q).filter(
+    return searchProducts(products, activeQuery).filter(
       (p) =>
         (skip === "categoria" || !state.categoria || p.categoria === state.categoria) &&
         (skip === "marca" || !state.marcas.length || state.marcas.includes(p.marca)) &&
@@ -108,6 +113,7 @@ export default async function catalog() {
     if (state.max) params.set("max", state.max);
     if (state.estoque) params.set("estoque", "1");
     if (state.sort !== "default") params.set("sort", state.sort);
+    if (state.q && state.exato) params.set("exato", "1");
     history.replaceState(null, "", `${location.pathname}${params.size ? `?${params}` : ""}`);
     const title = state.categoria || "Todos os equipamentos";
     $("#catalog-title").textContent = title;
@@ -116,6 +122,13 @@ export default async function catalog() {
     document.title = `${state.categoria || "Catálogo"} | Violet Voltage`;
   }
   function render() {
+    corrected = state.q && !state.exato && !searchProducts(products, state.q).length ? correctQuery(products, state.q) : null;
+    activeQuery = corrected || state.q;
+    const notice = $("#search-correction");
+    notice.hidden = !corrected;
+    notice.innerHTML = corrected
+      ? `${icon("sparkle", { size: 16 })}<span>Mostrando resultados para <strong>“${esc(corrected)}”</strong>.</span><button type="button" class="text-button" data-exact>Buscar apenas por “${esc(state.q)}”</button>`
+      : "";
     const min = reais(state.min);
     const max = reais(state.max);
     const invalid = min !== null && max !== null && min > max;
@@ -124,7 +137,7 @@ export default async function catalog() {
     form.elements.max.setAttribute("aria-invalid", String(invalid));
     const list = filtered();
     if (state.sort !== "default") list.sort(sorters[state.sort]);
-    $("#catalog-count").textContent = `${list.length} ${list.length === 1 ? "equipamento encontrado" : "equipamentos encontrados"}${state.q ? ` para “${state.q}”` : ""}`;
+    $("#catalog-count").textContent = `${list.length} ${list.length === 1 ? "equipamento encontrado" : "equipamentos encontrados"}${activeQuery ? ` para “${activeQuery}”` : ""}`;
     $("#filters-apply").textContent = `Ver ${list.length} ${list.length === 1 ? "resultado" : "resultados"}`;
     grid.innerHTML = list.length
       ? list.map((p, i) => productCard(p, i)).join("")
@@ -164,14 +177,23 @@ export default async function catalog() {
     clearTimeout(timer);
     timer = setTimeout(() => {
       state.q = search.value.trim().slice(0, 80);
+      state.exato = false;
       render();
     }, 150);
   });
   $("#catalog-search").addEventListener("submit", (event) => {
     event.preventDefault();
     state.q = search.value.trim().slice(0, 80);
+    state.exato = false;
+    rememberSearch(state.q);
     render();
     search.blur();
+  });
+  $("#search-correction").addEventListener("click", (event) => {
+    if (!event.target.closest("[data-exact]")) return;
+    state.exato = true;
+    render();
+    search.focus();
   });
   $("#catalog-q-clear").hidden = !search.value;
   $("#catalog-q-clear").addEventListener("click", () => removeFilter("q") || search.focus());

@@ -12,10 +12,13 @@ import {
   getRecent,
   isWished,
   toast,
+  getCart,
+  setCart,
 } from "../common.js";
 import { stockState, wishLabel, handleWish, installmentText, productCard, bindCards, carousel, errorState } from "../components.js";
 import { delivery, shipping, FREE_SHIPPING_CENTS, maxInstallments, installmentValue } from "../pricing.js";
 import { alertButtonHTML } from "../alerts.js";
+import { openCart } from "../drawer.js";
 
 function structuredData(p, name) {
   document.querySelector('script[type="application/ld+json"]')?.remove();
@@ -83,6 +86,60 @@ async function share(name) {
     if (error?.name !== "AbortError") toast("Não foi possível compartilhar. Copie o endereço da página.", { type: "error" });
   }
 }
+// Compre junto: o item mais acessível, em estoque, de categorias que completam este produto.
+const complements = {
+  Guitarras: ["Cabos", "Correias", "Amplificadores"],
+  Amplificadores: ["Cabos", "Pedais"],
+  Pedais: ["Cabos", "Pedais"],
+  Cabos: ["Pedais", "Acessórios"],
+  Correias: ["Acessórios", "Cabos"],
+  Acessórios: ["Cabos", "Correias"],
+};
+function bundle(p, others) {
+  const section = document.querySelector("#bundle");
+  const picks = [];
+  for (const category of complements[p.categoria] || []) {
+    const item = others.filter((x) => x.categoria === category && !picks.includes(x)).sort((a, b) => a.priceCents - b.priceCents)[0];
+    if (item) picks.push(item);
+    if (picks.length === 2) break;
+  }
+  if (!p.estoque || !picks.length) return;
+  const all = [p, ...picks];
+  const item = (x, main) =>
+    `<li class="bundle-item${main ? " is-main" : ""}"><label><input type="checkbox" value="${esc(x.id)}" checked${main ? " disabled" : ""}><span class="bundle-media"><img src="${esc(productImage(x))}" alt="" width="96" height="96" loading="lazy"></span><span class="bundle-text"><small>${main ? "Este item" : esc(x.categoria)}</small><span>${esc(x.marca)} ${esc(x.modelo)}</span><strong>${money(x.priceCents)}</strong></span></label>${main ? "" : `<a class="text-link small" href="/produto.html?id=${encodeURIComponent(x.id)}">Ver detalhes</a>`}</li>`;
+  section.innerHTML = `<div class="section-head"><div><span class="eyebrow">Compre junto</span><h2 id="bundle-title">Complete o seu setup</h2></div></div><div class="bundle panel"><ul class="bundle-items">${all.map((x, i) => item(x, i === 0)).join(`<li class="bundle-plus" aria-hidden="true">${icon("plus", { size: 20 })}</li>`)}</ul><div class="bundle-total" aria-live="polite"></div></div>`;
+  const total = section.querySelector(".bundle-total");
+  const sync = () => {
+    const chosen = all.filter((x, i) => i === 0 || section.querySelector(`input[value="${CSS.escape(x.id)}"]`).checked);
+    const sum = chosen.reduce((s, x) => s + x.priceCents, 0);
+    const parcel = installmentText(sum);
+    total.innerHTML = `<span>Total de ${chosen.length} ${chosen.length === 1 ? "item" : "itens"}</span><strong>${money(sum)}</strong>${parcel ? `<small>${parcel}</small>` : ""}<button type="button" data-bundle-add>${icon("bag", { size: 18 })}Adicionar ${chosen.length} ${chosen.length === 1 ? "item" : "itens"} ao carrinho</button>`;
+    return chosen;
+  };
+  section.addEventListener("change", sync);
+  section.addEventListener("click", (event) => {
+    if (!event.target.closest("[data-bundle-add]")) return;
+    const chosen = sync();
+    const cart = getCart();
+    let added = 0;
+    for (const x of chosen) {
+      const line = cart.find((i) => i.id === x.id);
+      if ((line?.quantidade || 0) + 1 > Math.min(99, x.estoque)) continue;
+      if (line) line.quantidade++;
+      else cart.push({ id: x.id, quantidade: 1 });
+      added++;
+    }
+    if (!added) return toast("Esses itens já estão no carrinho no limite do estoque.", { type: "info" });
+    try {
+      setCart(cart);
+    } catch {
+      return toast("Não foi possível salvar o carrinho neste navegador.", { type: "error" });
+    }
+    openCart(`${added} ${added === 1 ? "item adicionado" : "itens adicionados"} ao carrinho.`);
+  });
+  sync();
+  section.hidden = false;
+}
 async function extras(p) {
   let products;
   try {
@@ -91,6 +148,7 @@ async function extras(p) {
     return;
   }
   const others = products.filter((x) => x.id !== p.id && x.estoque > 0);
+  bundle(p, others);
   const related = [
     ...others.filter((x) => x.categoria === p.categoria).sort((a, b) => Math.abs(a.priceCents - p.priceCents) - Math.abs(b.priceCents - p.priceCents)),
     ...others.filter((x) => x.categoria !== p.categoria).sort((a, b) => a.priceCents - b.priceCents),

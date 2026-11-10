@@ -1,3 +1,27 @@
+# Fase 2, etapa 14 — 10/11/2026
+
+- Testes novos em `tests/account.test.js`: validação do endereço (CEP, UF e
+  mensagens por campo), regras de principal e limite de cinco, paridade entre
+  navegador e servidor, títulos das notificações de pedido e integração HTTP de
+  endereços, "Avise-me" (item disponível recusado, repetição sem duplicar,
+  procura no painel, disparo único na reposição e no cancelamento pela loja) e
+  notificações (status pela loja, cancelamento do próprio cliente sem aviso,
+  marcar uma e todas como lidas, contagem na sessão).
+- Teste PostgreSQL novo (PGlite, no CI): tabelas novas na migração, aviso único
+  por cliente e produto, reposição com falha desfeita por completo e reposição
+  confirmada notificando uma única vez.
+- No navegador (28 verificações): "Avise-me" de visitante com retorno ao produto
+  após o cadastro, botão ativo no produto e no card, endereços (CEP formatado, UF
+  sugerida, campos obrigatórios, principal, editar), checkout com endereço salvo
+  e outro endereço, procura no painel, reposição e mudança de status gerando
+  notificações, sino com contagem, marcar como lidas, adicionar ao carrinho a
+  partir do aviso e contador na navegação inferior no celular.
+- Auditoria de acessibilidade repetida com conta, formulário de endereço e
+  produto esgotado com aviso (claro e escuro, 360 e 1440 px), sem problemas;
+  regressão das etapas 6 a 13 sem falhas.
+
+---
+
 # Fase 2, etapa 13 — 10/11/2026
 
 - Testes novos em `tests/states-client.test.js` (estados com título e alerta

@@ -1,5 +1,6 @@
 import { AppError } from "../utils/validation.js";
 import { exclusive } from "./checkout.js";
+import { notify, orderNotice, restockAlerts } from "./notifications.js";
 
 export const statuses = ["Recebido", "Em preparação", "Enviado", "Concluído", "Cancelado"];
 const flow = statuses.slice(0, 4);
@@ -37,12 +38,17 @@ export async function updateOrderStatus(storage, orderId, status, options = {}) 
       for (const item of items) {
         const p = products.find((x) => x.rowKey === item.id);
         if (!p) continue;
-        await storage.save("products", { ...p, estoque: p.estoque + item.quantidade }, p.etag);
+        const restocked = { ...p, estoque: p.estoque + item.quantidade };
+        await storage.save("products", restocked, p.etag);
+        // Item que estava esgotado volta ao estoque: avisa quem pediu "Avise-me".
+        if (p.estoque === 0) await restockAlerts(storage, restocked);
         p.estoque += item.quantidade;
       }
       next.estoqueDevolvido = true;
     }
     await storage.save("orders", next, order.etag);
+    // Mudanças feitas pela loja geram notificação para o cliente, na mesma transação.
+    if (options.notify) await notify(storage, order.partitionKey, orderNotice(order, status));
     return next;
   });
 }

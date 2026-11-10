@@ -4,6 +4,7 @@ import { initDrawer } from "./drawer.js";
 import { initSearch } from "./search.js";
 import { initTheme } from "./theme.js";
 import { initMotion } from "./motion.js";
+import { initAlerts } from "./alerts.js";
 
 document.documentElement.classList.add("js");
 if (!matchMedia("(prefers-reduced-motion: reduce)").matches)
@@ -17,6 +18,7 @@ initTheme();
 initMotion();
 initDrawer();
 initSearch();
+initAlerts();
 const routes = {
   "/": "home",
   "/index.html": "home",

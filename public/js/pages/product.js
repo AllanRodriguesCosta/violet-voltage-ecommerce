@@ -15,6 +15,7 @@ import {
 } from "../common.js";
 import { stockState, wishLabel, handleWish, installmentText, productCard, bindCards, carousel, errorState } from "../components.js";
 import { delivery, shipping, FREE_SHIPPING_CENTS, maxInstallments, installmentValue } from "../pricing.js";
+import { alertButtonHTML } from "../alerts.js";
 
 function structuredData(p, name) {
   document.querySelector('script[type="application/ld+json"]')?.remove();
@@ -128,7 +129,7 @@ export default async function detail() {
     container.removeAttribute("aria-busy");
     container.innerHTML = `<div class="detail-media"><button type="button" class="zoom-frame" aria-label="Ampliar imagem de ${esc(name)}"><img class="detail-image" src="${esc(image)}" alt="${esc(name)}" width="640" height="640"></button><span class="zoom-hint">${icon("zoom", { size: 16 })}<span class="hint-fine">Passe o cursor para ampliar ou clique para tela cheia</span><span class="hint-touch">Toque para ampliar</span></span><button type="button" class="wish-button" data-wish="${esc(p.id)}" data-name="${esc(name)}" aria-pressed="${wished}" aria-label="${esc(wishLabel(name, wished))}">${icon("heart")}</button></div>
 <section class="detail-info" data-name="${esc(name)}"><span class="eyebrow">${esc(p.categoria)} · ${esc(p.marca)}</span><h1>${esc(p.modelo)}</h1><p class="detail-price">${money(p.priceCents)}</p>${installmentText(p.priceCents) ? `<p class="detail-installments">${installmentText(p.priceCents)}</p>` : ""}${installmentsTable(p.priceCents)}<p class="stock-pill stock-${stock.key}">${icon(stock.key === "out" ? "clock" : "check", { size: 16 })}${stock.key === "out" ? "Produto esgotado" : stock.key === "low" ? `Últimas unidades: ${p.estoque} em estoque` : `${p.estoque} unidades em estoque`}</p><p class="lead">${esc(p.descricao)}</p>
-<form id="add-product" class="buy-box"><div class="quantity-field"><label for="quantidade">Quantidade</label><div class="stepper stepper-lg" role="group" aria-label="Quantidade"><button type="button" data-qty="-1" aria-label="Diminuir quantidade"${p.estoque ? "" : " disabled"}>${icon("minus", { size: 18 })}</button><input id="quantidade" name="quantidade" type="number" value="1" min="1" max="${max}" inputmode="numeric" required${p.estoque ? "" : " disabled"}><button type="button" data-qty="1" aria-label="Aumentar quantidade"${p.estoque > 1 ? "" : " disabled"}>${icon("plus", { size: 18 })}</button></div></div><div class="buy-actions"><button type="submit"${p.estoque ? "" : " disabled"}>${icon("bag", { size: 18 })}Adicionar ao carrinho</button><button type="button" class="secondary" data-buy-now${p.estoque ? "" : " disabled"}>Comprar agora</button></div></form>
+${p.estoque ? `<form id="add-product" class="buy-box"><div class="quantity-field"><label for="quantidade">Quantidade</label><div class="stepper stepper-lg" role="group" aria-label="Quantidade"><button type="button" data-qty="-1" aria-label="Diminuir quantidade"${p.estoque ? "" : " disabled"}>${icon("minus", { size: 18 })}</button><input id="quantidade" name="quantidade" type="number" value="1" min="1" max="${max}" inputmode="numeric" required${p.estoque ? "" : " disabled"}><button type="button" data-qty="1" aria-label="Aumentar quantidade"${p.estoque > 1 ? "" : " disabled"}>${icon("plus", { size: 18 })}</button></div></div><div class="buy-actions"><button type="submit"${p.estoque ? "" : " disabled"}>${icon("bag", { size: 18 })}Adicionar ao carrinho</button><button type="button" class="secondary" data-buy-now${p.estoque ? "" : " disabled"}>Comprar agora</button></div></form>` : `<div class="buy-box buy-box-out">${alertButtonHTML(p)}<p class="small muted">Sem estoque agora. Ative o aviso e acompanhe em Minha conta.</p></div>`}
 <p class="cart-feedback" role="status"></p>
 <ul class="perk-list delivery-list">${Object.entries(delivery).map(([key, d]) => `<li>${icon(key === "retirada" ? "store" : "truck", { size: 18 })}<span><strong>${d.label}</strong><small>${d.prazo}</small></span><span class="option-price">${(key === "padrao" && p.priceCents >= FREE_SHIPPING_CENTS) || !shipping[key] ? "Grátis" : money(shipping[key])}</span></li>`).join("")}<li>${icon("refresh", { size: 18 })}<span><strong>Troca em até 7 dias</strong><small>Após o recebimento</small></span></li></ul><p class="small muted">Frete grátis na entrega padrão para compras a partir de ${money(FREE_SHIPPING_CENTS)}.</p>
 <div class="detail-actions"><button type="button" class="text-button" data-share>${icon("share", { size: 18 })}Compartilhar</button><a class="text-link" href="/catalogo.html?categoria=${encodeURIComponent(p.categoria)}">Mais ${esc(p.categoria.toLowerCase())} ${icon("arrowRight", { size: 16 })}</a></div>
@@ -139,37 +140,38 @@ export default async function detail() {
     container.querySelector("[data-wish]").addEventListener("click", (event) => handleWish(event.currentTarget.dataset.wish));
     container.querySelector("[data-share]").addEventListener("click", () => share(name));
     const form = container.querySelector("#add-product");
-    const qty = form.elements.quantidade;
+    const buyBox = container.querySelector(".buy-box");
+    const qty = form?.elements.quantidade;
     const syncSteps = () => {
       const value = Number(qty.value);
       form.querySelector('[data-qty="-1"]').disabled = !p.estoque || value <= 1;
       form.querySelector('[data-qty="1"]').disabled = !p.estoque || value >= max;
     };
-    form.querySelectorAll("[data-qty]").forEach((b) =>
+    form?.querySelectorAll("[data-qty]").forEach((b) =>
       b.addEventListener("click", () => {
         qty.value = Math.min(max, Math.max(1, (Number(qty.value) || 1) + Number(b.dataset.qty)));
         syncSteps();
       }),
     );
-    qty.addEventListener("input", syncSteps);
-    syncSteps();
+    qty?.addEventListener("input", syncSteps);
+    if (form) syncSteps();
     const feedback = container.querySelector(".cart-feedback");
-    bindForm(form, (data) => {
+    if (form) bindForm(form, (data) => {
       if (addCart(p, Number(data.quantidade), { source: container.querySelector(".detail-image") })) feedback.innerHTML = 'Equipamento adicionado. <a href="/carrinho.html">Ver meu carrinho</a>';
       else feedback.textContent = "Não foi possível adicionar. Confira a quantidade e a mensagem exibida.";
     });
-    container.querySelector("[data-buy-now]").addEventListener("click", () => {
+    container.querySelector("[data-buy-now]")?.addEventListener("click", () => {
       if (!validateForm(form)) return;
       if (addCart(p, Number(qty.value), { notify: false })) location.href = "/checkout.html";
     });
     // Barra de compra fixa no celular quando o botão principal sai da tela.
     const bar = document.querySelector("#sticky-buy");
-    bar.innerHTML = `<img src="${esc(image)}" alt="" width="44" height="44"><span><strong>${esc(p.modelo)}</strong><small>${money(p.priceCents)}</small></span><button type="button"${p.estoque ? "" : " disabled"}>${icon("bag", { size: 18 })}${p.estoque ? "Adicionar" : "Esgotado"}</button>`;
-    bar.querySelector("button").addEventListener("click", () => addCart(p, 1, { source: bar.querySelector("img") }));
+    bar.innerHTML = `<img src="${esc(image)}" alt="" width="44" height="44"><span><strong>${esc(p.modelo)}</strong><small>${p.estoque ? money(p.priceCents) : "Esgotado"}</small></span>${p.estoque ? `<button type="button" data-bar-add>${icon("bag", { size: 18 })}Adicionar</button>` : alertButtonHTML(p, { short: true, className: "" })}`;
+    bar.querySelector("[data-bar-add]")?.addEventListener("click", () => addCart(p, 1, { source: bar.querySelector("img") }));
     let ticking = false;
     const syncBar = () => {
       ticking = false;
-      bar.classList.toggle("is-visible", form.getBoundingClientRect().bottom < 0);
+      bar.classList.toggle("is-visible", buyBox.getBoundingClientRect().bottom < 0);
     };
     addEventListener(
       "scroll",

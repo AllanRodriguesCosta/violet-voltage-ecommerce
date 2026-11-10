@@ -28,13 +28,15 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/services/checkout.js` | Itens, estoque e idempotência do pedido |
 | `src/services/pricing.js` | Frete, frete grátis, cupons, parcelas e opções de entrega |
 | `src/services/orders.js` | Transições de status, cancelamento com devolução de estoque e resumo do painel |
+| `src/services/addresses.js` | Validação e regras dos endereços de entrega (até 5, um principal) |
+| `src/services/notifications.js` | Notificações da conta e avisos "Avise-me" disparados na reposição |
 | `src/services/bootstrap.js` | Criação/atualização privada do administrador |
 | `src/services/seed*.js` | Manifesto e carga dos 22 produtos/imagens |
 | `src/repositories/factory.js`, `postgres.js` | Seleção de backend e persistência PostgreSQL |
 | `src/repositories/memory.js` | Armazenamento volátil de desenvolvimento e testes |
 | `src/repositories/storage.js` | Adaptador Azure legado (somente testes) |
 | `src/utils/startup-error.js` | Mensagem de falha na inicialização sem segredos |
-| `migrations/001-postgres.sql` | Estrutura idempotente do schema privado |
+| `migrations/001-postgres.sql` | Estrutura idempotente do schema privado, incluindo `alerts` e `notifications` |
 | `public/js/common.js` | API cliente, sessão, formulários, carrinho, favoritos, avisos e layout comum |
 | `public/js/app.js` | Entrada: tema, cabeçalho, minicarrinho, busca e carregamento da página |
 | `public/js/theme-init.js`, `theme.js` | Tema aplicado antes da primeira pintura; seletores claro, escuro e automático |
@@ -63,6 +65,19 @@ produto, a imagem segue até o ícone do carrinho e um aviso compacto, que pausa
 com cursor ou foco, mostra o item, o frete grátis e atalhos; o minicarrinho abre
 só quando pedido. Os cards têm visualização rápida em diálogo (folha inferior no
 celular). Animações respeitam `prefers-reduced-motion`.
+
+### Conta, avisos e notificações
+
+O cliente guarda até cinco endereços de entrega no próprio cadastro
+(`enderecos`), com CEP formatado, UF sugerida pelo CEP no navegador e um
+endereço principal; o checkout oferece os salvos, o endereço do cadastro e a
+opção de digitar outro. Em itens esgotados, "Avise-me" cria um aviso por cliente
+e produto (tabela `alerts`). Quando o estoque volta, pelo painel ou pelo
+cancelamento de um pedido, cada aviso pendente vira uma notificação (tabela
+`notifications`) uma única vez, na mesma transação da reposição. Mudanças de
+status feitas pela loja também notificam o cliente. A sessão traz a contagem de
+não lidas para o sino do cabeçalho e para a navegação inferior, e o painel mostra
+quantos clientes esperam cada item esgotado.
 
 ### Acessibilidade e estados
 

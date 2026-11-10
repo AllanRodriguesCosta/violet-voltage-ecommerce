@@ -3,6 +3,7 @@
 import { icon } from "./icons.js";
 import { money, escapeHtml as esc, productImage, addCart, isWished, validateForm } from "./common.js";
 import { stockState, installmentText, productUrl, handleWish, wishLabel } from "./components.js";
+import { alertButtonHTML } from "./alerts.js";
 
 let dialog;
 let opener;
@@ -37,9 +38,15 @@ export function openQuickView(product, from) {
 <p class="qv-price">${money(p.priceCents)}</p>${installmentText(p.priceCents) ? `<p class="product-installments">${installmentText(p.priceCents)}</p>` : ""}
 <p class="stock-pill stock-${stock.key}">${icon(stock.key === "out" ? "clock" : "check", { size: 16 })}${stockText}</p>
 <p class="qv-desc">${esc(p.descricao || "")}</p>
-<form class="qv-buy"><div class="stepper stepper-lg" role="group" aria-label="Quantidade"><button type="button" data-qty="-1" aria-label="Diminuir quantidade" disabled>${icon("minus", { size: 16 })}</button><input name="quantidade" type="number" value="1" min="1" max="${max}" inputmode="numeric" aria-label="Quantidade"${p.estoque ? "" : " disabled"}><button type="button" data-qty="1" aria-label="Aumentar quantidade"${max > 1 ? "" : " disabled"}>${icon("plus", { size: 16 })}</button></div><button type="submit"${p.estoque ? "" : " disabled"}>${icon("bag", { size: 18 })}${p.estoque ? "Adicionar ao carrinho" : "Esgotado"}</button></form>
+${p.estoque ? `<form class="qv-buy"><div class="stepper stepper-lg" role="group" aria-label="Quantidade"><button type="button" data-qty="-1" aria-label="Diminuir quantidade" disabled>${icon("minus", { size: 16 })}</button><input name="quantidade" type="number" value="1" min="1" max="${max}" inputmode="numeric" aria-label="Quantidade"${p.estoque ? "" : " disabled"}><button type="button" data-qty="1" aria-label="Aumentar quantidade"${max > 1 ? "" : " disabled"}>${icon("plus", { size: 16 })}</button></div><button type="submit"${p.estoque ? "" : " disabled"}>${icon("bag", { size: 18 })}${p.estoque ? "Adicionar ao carrinho" : "Esgotado"}</button></form>` : `<div class="qv-buy">${alertButtonHTML(p)}</div>`}
 <div class="qv-links"><button type="button" class="text-button" data-wish="${esc(p.id)}" data-name="${esc(name)}" aria-pressed="${wished}" aria-label="${esc(wishLabel(name, wished))}">${icon("heart", { size: 18 })}<span>Favoritos</span></button><a class="text-link" href="${productUrl(p)}">Ver detalhes completos ${icon("arrowRight", { size: 16 })}</a></div></div></div>`;
-  const form = dialog.querySelector(".qv-buy");
+  const form = dialog.querySelector("form.qv-buy");
+  dialog.querySelector("[data-wish]").addEventListener("click", () => handleWish(p.id));
+  dialog.showModal();
+  if (!form) {
+    dialog.querySelector("[data-alert]").focus();
+    return;
+  }
   const qty = form.elements.quantidade;
   const sync = () => {
     const value = Number(qty.value);
@@ -59,7 +66,5 @@ export function openQuickView(product, from) {
     const image = dialog.querySelector(".qv-media img");
     if (addCart(p, Number(qty.value), { source: image })) dialog.close();
   });
-  dialog.querySelector("[data-wish]").addEventListener("click", () => handleWish(p.id));
-  dialog.showModal();
-  (p.estoque ? form.querySelector("[type=submit]") : dialog.querySelector(".qv-close")).focus();
+  form.querySelector("[type=submit]").focus();
 }

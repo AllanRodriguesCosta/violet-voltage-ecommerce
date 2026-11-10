@@ -33,5 +33,22 @@ CREATE TABLE IF NOT EXISTS violet_voltage.images (
   content bytea NOT NULL CHECK (octet_length(content) <= 5242880),
   mime_type text NOT NULL CHECK (mime_type IN ('image/png','image/jpeg','image/webp'))
 );
+-- Avisos de estoque ("Avise-me") e notificações da conta, particionados pelo cliente.
+CREATE TABLE IF NOT EXISTS violet_voltage.alerts (
+  partition_key text NOT NULL,
+  row_key text PRIMARY KEY,
+  data jsonb NOT NULL CHECK (jsonb_typeof(data) = 'object'),
+  version text NOT NULL,
+  CHECK (data->>'rowKey' = row_key AND data->>'partitionKey' = partition_key)
+);
+CREATE INDEX IF NOT EXISTS alerts_partition ON violet_voltage.alerts (partition_key);
+CREATE TABLE IF NOT EXISTS violet_voltage.notifications (
+  partition_key text NOT NULL,
+  row_key text PRIMARY KEY,
+  data jsonb NOT NULL CHECK (jsonb_typeof(data) = 'object'),
+  version text NOT NULL,
+  CHECK (data->>'rowKey' = row_key AND data->>'partitionKey' = partition_key)
+);
+CREATE INDEX IF NOT EXISTS notifications_partition ON violet_voltage.notifications (partition_key);
 REVOKE ALL ON ALL TABLES IN SCHEMA violet_voltage FROM PUBLIC;
 COMMIT;

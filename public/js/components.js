@@ -1,4 +1,5 @@
 import { icon } from "./icons.js";
+import { FREE_SHIPPING_CENTS, maxInstallments, installmentValue } from "./pricing.js";
 import {
   money,
   escapeHtml as esc,
@@ -22,6 +23,15 @@ export function stockState(product) {
   if (product.estoque <= 5) return { key: "low", label: "Últimas unidades" };
   return { key: "in", label: "Em estoque" };
 }
+export function installmentText(totalCents) {
+  const count = maxInstallments(totalCents);
+  return count > 1 ? `ou ${count}x de ${money(installmentValue(totalCents, count))} sem juros` : "";
+}
+export function freeShippingHTML(subtotalCents) {
+  const missing = Math.max(0, FREE_SHIPPING_CENTS - subtotalCents);
+  const percent = Math.min(100, Math.round((subtotalCents / FREE_SHIPPING_CENTS) * 100));
+  return `<div class="ship-progress${missing ? "" : " is-done"}"><p>${missing ? `${icon("truck", { size: 18 })}<span>Faltam <strong>${money(missing)}</strong> para frete grátis na entrega padrão.</span>` : `${icon("check", { size: 18 })}<span>Você ganhou <strong>frete grátis</strong> na entrega padrão.</span>`}</p><div class="ship-bar" role="progressbar" aria-label="Progresso para frete grátis" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span style="width:${percent}%"></span></div></div>`;
+}
 export const productUrl = (p) => `/produto.html?id=${encodeURIComponent(p.id)}`;
 export function wishLabel(name, wished) {
   return wished ? `Remover ${name} dos favoritos` : `Salvar ${name} nos favoritos`;
@@ -32,7 +42,7 @@ export function productCard(p, index = 0) {
   const wished = isWished(p.id);
   return `<article class="product-card${stock.key === "out" ? " is-out" : ""}" style="--i:${index % 12}">
 <div class="product-media"><img src="${esc(productImage(p))}" alt="" loading="lazy" decoding="async" width="480" height="480"><div class="product-badges"><span class="badge badge-category">${esc(p.categoria)}</span>${stock.key === "in" ? "" : `<span class="badge badge-${stock.key}">${stock.label}</span>`}</div><button type="button" class="wish-button" data-wish="${esc(p.id)}" aria-pressed="${wished}" aria-label="${esc(wishLabel(name, wished))}">${icon("heart")}</button></div>
-<div class="product-body"><span class="product-brand">${esc(p.marca)}</span><h3 class="product-title"><a href="${productUrl(p)}"><span class="sr-only">${esc(p.marca)} </span>${esc(p.modelo)}</a></h3><p class="product-price">${money(p.priceCents)}</p><button type="button" class="button add-button" data-add="${esc(p.id)}"${stock.key === "out" ? " disabled" : ""} aria-label="${stock.key === "out" ? `${esc(name)} esgotado` : `Adicionar ${esc(name)} ao carrinho`}">${icon(stock.key === "out" ? "clock" : "bag", { size: 18 })}<span>${stock.key === "out" ? "Esgotado" : "Adicionar"}</span></button></div>
+<div class="product-body"><span class="product-brand">${esc(p.marca)}</span><h3 class="product-title"><a href="${productUrl(p)}"><span class="sr-only">${esc(p.marca)} </span>${esc(p.modelo)}</a></h3><p class="product-price">${money(p.priceCents)}</p>${installmentText(p.priceCents) ? `<p class="product-installments">${installmentText(p.priceCents)}</p>` : ""}<button type="button" class="button add-button" data-add="${esc(p.id)}"${stock.key === "out" ? " disabled" : ""} aria-label="${stock.key === "out" ? `${esc(name)} esgotado` : `Adicionar ${esc(name)} ao carrinho`}">${icon(stock.key === "out" ? "clock" : "bag", { size: 18 })}<span>${stock.key === "out" ? "Esgotado" : "Adicionar"}</span></button></div>
 </article>`;
 }
 export const skeletonCards = (count = 6) =>

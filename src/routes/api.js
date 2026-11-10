@@ -12,7 +12,8 @@ import {
   productInput,
   profileInput,
 } from "../utils/validation.js";
-import { placeOrder, exclusive } from "../services/checkout.js";
+import { placeOrder, exclusive, calculate } from "../services/checkout.js";
+import { quote, deliveryOptions } from "../services/pricing.js";
 import { publicProduct, publicOrder } from "../controllers/serialization.js";
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -212,6 +213,18 @@ export function apiRouter(storage, config) {
         "X-Content-Type-Options": "nosniff",
       })
       .send(image.buffer);
+  });
+  // Cotação pública: mesmo cálculo do pedido, sem gravar nada.
+  r.post("/checkout/quote", async (req, res) => {
+    const items = calculate(req.body.items, await storage.list("products"));
+    const totals = quote(items, { entrega: req.body.entrega || "padrao", cupom: req.body.cupom });
+    res.json({
+      data: {
+        ...totals,
+        items: items.map((i) => ({ ...i, totalCents: i.priceCents * i.quantidade })),
+        entregas: deliveryOptions(totals.subtotalCents),
+      },
+    });
   });
   r.get("/orders", authenticated, async (req, res) =>
     res.json({

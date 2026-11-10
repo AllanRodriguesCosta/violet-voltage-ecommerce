@@ -1,15 +1,18 @@
 import { icon } from "../icons.js";
 import {
+  send,
   catalogProducts,
   money,
   productImage,
   escapeHtml as esc,
   getCart,
   setCart,
+  getWishlist,
+  setWishlist,
   toast,
-  showError,
 } from "../common.js";
-import { emptyState } from "../components.js";
+import { emptyState, freeShippingHTML, installmentText, productCard, bindCards, errorState } from "../components.js";
+import { maxInstallments, installmentValue } from "../pricing.js";
 
 export async function cartData() {
   const cart = getCart();
@@ -18,23 +21,40 @@ export async function cartData() {
 }
 export const subtotal = (items) =>
   items.reduce((sum, i) => sum + (i.product?.priceCents || 0) * i.quantidade, 0);
+// Preferências do checkout guardadas neste navegador.
+export const prefs = {
+  get coupon() {
+    try { return localStorage.getItem("vv_coupon") || ""; } catch { return ""; }
+  },
+  set coupon(value) {
+    try { value ? localStorage.setItem("vv_coupon", value) : localStorage.removeItem("vv_coupon"); } catch { /* opcional */ }
+  },
+  get delivery() {
+    try { return localStorage.getItem("vv_delivery") || "padrao"; } catch { return "padrao"; }
+  },
+  set delivery(value) {
+    try { localStorage.setItem("vv_delivery", value); } catch { /* opcional */ }
+  },
+};
+export const fetchQuote = (entrega, cupom) =>
+  send("/checkout/quote", { items: getCart().map(({ id, quantidade }) => ({ id, quantidade })), entrega, ...(cupom ? { cupom } : {}) });
+export function totalsHTML(quote) {
+  const count = maxInstallments(quote.totalCents);
+  return `<div class="summary-line"><span>Subtotal</span><span>${money(quote.subtotalCents)}</span></div><div class="summary-line"><span>Frete</span><span>${quote.freteCents ? money(quote.freteCents) : '<strong class="free">Grátis</strong>'}</span></div>${quote.descontoCents ? `<div class="summary-line discount"><span>Desconto${quote.cupom ? ` (${esc(quote.cupom.codigo)})` : ""}</span><span>− ${money(quote.descontoCents)}</span></div>` : ""}<div class="summary-line summary-total"><span>Total</span><span>${money(quote.totalCents)}</span></div>${count > 1 ? `<p class="installments-note">ou até ${count}x de ${money(installmentValue(quote.totalCents, count))} sem juros no cartão</p>` : ""}`;
+}
 
 export default async function cartPage() {
   const container = document.querySelector("#cart-content");
-  function retryCart(error) {
-    container.className = "";
-    container.replaceChildren();
-    showError(container, error);
-    const retry = document.createElement("button");
-    retry.type = "button";
-    retry.textContent = "Carregar carrinho novamente";
-    retry.onclick = () => render().catch(retryCart);
-    container.append(retry);
-  }
-  function save(items, message) {
+  let delivery = prefs.delivery;
+  let coupon = prefs.coupon;
+  let couponError = "";
+  let products = [];
+  function save(items, message, extra) {
     const previous = getCart();
+    const previousWishes = getWishlist();
     try {
       setCart(items);
+      extra?.();
     } catch {
       toast("Não foi possível salvar o carrinho. Verifique as permissões de armazenamento do navegador.", { type: "error" });
       return;
@@ -42,58 +62,127 @@ export default async function cartPage() {
     if (message)
       toast(message, {
         type: "info",
-        action: { label: "Desfazer", onClick: () => { setCart(previous); render().catch(retryCart); } },
+        action: { label: "Desfazer", onClick: () => { setCart(previous); setWishlist(previousWishes); render(); } },
       });
-    render().catch(retryCart);
+    render();
+  }
+  async function summary(items) {
+    const aside = container.querySelector(".summary-panel");
+    const invalid = items.some((i) => !i.product || i.quantidade > i.product.estoque);
+    const base = { subtotalCents: subtotal(items), freteCents: 0, descontoCents: 0, totalCents: subtotal(items) };
+    let quote = null;
+    if (!invalid) {
+      try {
+        quote = await fetchQuote(delivery, coupon);
+      } catch (error) {
+        if (error.field === "cupom" && coupon) {
+          couponError = error.message;
+          coupon = prefs.coupon = "";
+          try { quote = await fetchQuote(delivery); } catch { quote = null; }
+        } else if (error.field === "entrega") {
+          delivery = prefs.delivery = "padrao";
+        }
+      }
+    }
+    const options = quote?.entregas || [];
+    aside.innerHTML = `<h2>Resumo do pedido</h2>${options.length ? `<fieldset class="ship-estimate"><legend>Entrega</legend>${options.map((o) => `<label class="option-line"><input type="radio" name="estimate" value="${o.id}"${o.id === delivery ? " checked" : ""}><span><strong>${esc(o.label)}</strong><small>${esc(o.prazo)}</small></span><span class="option-price">${o.priceCents ? money(o.priceCents) : "Grátis"}</span></label>`).join("")}</fieldset>` : ""}
+<form class="coupon-form" novalidate><label for="cart-coupon">Cupom de desconto</label>${quote?.cupom ? `<div class="coupon-applied">${icon("tag", { size: 18 })}<span><strong>${esc(quote.cupom.codigo)}</strong><small>${esc(quote.cupom.descricao)}</small></span><button type="button" class="text-button" data-remove-coupon>Remover</button></div>` : `<div class="coupon-row"><input id="cart-coupon" name="cupom" maxlength="30" autocomplete="off" placeholder="Ex.: VOLTAGE10" value=""${couponError ? ' aria-invalid="true" aria-describedby="coupon-error"' : ""}><button type="submit" class="secondary">Aplicar</button></div>${couponError ? `<p class="field-error" id="coupon-error" role="alert">${esc(couponError)}</p>` : ""}`}</form>
+<div class="totals">${totalsHTML(quote || base)}</div>${invalid ? '<p class="field-error">Ajuste os itens indisponíveis para continuar.</p>' : ""}
+<a class="button full" href="/checkout.html"${invalid ? ' aria-disabled="true"' : ""}>Finalizar compra ${icon("arrowRight", { size: 18 })}</a><a class="button secondary full" href="/catalogo.html">Continuar comprando</a><p class="secure-note">${icon("shield", { size: 16 })}Preços, estoque e descontos são conferidos novamente ao confirmar.</p>`;
+    aside.querySelector('[aria-disabled="true"]')?.addEventListener("click", (e) => {
+      e.preventDefault();
+      toast("Ajuste os itens indisponíveis primeiro.", { type: "error" });
+    });
+    aside.querySelectorAll("input[name=estimate]").forEach((radio) =>
+      radio.addEventListener("change", () => {
+        delivery = prefs.delivery = radio.value;
+        couponError = "";
+        summary(items);
+      }),
+    );
+    aside.querySelector(".coupon-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const value = event.target.elements.cupom?.value.trim();
+      if (!value) return;
+      coupon = value.toUpperCase();
+      couponError = "";
+      try {
+        const applied = await fetchQuote(delivery, coupon);
+        prefs.coupon = coupon;
+        toast(`Cupom ${applied.cupom.codigo} aplicado.`, { type: "success" });
+      } catch (error) {
+        couponError = error.message;
+        coupon = "";
+      }
+      summary(items);
+    });
+    aside.querySelector("[data-remove-coupon]")?.addEventListener("click", () => {
+      coupon = prefs.coupon = "";
+      summary(items);
+    });
   }
   async function render() {
-    const items = await cartData();
+    let items;
+    try {
+      items = await cartData();
+      products = await catalogProducts();
+    } catch (error) {
+      errorState(container, error, render);
+      return;
+    }
     container.className = "";
     if (!items.length) {
       container.innerHTML = emptyState({
         symbol: "bag",
         title: "Seu carrinho está esperando o primeiro acorde.",
         text: "Explore o catálogo e monte o seu próximo setup.",
-        actions: '<a class="button" href="/catalogo.html">Explorar catálogo</a>',
+        actions: '<a class="button" href="/catalogo.html">Explorar catálogo</a><a class="button secondary" href="/favoritos.html">Ver favoritos</a>',
       });
       return;
     }
-    const invalid = items.some((i) => !i.product || i.quantidade > i.product.estoque);
-    container.innerHTML = `<div class="cart-layout"><section class="panel cart-list" aria-label="Itens do carrinho">${items
+    const count = items.reduce((s, i) => s + i.quantidade, 0);
+    const categoriesInCart = new Set(items.map((i) => i.product?.categoria));
+    const suggestions = products
+      .filter((p) => p.estoque > 0 && !categoriesInCart.has(p.categoria) && !items.some((i) => i.id === p.id))
+      .sort((a, b) => a.priceCents - b.priceCents)
+      .slice(0, 4);
+    container.innerHTML = `<div class="cart-layout"><div class="cart-main"><div class="panel ship-panel">${freeShippingHTML(subtotal(items))}</div><section class="panel cart-list" aria-label="Itens do carrinho"><h2 class="cart-count">${count} ${count === 1 ? "item" : "itens"}</h2>${items
       .map((i) => {
         const p = i.product;
         const name = p ? `${p.marca} ${p.modelo}` : "Produto removido ou indisponível";
-        const max = Math.min(99, p?.estoque || 1);
-        return `<article class="cart-item"><img src="${esc(productImage(p))}" alt="" width="96" height="96"><div class="cart-item-info"><h3>${p ? `<a href="/produto.html?id=${encodeURIComponent(p.id)}">${esc(name)}</a>` : esc(name)}</h3>${!p || i.quantidade > p.estoque ? '<p class="field-error">Ajuste a quantidade ou remova este item.</p>' : ""}<span class="small muted">${money(p?.priceCents || 0)} por unidade</span><div class="cart-actions"><label for="qty-${esc(i.id)}" class="small">Qtd.</label><input id="qty-${esc(i.id)}" type="number" min="1" max="${max}" value="${i.quantidade}" inputmode="numeric" data-qty="${esc(i.id)}"><button type="button" class="text-button" data-remove-item="${esc(i.id)}">${icon("trash", { size: 16 })}Remover</button></div></div><strong class="price">${money((p?.priceCents || 0) * i.quantidade)}</strong></article>`;
+        const max = Math.min(99, p?.estoque || 0);
+        const problem = !p ? "Este produto não está mais disponível." : i.quantidade > p.estoque ? `Restam ${p.estoque} em estoque; ajuste a quantidade.` : "";
+        return `<article class="cart-item"><img src="${esc(productImage(p))}" alt="" width="96" height="96"><div class="cart-item-info"><h3>${p ? `<a href="/produto.html?id=${encodeURIComponent(p.id)}">${esc(name)}</a>` : esc(name)}</h3><span class="small muted">${money(p?.priceCents || 0)} cada${p && installmentText(p.priceCents) ? ` · ${installmentText(p.priceCents)}` : ""}</span>${problem ? `<p class="field-error">${problem}</p>` : ""}<div class="cart-actions"><div class="stepper" role="group" aria-label="Quantidade de ${esc(name)}"><button type="button" data-step="-1" data-id="${esc(i.id)}" aria-label="Diminuir quantidade"${i.quantidade <= 1 ? " disabled" : ""}>${icon("minus", { size: 16 })}</button><output aria-live="polite">${i.quantidade}</output><button type="button" data-step="1" data-id="${esc(i.id)}" data-max="${max}" aria-label="Aumentar quantidade"${i.quantidade >= max ? " disabled" : ""}>${icon("plus", { size: 16 })}</button></div>${p ? `<button type="button" class="text-button" data-later="${esc(i.id)}">${icon("heart", { size: 16 })}Salvar para depois</button>` : ""}<button type="button" class="text-button" data-remove-item="${esc(i.id)}">${icon("trash", { size: 16 })}Remover</button></div></div><strong class="price">${money((p?.priceCents || 0) * i.quantidade)}</strong></article>`;
       })
-      .join("")}</section><aside class="panel summary-panel"><h2>Resumo</h2><div class="summary-line"><span>Subtotal</span><strong>${money(subtotal(items))}</strong></div><p class="small muted">Frete calculado no checkout. Preços e estoque são conferidos novamente ao finalizar.</p><a class="button full" href="/checkout.html"${invalid ? ' aria-disabled="true"' : ""}>Continuar para o checkout ${icon("arrowRight", { size: 18 })}</a><a class="button secondary full" href="/catalogo.html">Continuar comprando</a></aside></div>`;
-    container.querySelector('[aria-disabled="true"]')?.addEventListener("click", (e) => {
-      e.preventDefault();
-      toast("Ajuste os itens indisponíveis primeiro.", { type: "error" });
-    });
-    container.querySelectorAll("[data-remove-item]").forEach((b) =>
-      b.addEventListener("click", () =>
-        save(getCart().filter((i) => i.id !== b.dataset.removeItem), "Item removido do carrinho."),
-      ),
-    );
-    container.querySelectorAll("[data-qty]").forEach((input) =>
-      input.addEventListener("change", () => {
-        const qty = Number(input.value);
-        if (!Number.isInteger(qty) || qty < 1 || qty > Number(input.max)) {
-          toast("Quantidade inválida para o estoque disponível.", { type: "error" });
-          render().catch(retryCart);
-          return;
-        }
+      .join("")}</section></div><aside class="panel summary-panel" aria-live="polite"><div class="loading">Calculando…</div></aside></div>${suggestions.length ? `<section class="cart-suggestions" aria-labelledby="suggestions-title"><h2 id="suggestions-title">Complete seu setup</h2><div class="product-grid product-grid-wide">${suggestions.map((p, i) => productCard(p, i)).join("")}</div></section>` : ""}`;
+    const grid = container.querySelector(".cart-suggestions .product-grid");
+    if (grid) bindCards(grid, () => products);
+    container.querySelectorAll("[data-step]").forEach((b) =>
+      b.addEventListener("click", () => {
         const cart = getCart();
-        const item = cart.find((i) => i.id === input.dataset.qty);
-        if (!item) return render().catch(retryCart);
-        item.quantidade = qty;
+        const item = cart.find((i) => i.id === b.dataset.id);
+        if (!item) return render();
+        item.quantidade = Math.max(1, item.quantidade + Number(b.dataset.step));
         save(cart);
       }),
     );
+    container.querySelectorAll("[data-remove-item]").forEach((b) =>
+      b.addEventListener("click", () => save(getCart().filter((i) => i.id !== b.dataset.removeItem), "Item removido do carrinho.")),
+    );
+    container.querySelectorAll("[data-later]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const id = b.dataset.later;
+        save(getCart().filter((i) => i.id !== id), "Item movido para os favoritos.", () => {
+          const wishes = getWishlist();
+          if (!wishes.includes(id)) setWishlist([id, ...wishes]);
+        });
+      }),
+    );
+    await summary(items);
   }
   document.addEventListener("vv:cart", () => {
-    if (!container.contains(document.activeElement)) render().catch(retryCart);
+    if (!container.contains(document.activeElement)) render();
   });
-  await render().catch(retryCart);
+  document.addEventListener("vv:cart-added", () => render());
+  await render();
 }

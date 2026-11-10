@@ -1,3 +1,15 @@
+# Fase 2, etapa 9 — 10/11/2026
+
+- Testes novos em `tests/pricing.test.js`: paridade das regras do navegador com
+  o servidor, frete grátis, cupons (teto, mínimo, frete, inválidos), parcelas e
+  integração HTTP de cotação e pedido com cupom e parcelas.
+- No navegador (360 e 1440 px): progresso de frete grátis, cupom inválido com
+  erro no campo, cupom aplicado, estimativa de entrega, salvar para depois com
+  desfazer, checkout que reaplica cupom e entrega, pedido no cartão em 3x,
+  confirmação e histórico com desconto e parcelas; sem rolagem horizontal.
+
+---
+
 # Fase 2, etapas 6 e 7 — 10/11/2026
 
 - Revisão em Chromium nas larguras 360, 768 e 1440 px: home, catálogo,

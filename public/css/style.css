@@ -271,6 +271,7 @@ dialog::backdrop { background: rgb(18 11 25 / 55%); backdrop-filter: blur(2px); 
 .product-title { font-size: 15px; font-weight: 600; line-height: 1.35; margin: 2px 0 0; letter-spacing: -0.01em; }
 .product-title a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
 .product-price { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; margin: 6px 0 12px; }
+.product-installments { font-size: 12.5px; color: var(--muted); margin: -10px 0 12px; line-height: 1.4; }
 .add-button { position: relative; z-index: 2; margin-top: auto; width: 100%; min-height: 42px; padding: 10px 12px; font-size: 14px; background: var(--ink); }
 .add-button:hover { background: var(--violet); }
 .add-button:disabled { background: var(--surface-2); color: var(--muted); opacity: 1; }
@@ -323,6 +324,18 @@ dialog::backdrop { background: rgb(18 11 25 / 55%); backdrop-filter: blur(2px); 
 .summary-line > :last-child { flex-shrink: 0; }
 .summary-total { font-size: 18px; font-weight: 700; padding-top: 12px; border-top: 1px solid var(--line); }
 .drawer-footer .summary-total { border-top: 0; padding-top: 0; margin: 0; }
+
+/* Progresso para frete grátis */
+.ship-progress p { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 14px; }
+.ship-progress .icon { color: var(--violet); }
+.ship-progress.is-done .icon { color: var(--success); }
+.ship-bar { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.ship-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--violet), #a57bff); transition: width 0.5s var(--ease); }
+.ship-progress.is-done .ship-bar span { background: linear-gradient(90deg, var(--success), #39b27d); }
+.promo { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 28px; padding: 16px 20px; border-radius: var(--radius-lg); background: linear-gradient(100deg, var(--violet-soft), #fff 70%); border: 1px solid #ddcdfa; }
+.promo p { margin: 0; flex: 1 1 260px; font-size: 15px; }
+.promo code { font-family: inherit; font-weight: 700; color: var(--violet-strong); background: #fff; border: 1px dashed var(--violet); border-radius: 6px; padding: 2px 8px; }
+.promo-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; background: var(--violet); color: #fff; flex-shrink: 0; }
 
 /* Home: abertura */
 .hero { position: relative; overflow: hidden; color: #fff; background: radial-gradient(55% 75% at 78% 42%, rgb(124 77 255 / 38%), transparent 62%), radial-gradient(35% 45% at 8% 100%, rgb(217 255 74 / 9%), transparent 70%), linear-gradient(180deg, #1a0f26, var(--night)); }

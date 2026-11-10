@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { AppError, integer, text } from "../utils/validation.js";
-export const shipping = { padrao: 2500, expressa: 4500, retirada: 0 };
+import { quote, installments, shipping } from "./pricing.js";
+export { shipping };
 export function calculate(items, products) {
   if (!Array.isArray(items) || items.length === 0 || items.length > 30)
     throw new AppError(400, "Carrinho inválido.");
@@ -51,21 +52,26 @@ export async function placeOrder(storage, user, body) {
     const endereco = text(body.endereco, "endereco", 5, 500);
     const products = await storage.list("products");
     const items = calculate(body.items, products);
-    const subtotal = items.reduce((s, i) => s + i.priceCents * i.quantidade, 0);
-    const freight = shipping[body.entrega];
+    const totals = quote(items, { entrega: body.entrega, cupom: body.cupom });
+    const parcelas = installments(body.pagamento, body.parcelas, totals.totalCents);
+    const createdAt = new Date().toISOString();
     const order = {
       partitionKey: user.id,
       rowKey: randomUUID(),
       requestId,
       itens: JSON.stringify(items),
-      subtotalCents: subtotal,
-      freteCents: freight,
-      totalCents: subtotal + freight,
+      subtotalCents: totals.subtotalCents,
+      freteCents: totals.freteCents,
+      descontoCents: totals.descontoCents,
+      cupom: totals.cupom?.codigo || null,
+      totalCents: totals.totalCents,
       pagamento: body.pagamento,
+      parcelas,
       entrega: body.entrega,
       endereco,
       status: "Recebido",
-      createdAt: new Date().toISOString(),
+      statusHistory: [{ status: "Recebido", at: createdAt }],
+      createdAt,
     };
     const changed = [];
     try {

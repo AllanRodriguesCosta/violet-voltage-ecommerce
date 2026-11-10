@@ -116,3 +116,18 @@ export function carousel(section) {
   addEventListener("resize", sync);
   sync();
 }
+// Confirmação acessível com <dialog>; o foco inicial fica na opção segura.
+export function confirmDialog({ title, text, confirm = "Confirmar", cancel = "Voltar", danger = false }) {
+  return new Promise((resolve) => {
+    const dialog = document.createElement("dialog");
+    dialog.className = "confirm-dialog";
+    dialog.innerHTML = `<form method="dialog"><h2>${title}</h2><p>${text}</p><div class="row"><button value="cancel" class="secondary">${cancel}</button><button value="ok"${danger ? ' class="danger-solid"' : ""}>${confirm}</button></div></form>`;
+    document.body.append(dialog);
+    dialog.addEventListener("close", () => {
+      resolve(dialog.returnValue === "ok");
+      dialog.remove();
+    });
+    dialog.showModal();
+    dialog.querySelector('button[value="cancel"]').focus();
+  });
+}

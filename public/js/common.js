@@ -412,18 +412,3 @@ export function requireUser(user) {
   }
   return true;
 }
-const paymentLabels = { pix: "Pix", cartao: "Cartão de crédito", boleto: "Boleto" };
-const deliveryLabels = { padrao: "Entrega padrão", expressa: "Entrega expressa", retirada: "Retirada na loja" };
-export const statusClass = (status) =>
-  ({ Recebido: "received", "Em preparação": "preparing", Enviado: "shipped", Concluído: "done", Cancelado: "canceled" })[status] || "received";
-export function ordersHTML(orders, admin = false) {
-  if (!orders.length)
-    return `<div class="empty">${icon("package", { size: 28 })}<h3>Nenhuma compra por aqui ainda.</h3><p>Quando você finalizar um pedido, ele aparece aqui com status e detalhes.</p><a class="button secondary" href="/catalogo.html">Explorar equipamentos</a></div>`;
-  return [...orders]
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    .map(
-      (o) =>
-        `<details class="order"><summary><span class="order-head"><strong>Pedido ${escapeHtml(o.id.slice(0, 8).toUpperCase())}</strong><span class="status status-${statusClass(o.status)}">${escapeHtml(o.status)}</span></span><span class="order-meta"><span>${new Date(o.createdAt).toLocaleString("pt-BR")}</span><strong>${money(o.totalCents)}</strong></span><span class="order-toggle">Ver detalhes ${icon("chevronDown", { size: 16 })}</span></summary><div class="order-body"><ul class="order-items">${o.itens.map((i) => `<li><span>${i.quantidade} × ${escapeHtml(i.nome)}</span><strong>${money(i.priceCents * i.quantidade)}</strong></li>`).join("")}</ul><dl class="order-facts"><div><dt>Subtotal</dt><dd>${money(o.subtotalCents)}</dd></div><div><dt>Frete</dt><dd>${o.freteCents ? money(o.freteCents) : "Grátis"}</dd></div>${o.descontoCents ? `<div><dt>Desconto${o.cupom ? ` (${escapeHtml(o.cupom)})` : ""}</dt><dd>− ${money(o.descontoCents)}</dd></div>` : ""}<div><dt>Pagamento</dt><dd>${escapeHtml(paymentLabels[o.pagamento] || o.pagamento)}${o.parcelas > 1 ? ` em ${o.parcelas}x` : ""}</dd></div><div><dt>Entrega</dt><dd>${escapeHtml(deliveryLabels[o.entrega] || o.entrega)}</dd></div><div class="wide"><dt>Endereço</dt><dd>${escapeHtml(o.endereco)}</dd></div><div class="wide"><dt>Número completo</dt><dd>${escapeHtml(o.id)}</dd></div></dl>${admin ? `<label for="status-${o.id}">Status do pedido</label><select class="order-status" id="status-${o.id}" data-order="${o.id}">${["Recebido", "Em preparação", "Enviado", "Concluído", "Cancelado"].map((s) => `<option${o.status === s ? " selected" : ""}>${s}</option>`).join("")}</select>` : ""}</div></details>`,
-    )
-    .join("");
-}

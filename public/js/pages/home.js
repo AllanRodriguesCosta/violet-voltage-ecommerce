@@ -10,7 +10,7 @@ import {
   escapeHtml as esc,
   toast,
 } from "../common.js";
-import { productCard, skeletonCards, bindCards, categoryInfo, errorState, productUrl } from "../components.js";
+import { productCard, skeletonCards, bindCards, categoryInfo, errorState, productUrl, carousel } from "../components.js";
 import { openCart } from "../drawer.js";
 
 // Combinações curadas; itens ausentes ou inativos são ignorados.
@@ -20,20 +20,6 @@ const setups = [
   { id: "palco", title: "Pronto para o palco", text: "Timbre de show do primeiro ao último acorde.", items: ["demo-014", "demo-004", "demo-011", "demo-020"] },
 ];
 
-function carousel(section) {
-  const track = section.querySelector(".carousel");
-  const prev = section.querySelector("[data-prev]");
-  const next = section.querySelector("[data-next]");
-  const sync = () => {
-    prev.disabled = track.scrollLeft < 8;
-    next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 8;
-  };
-  prev.addEventListener("click", () => track.scrollBy({ left: -track.clientWidth * 0.9 }));
-  next.addEventListener("click", () => track.scrollBy({ left: track.clientWidth * 0.9 }));
-  track.addEventListener("scroll", sync, { passive: true });
-  addEventListener("resize", sync);
-  sync();
-}
 function highlights(products) {
   const available = products.filter((p) => p.estoque > 0);
   const flagship = categories

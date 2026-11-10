@@ -174,7 +174,7 @@ function updateCounts() {
     el.hidden = wishes === 0;
   });
 }
-export function addCart(product, quantity = 1) {
+export function addCart(product, quantity = 1, { notify = true } = {}) {
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
     toast("Informe uma quantidade inteira entre 1 e 99.", { type: "error" });
     return false;
@@ -196,7 +196,7 @@ export function addCart(product, quantity = 1) {
     );
     return false;
   }
-  emit("vv:cart-added", { product, quantity });
+  if (notify) emit("vv:cart-added", { product, quantity });
   return true;
 }
 

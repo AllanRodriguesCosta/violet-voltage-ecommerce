@@ -56,8 +56,11 @@ acentos, filtros por categoria, marca, faixa de preço e disponibilidade (com
 contagens), ordenação, parâmetros preservados na URL, filtros removíveis,
 limpeza completa e nova tentativa em falha. O cabeçalho sugere produtos e
 categorias enquanto se digita. Favoritos e vistos recentemente ficam no
-navegador. Produto mostra imagem inteira, descrição,
-marca, modelo, categoria, preço e disponibilidade. Produto inválido tem retorno
+navegador. Produto mostra imagem inteira com zoom e
+tela cheia, descrição, marca, modelo, categoria, preço, parcelas, disponibilidade,
+prazos de entrega, relacionados, vistos recentemente, compartilhamento,
+"Comprar agora", barra de compra fixa no celular e dados estruturados
+schema.org `Product` (sem avaliações). Produto inválido tem retorno
 ao catálogo. Não há dados técnicos inventados para preencher especificações.
 
 ### Carrinho e checkout

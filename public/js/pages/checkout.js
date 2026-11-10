@@ -22,7 +22,7 @@ export default async function checkout(session) {
   try {
     items = await cartData();
   } catch (error) {
-    errorState(content, error, () => location.reload());
+    errorState(content, error, () => location.reload(), { back: { href: "/carrinho.html", label: "Voltar ao carrinho" } });
     return;
   }
   if (!items.length) {
@@ -92,7 +92,7 @@ export default async function checkout(session) {
         renderCoupon(error.message);
         renderSummary();
       } else {
-        errorState(content, error, () => location.reload());
+        errorState(content, error, () => location.reload(), { back: { href: "/carrinho.html", label: "Voltar ao carrinho" } });
         return;
       }
     }

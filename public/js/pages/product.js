@@ -7,13 +7,13 @@ import {
   escapeHtml as esc,
   addCart,
   bindForm,
-  showError,
+  validateForm,
   pushRecent,
   getRecent,
   isWished,
   toast,
 } from "../common.js";
-import { stockState, wishLabel, handleWish, installmentText, productCard, bindCards, carousel } from "../components.js";
+import { stockState, wishLabel, handleWish, installmentText, productCard, bindCards, carousel, errorState } from "../components.js";
 import { delivery, shipping, FREE_SHIPPING_CENTS, maxInstallments, installmentValue } from "../pricing.js";
 
 function structuredData(p, name) {
@@ -159,7 +159,7 @@ export default async function detail() {
       else feedback.textContent = "Não foi possível adicionar. Confira a quantidade e a mensagem exibida.";
     });
     container.querySelector("[data-buy-now]").addEventListener("click", () => {
-      if (!form.reportValidity()) return;
+      if (!validateForm(form)) return;
       if (addCart(p, Number(qty.value), { notify: false })) location.href = "/checkout.html";
     });
     // Barra de compra fixa no celular quando o botão principal sai da tela.
@@ -184,21 +184,15 @@ export default async function detail() {
     syncBar();
     await extras(p);
   } catch (e) {
-    container.className = "state-panel";
+    container.className = "state-wrap";
     container.removeAttribute("aria-busy");
-    container.innerHTML = "";
-    showError(container, e);
-    const back = document.createElement("a");
-    back.href = "/catalogo.html";
-    back.className = "button secondary";
-    back.textContent = "Voltar ao catálogo";
-    container.append(back);
-    if (e.status !== 404) {
-      const retry = document.createElement("button");
-      retry.type = "button";
-      retry.textContent = "Tentar novamente";
-      retry.onclick = detail;
-      container.append(retry);
-    }
+    const missing = e.status === 404;
+    document.querySelector("#crumb-current").textContent = missing ? "Produto não encontrado" : "Produto";
+    errorState(container, e, missing ? null : detail, {
+      level: 1,
+      title: missing ? "Produto não encontrado." : "Não foi possível carregar este produto.",
+      text: missing ? "O endereço pode estar incompleto ou o item saiu do catálogo. Que tal explorar os equipamentos disponíveis?" : undefined,
+      back: { href: "/catalogo.html", label: "Voltar ao catálogo" },
+    });
   }
 }

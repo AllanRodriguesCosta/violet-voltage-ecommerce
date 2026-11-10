@@ -46,30 +46,6 @@ function strengthMeter(input) {
         : { strong: "Senha forte.", medium: "Senha razoável: acrescente números, símbolos ou maiúsculas.", weak: "Senha fraca: misture letras, números e símbolos." }[level];
   });
 }
-// Validação ao sair do campo: aponta o erro antes do envio.
-function validateOnBlur(form) {
-  form.querySelectorAll("input[name]").forEach((input) => {
-    const hint = () => form.querySelector(`#hint-${input.name}`);
-    input.addEventListener("blur", () => {
-      if (!input.value || input.checkValidity() || !messages[input.name]) return;
-      if (!hint()) {
-        const message = document.createElement("p");
-        message.className = "field-error";
-        message.id = `hint-${input.name}`;
-        message.textContent = messages[input.name];
-        (input.closest(".password-field") || input).after(message);
-      }
-      input.setAttribute("aria-invalid", "true");
-      input.setAttribute("aria-describedby", `hint-${input.name}`);
-    });
-    input.addEventListener("input", () => {
-      if (!input.checkValidity()) return;
-      hint()?.remove();
-      input.removeAttribute("aria-invalid");
-      if (input.getAttribute("aria-describedby") === `hint-${input.name}`) input.removeAttribute("aria-describedby");
-    });
-  });
-}
 export default function authentication() {
   const next = new URLSearchParams(location.search).get("next");
   const target = allowed.includes(next) ? next : "/minha-conta.html";
@@ -77,21 +53,28 @@ export default function authentication() {
     document.querySelectorAll('.auth-bottom a[href="/cadastro.html"], .auth-bottom a[href="/login.html"]').forEach((a) => (a.href += `?next=${encodeURIComponent(next)}`));
   for (const form of document.querySelectorAll("#login-form, #register-form")) {
     form.querySelectorAll('input[type="password"]').forEach(passwordToggle);
-    validateOnBlur(form);
   }
   const login = document.querySelector("#login-form");
   if (login)
-    bindForm(login, async (data) => {
-      await send("/auth/login", data);
-      location.href = target;
-    });
+    bindForm(
+      login,
+      async (data) => {
+        await send("/auth/login", data);
+        location.href = target;
+      },
+      { messages: { email: messages.email } },
+    );
   const register = document.querySelector("#register-form");
   if (register) {
     strengthMeter(register.elements.senha);
     maskPhone(register.elements.telefone);
-    bindForm(register, async (data) => {
-      await send("/auth/register", data);
-      location.href = target;
-    });
+    bindForm(
+      register,
+      async (data) => {
+        await send("/auth/register", data);
+        location.href = target;
+      },
+      { messages },
+    );
   }
 }

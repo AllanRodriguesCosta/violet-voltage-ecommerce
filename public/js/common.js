@@ -302,10 +302,77 @@ export function showError(container, error) {
     field.focus();
   } else container.prepend(message);
 }
-export function bindForm(form, handler) {
+// Validação com mensagens em português ligadas ao campo (aria-invalid e aria-describedby),
+// no lugar dos balões nativos, que variam conforme o idioma do navegador.
+export function fieldMessage(input, custom) {
+  const v = input.validity;
+  if (custom) return custom;
+  if (v.valueMissing) return input.type === "checkbox" ? "Marque esta opção para continuar." : "Preencha este campo.";
+  if (v.typeMismatch && input.type === "email") return "Informe um e-mail válido, como nome@exemplo.com.";
+  if (v.tooShort) return `Use pelo menos ${input.minLength} caracteres.`;
+  if (v.tooLong) return `Use no máximo ${input.maxLength} caracteres.`;
+  if (v.rangeUnderflow) return `Informe um valor a partir de ${input.min}.`;
+  if (v.rangeOverflow) return `Informe um valor até ${input.max}.`;
+  if (v.badInput || v.stepMismatch) return "Informe um número inteiro válido.";
+  if (v.patternMismatch) return input.title || "Confira o formato informado.";
+  return input.validationMessage;
+}
+export function markField(input, message) {
+  const id = `hint-${input.name || input.id}`;
+  let hint = document.getElementById(id);
+  const refs = new Set((input.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
+  if (!message) {
+    hint?.remove();
+    input.removeAttribute("aria-invalid");
+    refs.delete(id);
+    if (refs.size) input.setAttribute("aria-describedby", [...refs].join(" "));
+    else input.removeAttribute("aria-describedby");
+    return;
+  }
+  if (!hint) {
+    hint = document.createElement("p");
+    hint.className = "field-error";
+    hint.id = id;
+    (input.closest(".password-field, .stepper, .search-box") || input).after(hint);
+  }
+  hint.textContent = message;
+  input.setAttribute("aria-invalid", "true");
+  refs.add(id);
+  input.setAttribute("aria-describedby", [...refs].join(" "));
+}
+// Marca todos os campos inválidos e leva o foco ao primeiro; devolve se o formulário é válido.
+export function validateForm(form, messages = {}) {
+  const invalid = [...form.elements].filter((field) => field.willValidate && !field.checkValidity());
+  invalid.forEach((field) => markField(field, fieldMessage(field, messages[field.name])));
+  invalid[0]?.focus();
+  return !invalid.length;
+}
+export function bindForm(form, handler, { messages = {} } = {}) {
+  if (typeof form.checkValidity === "function") {
+    form.noValidate = true;
+    // Ao sair de um campo preenchido e inválido, o erro aparece; some assim que o valor fica válido.
+    // Se a saída é o clique no botão de envio, o envio valida: inserir a mensagem antes deslocaria
+    // o botão entre o pressionar e o soltar, e o clique se perderia.
+    let pressingSubmit = false;
+    form.addEventListener("pointerdown", (event) => (pressingSubmit = !!event.target.closest?.("[type=submit]")));
+    addEventListener("pointerup", () => setTimeout(() => (pressingSubmit = false)));
+    form.addEventListener("focusout", (event) => {
+      const field = event.target;
+      if (pressingSubmit || event.relatedTarget?.type === "submit") return;
+      if (field.willValidate && field.value && !field.checkValidity()) markField(field, fieldMessage(field, messages[field.name]));
+    });
+    form.addEventListener("input", (event) => {
+      const field = event.target;
+      if (field.getAttribute?.("aria-invalid") === "true" && field.checkValidity?.()) markField(field, "");
+    });
+  }
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (form.dataset.busy) return;
+    if (typeof form.checkValidity === "function" && !form.checkValidity()) {
+      validateForm(form, messages);
+      return;
+    }
     form.dataset.busy = "true";
     form.querySelectorAll(".field-error,.error").forEach((e) => e.remove());
     form.querySelectorAll("[aria-invalid]").forEach((e) => {

@@ -17,6 +17,16 @@
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/ui.css" />
     <script type="module" src="/js/app.js"></script>
+    <link rel="modulepreload" href="/js/common.js" />
+    <link rel="modulepreload" href="/js/icons.js" />
+    <link rel="modulepreload" href="/js/theme.js" />
+    <link rel="modulepreload" href="/js/drawer.js" />
+    <link rel="modulepreload" href="/js/components.js" />
+    <link rel="modulepreload" href="/js/pricing.js" />
+    <link rel="modulepreload" href="/js/motion.js" />
+    <link rel="modulepreload" href="/js/search.js" />
+    <link rel="modulepreload" href="/js/pages/catalog.js" />
+    <link rel="preload" href="/api/products" as="fetch" crossorigin />
   </head>
   <body>
     <div id="header"></div>
@@ -61,7 +71,8 @@
             </form>
             <div class="filters-foot"><button type="button" class="button secondary" id="clear-filters">Limpar filtros</button><button type="button" class="button" id="filters-apply">Ver resultados</button></div>
           </aside>
-          <section class="results" aria-label="Resultados">
+          <section class="results" aria-labelledby="results-title">
+            <h2 class="sr-only" id="results-title">Resultados</h2>
             <p class="catalog-meta" id="catalog-count" aria-live="polite">Carregando equipamentos…</p>
             <div class="product-grid" id="products"></div>
           </section>

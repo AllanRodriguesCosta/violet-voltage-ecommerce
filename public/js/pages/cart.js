@@ -127,7 +127,8 @@ export default async function cartPage() {
       items = await cartData();
       products = await catalogProducts();
     } catch (error) {
-      errorState(container, error, render);
+      container.className = "";
+      errorState(container, error, render, { back: { href: "/catalogo.html", label: "Voltar ao catálogo" } });
       return;
     }
     container.className = "";
@@ -154,7 +155,7 @@ export default async function cartPage() {
         const problem = !p ? "Este produto não está mais disponível." : i.quantidade > p.estoque ? `Restam ${p.estoque} em estoque; ajuste a quantidade.` : "";
         return `<article class="cart-item"><img src="${esc(productImage(p))}" alt="" width="96" height="96"><div class="cart-item-info"><h3>${p ? `<a href="/produto.html?id=${encodeURIComponent(p.id)}">${esc(name)}</a>` : esc(name)}</h3><span class="small muted">${money(p?.priceCents || 0)} cada${p && installmentText(p.priceCents) ? ` · ${installmentText(p.priceCents)}` : ""}</span>${problem ? `<p class="field-error">${problem}</p>` : ""}<div class="cart-actions"><div class="stepper" role="group" aria-label="Quantidade de ${esc(name)}"><button type="button" data-step="-1" data-id="${esc(i.id)}" aria-label="Diminuir quantidade"${i.quantidade <= 1 ? " disabled" : ""}>${icon("minus", { size: 16 })}</button><output aria-live="polite">${i.quantidade}</output><button type="button" data-step="1" data-id="${esc(i.id)}" data-max="${max}" aria-label="Aumentar quantidade"${i.quantidade >= max ? " disabled" : ""}>${icon("plus", { size: 16 })}</button></div>${p ? `<button type="button" class="text-button" data-later="${esc(i.id)}">${icon("heart", { size: 16 })}Salvar para depois</button>` : ""}<button type="button" class="text-button" data-remove-item="${esc(i.id)}">${icon("trash", { size: 16 })}Remover</button></div></div><strong class="price">${money((p?.priceCents || 0) * i.quantidade)}</strong></article>`;
       })
-      .join("")}</section></div><aside class="panel summary-panel" aria-live="polite"><div class="loading">Calculando…</div></aside></div>${suggestions.length ? `<section class="cart-suggestions" aria-labelledby="suggestions-title"><h2 id="suggestions-title">Complete seu setup</h2><div class="product-grid product-grid-wide">${suggestions.map((p, i) => productCard(p, i)).join("")}</div></section>` : ""}`;
+      .join("")}</section></div><aside class="panel summary-panel" aria-live="polite"><div class="loading" role="status">Calculando…</div></aside></div>${suggestions.length ? `<section class="cart-suggestions" aria-labelledby="suggestions-title"><h2 id="suggestions-title">Complete seu setup</h2><div class="product-grid product-grid-wide">${suggestions.map((p, i) => productCard(p, i)).join("")}</div></section>` : ""}`;
     const grid = container.querySelector(".cart-suggestions .product-grid");
     if (grid) bindCards(grid, () => products);
     container.querySelectorAll("[data-step]").forEach((b) =>

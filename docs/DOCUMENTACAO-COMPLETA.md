@@ -64,6 +64,17 @@ com cursor ou foco, mostra o item, o frete grátis e atalhos; o minicarrinho abr
 só quando pedido. Os cards têm visualização rápida em diálogo (folha inferior no
 celular). Animações respeitam `prefers-reduced-motion`.
 
+### Acessibilidade e estados
+
+`components.js` concentra os estados de vazio, falha, sucesso e informação
+(`stateHTML`, `emptyState`, `errorState`): o título usa o nível certo da página e
+só falhas recebem `role="alert"`; toda falha oferece nova tentativa ou um caminho
+de saída. `bindForm` troca os balões nativos por mensagens em português ligadas
+ao campo (`aria-invalid` e `aria-describedby`), valida ao sair de um campo
+preenchido e leva o foco ao primeiro erro. O cabeçalho tem a altura reservada
+antes do JavaScript e o rodapé começa abaixo da dobra, o que zera o deslocamento
+de layout medido.
+
 ### Catálogo e produto
 
 A home funciona como vitrine de descoberta: categorias com contagem, destaques,

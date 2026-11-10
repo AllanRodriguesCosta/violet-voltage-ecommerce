@@ -2,13 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { randomBytes, randomUUID } from "node:crypto";
 import { once } from "node:events";
-import { MemoryStorage } from "../src/repositories/storage.js";
+import { MemoryStorage } from "../src/repositories/memory.js";
 import { createApp } from "../src/app.js";
-import {
-  configuration,
-  tableNames,
-  containerName,
-} from "../src/config/index.js";
+import { configuration } from "../src/config/index.js";
 import { productInput, email, integer } from "../src/utils/validation.js";
 import { calculate, placeOrder } from "../src/services/checkout.js";
 import { bootstrapAdmin } from "../src/services/bootstrap.js";
@@ -31,7 +27,7 @@ test("validação de valores, e-mail e produto", () => {
   assert.throws(() => productInput({ ...sample, categoria: "Inválida" }));
   assert.deepEqual(productInput(sample), sample);
 });
-test("produção exige PostgreSQL e segredo forte; nomes Azure legados preservados", () => {
+test("produção exige PostgreSQL e segredo forte", () => {
   assert.throws(() =>
     configuration({ NODE_ENV: "production", DEV_MEMORY_STORAGE: "true" }),
   );
@@ -40,12 +36,6 @@ test("produção exige PostgreSQL e segredo forte; nomes Azure legados preservad
     configuration({ DATABASE_URL: "postgresql://localhost/violet" }),
   );
   assert.equal(configuration({ DEV_MEMORY_STORAGE: "true" }).memory, true);
-  assert.deepEqual(Object.values(tableNames), [
-    "AllanRibeiroProdutos",
-    "AllanRibeiroClientes",
-    "AllanRibeiroPedidos",
-  ]);
-  assert.equal(containerName, "allan-ribeiro-produtos");
 });
 test("log de inicialização mostra a causa sem expor segredos", () => {
   let config;

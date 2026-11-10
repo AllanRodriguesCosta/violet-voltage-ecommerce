@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { fileURLToPath } from "node:url";
 import { apiRouter } from "./routes/api.js";
 import { AppError, categories } from "./utils/validation.js";
+import { compressedStatic, compressJson, cacheControl } from "./http/static.js";
 const publicDir = fileURLToPath(new URL("../public", import.meta.url));
 export function createApp(storage, config) {
   const app = express();
@@ -41,6 +42,7 @@ export function createApp(storage, config) {
     }
     next();
   });
+  app.use("/api", compressJson);
   app.use("/api", apiRouter(storage, config));
   app.use("/api", (_req, _res, next) =>
     next(new AppError(404, "Rota não encontrada.")),
@@ -63,7 +65,7 @@ export function createApp(storage, config) {
     const base = origin(req);
     const products = (await storage.list("products")).filter((p) => p.ativo);
     const urls = [
-      ...["/", "/catalogo.html", "/setup.html", "/ajuda.html", ...categories.map((c) => `/catalogo.html?categoria=${encodeURIComponent(c)}`)].map((path) => ({ loc: base + path })),
+      ...["/", "/catalogo.html", "/setup.html", "/ajuda.html", "/privacidade.html", "/termos.html", ...categories.map((c) => `/catalogo.html?categoria=${encodeURIComponent(c)}`)].map((path) => ({ loc: base + path })),
       ...products.map((p) => ({ loc: `${base}/produto.html?id=${encodeURIComponent(p.rowKey)}`, lastmod: p.updatedAt?.slice(0, 10) })),
     ];
     res
@@ -72,7 +74,15 @@ export function createApp(storage, config) {
         `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((u) => `<url><loc>${xml(u.loc)}</loc>${u.lastmod ? `<lastmod>${xml(u.lastmod)}</lastmod>` : ""}</url>`).join("")}</urlset>\n`,
       );
   });
-  app.use(express.static(publicDir));
+  app.use(compressedStatic(publicDir));
+  app.use(
+    express.static(publicDir, {
+      setHeaders: (res, file) => {
+        res.set("Cache-Control", cacheControl(file));
+        if (/\.(?:html|css|js|svg|json|webmanifest|txt|xml)$/i.test(file)) res.set("Vary", "Accept-Encoding");
+      },
+    }),
+  );
   app.use((_req, res) => res.status(404).sendFile(`${publicDir}/404.html`));
   app.use((err, _req, res, _next) => {
     const status =

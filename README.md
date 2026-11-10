@@ -34,7 +34,7 @@ Checkout recalcula valores em centavos no servidor. Estoque e pedido são gravad
 | `public/` | Interface |
 | `tests/` | Regras, HTTP e PostgreSQL via PGlite |
 
-O adaptador Azure e seus testes permanecem como legado em `src/repositories/storage.js`; a aplicação usa `memory.js` ou `postgres.js` e não carrega os SDKs Azure. Nenhuma credencial Azure é necessária.
+A aplicação usa `memory.js` (desenvolvimento e testes) ou `postgres.js` (produção). O antigo adaptador Azure e seus SDKs foram removidos; nenhuma credencial Azure é necessária.
 
 ## Execução
 
@@ -77,6 +77,8 @@ Senha administrativa: 12 a 72 caracteres e até 72 bytes UTF-8. Bootstrap reapli
 ## Funcionalidades e API
 
 Home de descoberta, catálogo com busca instantânea e filtros com contagens, sugestões de busca tolerantes a erros de digitação e buscas recentes, montador de setup com link compartilhável, "Compre junto", visualização rápida, favoritos, minicarrinho com aviso de item adicionado, tema claro/escuro/automático, cadastro/login/perfil, endereços de entrega, "Avise-me" para itens esgotados, notificações da conta, histórico próprio, checkout demonstrativo e painel com produtos, imagens, clientes, pedidos e indicadores. Upload PNG/JPEG/WebP até 5 MB. Fretes em centavos: padrão 2500 (grátis a partir de 99900 de subtotal), expresso 4500, retirada zero. Cartão em até 10x sem juros, com parcela mínima de 5000. Cupons de teste: `VOLTAGE10` (10% nos produtos, até R$ 500), `PRIMEIROACORDE` (R$ 30 a partir de R$ 200) e `FRETEVOLT` (frete padrão ou expresso grátis). Regras em `src/services/pricing.js`.
+
+Desempenho e instalação: arquivos de texto e respostas JSON comprimidos (Brotli ou gzip), cache HTTP por tipo de arquivo, manifesto com ícones e service worker de rede primeiro, que mantém as páginas já abertas disponíveis sem conexão. Páginas de privacidade e termos de uso no rodapé.
 
 Acessibilidade: contraste AA verificado por teste nos dois temas, bordas de campos com 3:1, mensagens de erro em português ligadas aos campos, estados de carregamento, vazio e falha com nova tentativa e reflow até 320 px.
 

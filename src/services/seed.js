@@ -72,7 +72,7 @@ export async function seed(
     const timestamp = now().toISOString();
     const product = {
       ...data,
-      // Mantém a chave existente: trocar categoria não cria outra entidade Azure.
+      // Mantém a chave existente: trocar categoria não cria outro registro.
       partitionKey:
         previous?.partitionKey ||
         data.categoria

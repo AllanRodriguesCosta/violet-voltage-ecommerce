@@ -15,8 +15,6 @@
     "db:migrate": "node scripts/migrate.js"
   },
   "dependencies": {
-    "@azure/data-tables": "^13.3.0",
-    "@azure/storage-blob": "^12.28.0",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.0",

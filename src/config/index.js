@@ -35,9 +35,3 @@ export function configuration(env = process.env) {
     secret: env.JWT_SECRET || randomBytes(48).toString("hex"),
   };
 }
-export const tableNames = {
-  products: "AllanRibeiroProdutos",
-  customers: "AllanRibeiroClientes",
-  orders: "AllanRibeiroPedidos",
-};
-export const containerName = "allan-ribeiro-produtos";

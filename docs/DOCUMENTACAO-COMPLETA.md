@@ -34,7 +34,7 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/services/seed*.js` | Manifesto e carga dos 22 produtos/imagens |
 | `src/repositories/factory.js`, `postgres.js` | Seleção de backend e persistência PostgreSQL |
 | `src/repositories/memory.js` | Armazenamento volátil de desenvolvimento e testes |
-| `src/repositories/storage.js` | Adaptador Azure legado (somente testes) |
+| `src/http/static.js` | Compressão Brotli/gzip de arquivos e JSON e cache HTTP por tipo de arquivo |
 | `src/utils/startup-error.js` | Mensagem de falha na inicialização sem segredos |
 | `migrations/001-postgres.sql` | Estrutura idempotente do schema privado, incluindo `alerts` e `notifications` |
 | `public/js/common.js` | API cliente, sessão, formulários, carrinho, favoritos, avisos e layout comum |
@@ -45,6 +45,7 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `public/js/components.js`, `drawer.js`, `search.js`, `icons.js` | Cards, minicarrinho e aviso de item adicionado, sugestões de busca e ícones SVG |
 | `public/js/admin.js` | Painel administrativo |
 | `public/fonts/` | Fonte Geist (licença OFL) servida pelo próprio site |
+| `public/sw.js`, `manifest.webmanifest`, `offline.html`, `icons/` | Service worker de rede primeiro, manifesto, página sem conexão e ícones do app |
 | `public/css/` | Base visual, componentes e regras responsivas |
 | `tests/` | Testes de domínio, HTTP, PostgreSQL e cliente simulado |
 | `.github/workflows/quality.yml` | CI de lint e testes em cada push e pull request |
@@ -78,6 +79,17 @@ cancelamento de um pedido, cada aviso pendente vira uma notificação (tabela
 status feitas pela loja também notificam o cliente. A sessão traz a contagem de
 não lidas para o sino do cabeçalho e para a navegação inferior, e o painel mostra
 quantos clientes esperam cada item esgotado.
+
+### Desempenho e instalação
+
+`src/http/static.js` comprime com Brotli (ou gzip) os arquivos de texto de
+`public/` uma vez por versão do arquivo e as respostas JSON da API a partir de
+1 KB, sempre com `Vary: Accept-Encoding`. HTML, CSS, JS e o manifesto revalidam a
+cada visita com ETag (304 quando nada mudou), a fonte fica 30 dias em cache e as
+imagens, 7 dias. O manifesto e os ícones tornam o site instalável; `public/sw.js`
+busca primeiro na rede e guarda uma cópia de cada página e arquivo estático
+(páginas sem a query), para que o que já foi aberto funcione sem conexão. Páginas
+nunca abertas mostram `offline.html`. A API não passa pelo service worker.
 
 ### Acessibilidade e estados
 
@@ -192,8 +204,6 @@ Para instalar todas de forma reproduzível, usar `npm ci`.
 | helmet | ^8.1.0 | Cabeçalhos de proteção |
 | express-rate-limit | ^8.1.0 | Limitação de requisições |
 | multer | ^2.0.2 | Recepção de imagens |
-| @azure/data-tables | ^13.3.0 | Adaptador legado e testes de contrato |
-| @azure/storage-blob | ^12.28.0 | Adaptador legado; não é o armazenamento ativo |
 | @electric-sql/pglite | ^0.5.15 | PostgreSQL WASM para testes isolados |
 | eslint | ^10.11.0 | Análise estática |
 | globals | ^16.4.0 | Globais do ESLint |

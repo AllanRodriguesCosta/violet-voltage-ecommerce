@@ -4,7 +4,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { allowedNext, summary, statuses } from "../src/services/orders.js";
 import * as client from "../public/js/orders.js";
-import { MemoryStorage } from "../src/repositories/storage.js";
+import { MemoryStorage } from "../src/repositories/memory.js";
 import { createApp } from "../src/app.js";
 import { bootstrapAdmin } from "../src/services/bootstrap.js";
 

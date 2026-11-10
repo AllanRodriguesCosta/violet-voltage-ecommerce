@@ -101,10 +101,11 @@ preço no servidor e ciclo de vida dos pedidos.
 
 ### 8. Página de produto
 
-- [ ] Zoom da imagem e visualização ampliada.
-- [ ] Seletor de quantidade, "Comprar agora", parcelas e opções de entrega com prazo.
-- [ ] Produtos relacionados, vistos recentemente e barra de compra fixa no celular.
-- [ ] Compartilhar link e dados estruturados schema.org `Product`, sem avaliações.
+- [x] Zoom da imagem ao passar o cursor e visualização em tela cheia.
+- [x] Seletor de quantidade, "Comprar agora", tabela de parcelas e opções de
+      entrega com prazo e preço.
+- [x] Produtos relacionados, vistos recentemente e barra de compra fixa no celular.
+- [x] Compartilhar link e dados estruturados schema.org `Product`, sem avaliações.
 
 ### 9. Carrinho, checkout e regras de preço
 

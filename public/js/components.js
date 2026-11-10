@@ -100,3 +100,19 @@ export function bindCards(container, getProducts, { onWishChange } = {}) {
     } else if (wish) handleWish(wish.dataset.wish, onWishChange);
   });
 }
+// Carrossel horizontal com botões anterior/próximo.
+export function carousel(section) {
+  const track = section.querySelector(".carousel");
+  const prev = section.querySelector("[data-prev]");
+  const next = section.querySelector("[data-next]");
+  if (!track || !prev || !next) return;
+  const sync = () => {
+    prev.disabled = track.scrollLeft < 8;
+    next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 8;
+  };
+  prev.addEventListener("click", () => track.scrollBy({ left: -track.clientWidth * 0.9 }));
+  next.addEventListener("click", () => track.scrollBy({ left: track.clientWidth * 0.9 }));
+  track.addEventListener("scroll", sync, { passive: true });
+  addEventListener("resize", sync);
+  sync();
+}

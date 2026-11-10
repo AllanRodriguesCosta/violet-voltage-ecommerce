@@ -1,3 +1,14 @@
+# Fase 2, etapa 8 — 10/11/2026
+
+- Produto no navegador (1440 e 360 px): relacionados, vistos recentemente,
+  JSON-LD `Product` sem avaliações e sem violação de CSP, zoom ao passar o
+  cursor, tela cheia com Escape, seletor de quantidade, tabela de parcelas,
+  compartilhar (cópia do link), "Comprar agora" com a quantidade escolhida,
+  produto inexistente com retorno ao catálogo e barra fixa que adiciona ao
+  carrinho no celular; sem rolagem horizontal.
+
+---
+
 # Fase 2, etapa 9 — 10/11/2026
 
 - Testes novos em `tests/pricing.test.js`: paridade das regras do navegador com

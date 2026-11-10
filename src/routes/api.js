@@ -14,6 +14,7 @@ import {
 } from "../utils/validation.js";
 import { placeOrder, exclusive, calculate } from "../services/checkout.js";
 import { quote, deliveryOptions } from "../services/pricing.js";
+import { updateOrderStatus, summary } from "../services/orders.js";
 import { publicProduct, publicOrder } from "../controllers/serialization.js";
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -238,21 +239,23 @@ export function apiRouter(storage, config) {
       data: publicOrder(await placeOrder(storage, req.user, req.body)),
     }),
   );
+  // Cliente cancela o próprio pedido enquanto ainda está "Recebido".
+  r.post("/orders/:id/cancel", authenticated, async (req, res) =>
+    res.json({
+      data: publicOrder(
+        await updateOrderStatus(storage, req.params.id, "Cancelado", {
+          customerId: req.user.id,
+          onlyFrom: ["Recebido"],
+        }),
+      ),
+    }),
+  );
   r.use("/admin", authenticated, admin);
   r.get("/admin/summary", async (_req, res) => {
     const [p, c, o] = await Promise.all(
       ["products", "customers", "orders"].map((t) => storage.list(t)),
     );
-    res.json({
-      data: {
-        produtos: p.filter((p) => p.ativo).length,
-        clientes: c.filter((c) => c.ativo && c.role === "customer").length,
-        pedidos: o.length,
-        totalCents: o
-          .filter((o) => o.status !== "Cancelado")
-          .reduce((s, o) => s + o.totalCents, 0),
-      },
-    });
+    res.json({ data: summary(p, c, o) });
   });
   r.post("/admin/products", async (req, res) => {
     const input = productInput(req.body);
@@ -372,25 +375,10 @@ export function apiRouter(storage, config) {
   r.get("/admin/orders", async (_req, res) =>
     res.json({ data: (await storage.list("orders")).map(publicOrder) }),
   );
-  r.patch("/admin/orders/:id", async (req, res) => {
-    const status = req.body.status;
-    if (
-      ![
-        "Recebido",
-        "Em preparação",
-        "Enviado",
-        "Concluído",
-        "Cancelado",
-      ].includes(status)
-    )
-      throw new AppError(400, "Status inválido.");
-    const o = (await storage.list("orders")).find(
-      (o) => o.rowKey === req.params.id,
-    );
-    if (!o) throw new AppError(404, "Pedido não encontrado.");
-    const next = { ...o, status };
-    await storage.save("orders", next, o.etag);
-    res.json({ data: publicOrder(next) });
-  });
+  r.patch("/admin/orders/:id", async (req, res) =>
+    res.json({
+      data: publicOrder(await updateOrderStatus(storage, req.params.id, req.body.status)),
+    }),
+  );
   return r;
 }

@@ -1,3 +1,16 @@
+# Fase 2, etapa 10 — 10/11/2026
+
+- Testes novos em `tests/orders.test.js`: transições permitidas (com paridade
+  do navegador), resumo do painel (ticket médio, status, estoque baixo, 14 dias)
+  e integração HTTP de cancelamento pelo dono, idempotência sem devolver estoque
+  duas vezes, bloqueios de transição e cancelamento pelo administrador.
+- No navegador: conta com linha do tempo e indicadores, diálogo de confirmação
+  com foco na opção segura, cancelamento, filtro, "Comprar novamente", painel
+  com indicadores, gráfico, estoque baixo, busca, avanço de status e filtros;
+  painel sem rolagem horizontal em 360 px.
+
+---
+
 # Fase 2, etapa 8 — 10/11/2026
 
 - Produto no navegador (1440 e 360 px): relacionados, vistos recentemente,

@@ -89,6 +89,7 @@ Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..."
 | PATCH | `/api/profile` | Autenticado |
 | POST | `/api/checkout/quote` | Público; cotação sem gravar pedido |
 | GET / POST | `/api/orders` | Histórico próprio / checkout |
+| POST | `/api/orders/:id/cancel` | Autenticado; só o dono e só com status `Recebido` |
 | GET | `/api/admin/summary` | Admin |
 | POST | `/api/admin/products` | Admin |
 | PATCH / DELETE | `/api/admin/products/:id` | Admin |
@@ -96,7 +97,7 @@ Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..."
 | GET / POST | `/api/admin/customers` | Admin |
 | PATCH / DELETE | `/api/admin/customers/:id` | Admin |
 | GET | `/api/admin/orders` | Admin |
-| PATCH | `/api/admin/orders/:id` | Admin, campo `status` |
+| PATCH | `/api/admin/orders/:id` | Admin, campo `status`; só transições válidas |
 
 Filtros: `q`, `marca`, `modelo`, `categoria`, `min`, `max` (centavos). Checkout: `items: [{id, quantidade}]`, `pagamento`, `entrega`, `endereco`, `requestId` e, opcionalmente, `cupom` e `parcelas` (cartão). A cotação recebe `items`, `entrega` e `cupom` e devolve subtotal, frete, desconto, total, parcelas máximas e opções de entrega. Valores enviados pelo navegador são ignorados; repetir um pedido persistido com o mesmo identificador devolve esse pedido.
 
@@ -105,7 +106,7 @@ Filtros: `q`, `marca`, `modelo`, `categoria`, `min`, `max` (centavos). Checkout:
 - JWT de 8 horas, HttpOnly, SameSite=Lax e Secure em produção, com papel e cliente relidos no servidor. Logout expira o cookie, sem lista de revogação.
 - Helmet, proteção de origem e limites de payload/autenticação. Não exponha `violet_voltage` pela Data API do Supabase.
 - Exclusões lógicas preservam histórico; não equivalem a um fluxo completo de apagamento de dados pessoais.
-- Cancelar pedido não repõe estoque automaticamente. Consultas ainda listam registros e filtram em memória, adequadas ao pequeno catálogo.
+- Status seguem Recebido → Em preparação → Enviado → Concluído (pode pular etapas, não volta). Cancelamento só até a preparação, devolve os itens ao estoque e é definitivo. Consultas ainda listam registros e filtram em memória, adequadas ao pequeno catálogo.
 - Upload valida MIME e assinatura básica. Substituição administrativa de imagem não é uma transação global; falhas de limpeza podem deixar arquivos órfãos.
 - Sem gateway, frete real, recuperação de senha, e-mail ou integração fiscal. Uma instância é suficiente para a demonstração.
 

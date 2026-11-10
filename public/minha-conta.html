@@ -18,12 +18,20 @@
       <div class="container page-wrap">
         <nav class="breadcrumb" aria-label="Trilha de navegação"><a href="/">Início</a><span aria-hidden="true">/</span><span aria-current="page">Minha conta</span></nav>
         <header class="page-head">
-          <div><span class="eyebrow">Minha conta</span><h1 class="page-title" id="account-greeting">Seu espaço, seu som.</h1><p class="lead">Dados pessoais e histórico de compras em um só lugar.</p></div>
-          <button type="button" id="logout" class="secondary">Sair da conta</button>
+          <div><span class="eyebrow">Minha conta</span><h1 class="page-title" id="account-greeting">Seu espaço, seu som.</h1><p class="lead">Acompanhe seus pedidos e mantenha seus dados em dia.</p></div>
+          <button type="button" id="logout" class="secondary"><span data-icon="logout" data-size="18"></span>Sair da conta</button>
         </header>
+        <div class="account-stats" id="account-stats"></div>
         <div class="account-grid">
-          <section class="panel" aria-labelledby="profile-title">
-            <h2 id="profile-title">Meu perfil</h2>
+          <section id="pedidos" aria-labelledby="orders-title">
+            <div class="orders-head">
+              <h2 id="orders-title">Meus pedidos</h2>
+              <div class="chip-row" id="order-filters" role="group" aria-label="Filtrar pedidos"><button type="button" class="chip" data-group="todos" aria-pressed="true">Todos <span class="chip-count">0</span></button><button type="button" class="chip" data-group="andamento" aria-pressed="false">Em andamento <span class="chip-count">0</span></button><button type="button" class="chip" data-group="concluidos" aria-pressed="false">Concluídos <span class="chip-count">0</span></button><button type="button" class="chip" data-group="cancelados" aria-pressed="false">Cancelados <span class="chip-count">0</span></button></div>
+            </div>
+            <div id="orders" class="order-list"><div class="loading">Carregando compras…</div></div>
+          </section>
+          <section class="panel profile-panel" aria-labelledby="profile-title">
+            <h2 id="profile-title">Meus dados</h2>
             <form id="profile-form">
               <div class="field"><label for="nome">Nome completo</label><input id="nome" name="nome" type="text" required minlength="2" maxlength="200" autocomplete="name" /></div>
               <div class="field"><label for="email">E-mail de acesso</label><input id="email" name="email" type="email" readonly /></div>
@@ -31,11 +39,6 @@
               <div class="field"><label for="endereco">Endereço</label><input id="endereco" name="endereco" type="text" maxlength="500" autocomplete="street-address" /></div>
               <button type="submit" class="full">Salvar meus dados</button>
             </form>
-          </section>
-          <section id="pedidos" aria-labelledby="orders-title">
-            <h2 id="orders-title">Minhas compras</h2>
-            <p class="small muted">Abra um pedido para consultar os itens e a entrega.</p>
-            <div id="orders"><div class="loading">Carregando compras…</div></div>
           </section>
         </div>
       </div>

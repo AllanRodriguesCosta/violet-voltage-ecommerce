@@ -124,12 +124,14 @@ preço no servidor e ciclo de vida dos pedidos.
 
 ### 10. Pedidos, conta e administração
 
-- [ ] Histórico de status com datas e transições válidas; cancelamento devolve
-      os itens ao estoque.
-- [ ] Cliente cancela pedido ainda "Recebido" e pode comprar novamente.
-- [ ] Minha conta com linha do tempo de cada pedido.
-- [ ] Painel com ticket médio, pedidos por status, vendas dos últimos 14 dias,
-      estoque baixo, busca e filtros.
+- [x] Histórico de status com datas e transições válidas
+      (`src/services/orders.js`); cancelamento devolve os itens ao estoque na
+      mesma transação.
+- [x] Cliente cancela pedido ainda "Recebido" (`POST /api/orders/:id/cancel`) e
+      pode comprar novamente.
+- [x] Minha conta com indicadores, filtros e linha do tempo de cada pedido.
+- [x] Painel com ticket médio, pedidos por status, vendas dos últimos 14 dias,
+      estoque baixo, busca e filtros; confirmações em diálogo próprio.
 
 ### 11. Qualidade técnica e conteúdo
 

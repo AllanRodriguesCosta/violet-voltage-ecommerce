@@ -27,6 +27,7 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/controllers/serialization.js` | Projeções públicas das entidades |
 | `src/services/checkout.js` | Itens, estoque e idempotência do pedido |
 | `src/services/pricing.js` | Frete, frete grátis, cupons, parcelas e opções de entrega |
+| `src/services/orders.js` | Transições de status, cancelamento com devolução de estoque e resumo do painel |
 | `src/services/bootstrap.js` | Criação/atualização privada do administrador |
 | `src/services/seed*.js` | Manifesto e carga dos 22 produtos/imagens |
 | `src/repositories/factory.js`, `postgres.js` | Seleção de backend e persistência PostgreSQL |
@@ -85,9 +86,12 @@ já registrado. Falhar ao limpar o carrinho depois do sucesso não oculta o pedi
 
 Cadastro, login/logout, perfil e histórico privado. Cadastro público não cria
 administrador. O backend relê o usuário para considerar papel e desativação.
-Painel oferece produtos, imagens, clientes, pedidos, status e indicadores.
-Exclusões são lógicas para preservar histórico. Cancelamento não repõe estoque
-automaticamente. Não há modo público de edição nem conta admin compartilhada.
+Minha conta mostra indicadores, filtros e a linha do tempo de cada pedido, com
+"Comprar novamente" e cancelamento enquanto o pedido está "Recebido". O painel
+mostra volume, pedidos, ticket médio, pedidos por status, vendas dos últimos 14
+dias e estoque baixo, com busca e filtros. Status só avançam no fluxo; o
+cancelamento, permitido até a preparação, devolve os itens ao estoque na mesma
+transação do pedido. Exclusões são lógicas para preservar histórico. Não há modo público de edição nem conta admin compartilhada.
 
 ### Interface e recuperação
 

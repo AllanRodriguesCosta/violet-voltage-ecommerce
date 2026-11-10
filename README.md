@@ -1,5 +1,9 @@
 # Violet Voltage
 
+[![Qualidade](https://github.com/AllanRodriguesCosta/violet-voltage-ecommerce/actions/workflows/quality.yml/badge.svg)](https://github.com/AllanRodriguesCosta/violet-voltage-ecommerce/actions/workflows/quality.yml)
+
+**Site publicado:** <https://violet-voltage-ecommerce-1.onrender.com/>. No plano gratuito do Render, a primeira visita após um período sem acesso pode levar cerca de um minuto.
+
 Consulte a [documentação consolidada](docs/DOCUMENTACAO-COMPLETA.md) para conhecer
 funcionalidades, arquitetura, dependências instaladas e desenvolvimento planejado.
 
@@ -105,9 +109,10 @@ Filtros: `q`, `marca`, `modelo`, `categoria`, `min`, `max` (centavos). Checkout:
 
 ## Validação e evolução
 
-O workflow `.github/workflows/quality.yml` prepara lint e testes em Node 24
+O workflow `.github/workflows/quality.yml` executa lint e testes em Node 24
 para pushes e pull requests destinados a `main`, sem segredos de produção.
-Sua execução remota ainda deve ser confirmada após o envio ao GitHub.
+A primeira execução remota foi aprovada em 10/11/2026; cada pull request passa
+pelo mesmo workflow antes do merge.
 Referências das actions: [checkout](https://github.com/actions/checkout) e
 [setup-node](https://github.com/actions/setup-node).
 
@@ -123,4 +128,4 @@ npm test
 
 Testes usam dados descartáveis e PostgreSQL local em WASM (PGlite), sem credenciais cloud ou PNGs privados. Cobrem seed, versões, rollback e integração HTTP; não substituem a conexão TCP/TLS com Supabase. Resultados em `VALIDACAO.md`.
 
-Prioridades: publicação; depois apresentação profissional, aparência e acessibilidade; depois agentes. A transcrição enviada demonstra criação de um CRM com ferramentas de IA, Supabase e deploy. Ela não exige reescrever este projeto em Next.js nem trocar sua autenticação.
+Próximas entregas e critérios estão no [roadmap](docs/ROADMAP.md): primeiro a experiência de loja completa (Fase 2), depois os agentes.

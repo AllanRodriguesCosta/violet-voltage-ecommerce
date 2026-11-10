@@ -35,11 +35,10 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `public/js/app.js`, `admin.js` | Comportamento das telas públicas e administrativas |
 | `public/css/` | Base visual, componentes e regras responsivas |
 | `tests/` | Testes de domínio, HTTP, PostgreSQL e cliente simulado |
-| `.github/workflows/quality.yml` | CI preparado para lint e testes |
+| `.github/workflows/quality.yml` | CI de lint e testes em cada push e pull request |
 
-Arquivos antigos como `scripts/create-pages.js` e `src/controllers/api.js` não
-substituem os pontos de entrada ativos. Não executar o gerador legado para
-atualizar páginas atuais.
+Os pontos de entrada ativos são `src/server.js` (servidor), `scripts/seed.js` e
+`scripts/migrate.js`.
 
 ## Capacidades existentes
 
@@ -159,7 +158,7 @@ Apresentação: [demonstração](DEMONSTRACAO.md). Evidências: [validação](..
 | 2 — Catálogo | Busca, ordenação, URL, filtros, produto, disponibilidade | Exercitar combinações, recarga, falhas e produto indisponível no browser |
 | 3 — Mobile | Layouts, filtros recolhíveis, toque e quebra de conteúdo | Checkout/conta mobile e redimensionamento; teclado adiado pelo usuário |
 | 4 — Fluxos | Feedback, recuperação de rede, confirmação e testes simulados | Validar fluxos completos de erro em navegador e produzir apresentação admin |
-| 5 — Técnica | CI preparado, README, estudo de caso e roteiro | CI remoto, capturas fictícias, medições e publicação verificada |
+| 5 — Técnica | CI aprovado no GitHub, README, estudo de caso e roteiro | Capturas fictícias e medições |
 
 Agentes posteriores: primeiro, assistente de descoberta com consulta ao catálogo
 real e ferramentas somente de leitura. Definir contratos, limites, custo, dados
@@ -167,16 +166,15 @@ permitidos, fallback e avaliações antes de implementar. Segundo agente opciona
 qualidade do catálogo para administrador, inicialmente só sugestões; qualquer
 escrita futura exige revisão e autorização backend. Nenhum agente está instalado.
 
-Roadmap 2, somente após a base atual: separar descoberta de resultados, enriquecer
-cards com informações demonstrativas consistentes, lista de desejos mobile e
-desktop, busca fixa no topo dos resultados e navegação inferior para início,
-carrinho e conta. Não incluir notas/estrelas/avaliações. Essas ideias não são
-dependências do Roadmap 1 e não foram implementadas.
+Fase 2 do [roadmap](ROADMAP.md), em andamento: amplia o antigo Roadmap 2
+(descoberta separada dos resultados, cards ricos, lista de desejos, busca fixa e
+navegação inferior) com sistema visual, regras de preço no servidor e ciclo de
+vida dos pedidos. Não inclui notas, estrelas ou avaliações.
 
 ## Limites das evidências
 
 Capturas mostram sucesso até histórico em desktop e home/catálogo em mobile,
 mas não comprovam todas as interações, falhas, larguras ou desempenho. Testes
 de cliente usam simulação de DOM/rede; PGlite não valida infraestrutura cloud.
-CI preparado não significa execução remota aprovada. O roadmap público registra
+O CI remoto está aprovado desde 10/11/2026. O roadmap público registra
 implementação separadamente de revisão; o arquivo local detalhado é ignorado.

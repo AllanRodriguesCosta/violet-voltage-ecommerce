@@ -264,7 +264,8 @@ export function toast(message, { type = "info", action } = {}) {
 }
 export function showError(container, error) {
   container.querySelectorAll(".field-error,.error").forEach((e) => e.remove());
-  const field = error.field && container.elements?.namedItem(error.field);
+  let field = error.field && container.elements?.namedItem(error.field);
+  if (field && typeof field.setAttribute !== "function") field = field[0] || null;
   const message = document.createElement("div");
   message.className = field ? "field-error" : "error";
   message.setAttribute("role", "alert");
@@ -313,7 +314,7 @@ export function bindForm(form, handler) {
 const categoryLink = (c) => `/catalogo.html?categoria=${encodeURIComponent(c)}`;
 function headerHTML() {
   return `<a class="skip" href="#main">Pular para o conteúdo</a>
-<div class="announcement"><div class="container announcement-inner"><span>${icon("store", { size: 15 })} Retirada na loja sem custo</span><span class="hide-sm">${icon("truck", { size: 15 })} Entrega expressa em 1 a 3 dias úteis</span><span class="hide-md">${icon("refresh", { size: 15 })} Troca em até 7 dias</span></div></div>
+<div class="announcement"><div class="container announcement-inner"><span>${icon("truck", { size: 15 })} Frete grátis acima de R$ 999</span><span class="hide-sm">${icon("card", { size: 15 })} Até 10x sem juros no cartão</span><span class="hide-md">${icon("store", { size: 15 })} Retirada na loja sem custo</span></div></div>
 <header class="site-header"><div class="container header-bar">
 <button type="button" class="icon-button menu-toggle" data-open-menu aria-haspopup="dialog" aria-label="Abrir menu">${icon("menu")}</button>
 <a class="brand" href="/" aria-label="Violet Voltage, início"><span class="brand-mark" aria-hidden="true">${icon("bolt", { size: 20 })}</span><span class="brand-words">VIOLET VOLTAGE<small>TURN UP YOUR TONE</small></span></a>
@@ -422,7 +423,7 @@ export function ordersHTML(orders, admin = false) {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .map(
       (o) =>
-        `<details class="order"><summary><span class="order-head"><strong>Pedido ${escapeHtml(o.id.slice(0, 8).toUpperCase())}</strong><span class="status status-${statusClass(o.status)}">${escapeHtml(o.status)}</span></span><span class="order-meta"><span>${new Date(o.createdAt).toLocaleString("pt-BR")}</span><strong>${money(o.totalCents)}</strong></span><span class="order-toggle">Ver detalhes ${icon("chevronDown", { size: 16 })}</span></summary><div class="order-body"><ul class="order-items">${o.itens.map((i) => `<li><span>${i.quantidade} × ${escapeHtml(i.nome)}</span><strong>${money(i.priceCents * i.quantidade)}</strong></li>`).join("")}</ul><dl class="order-facts"><div><dt>Subtotal</dt><dd>${money(o.subtotalCents)}</dd></div><div><dt>Frete</dt><dd>${money(o.freteCents)}</dd></div><div><dt>Pagamento</dt><dd>${escapeHtml(paymentLabels[o.pagamento] || o.pagamento)}</dd></div><div><dt>Entrega</dt><dd>${escapeHtml(deliveryLabels[o.entrega] || o.entrega)}</dd></div><div class="wide"><dt>Endereço</dt><dd>${escapeHtml(o.endereco)}</dd></div><div class="wide"><dt>Número completo</dt><dd>${escapeHtml(o.id)}</dd></div></dl>${admin ? `<label for="status-${o.id}">Status do pedido</label><select class="order-status" id="status-${o.id}" data-order="${o.id}">${["Recebido", "Em preparação", "Enviado", "Concluído", "Cancelado"].map((s) => `<option${o.status === s ? " selected" : ""}>${s}</option>`).join("")}</select>` : ""}</div></details>`,
+        `<details class="order"><summary><span class="order-head"><strong>Pedido ${escapeHtml(o.id.slice(0, 8).toUpperCase())}</strong><span class="status status-${statusClass(o.status)}">${escapeHtml(o.status)}</span></span><span class="order-meta"><span>${new Date(o.createdAt).toLocaleString("pt-BR")}</span><strong>${money(o.totalCents)}</strong></span><span class="order-toggle">Ver detalhes ${icon("chevronDown", { size: 16 })}</span></summary><div class="order-body"><ul class="order-items">${o.itens.map((i) => `<li><span>${i.quantidade} × ${escapeHtml(i.nome)}</span><strong>${money(i.priceCents * i.quantidade)}</strong></li>`).join("")}</ul><dl class="order-facts"><div><dt>Subtotal</dt><dd>${money(o.subtotalCents)}</dd></div><div><dt>Frete</dt><dd>${o.freteCents ? money(o.freteCents) : "Grátis"}</dd></div>${o.descontoCents ? `<div><dt>Desconto${o.cupom ? ` (${escapeHtml(o.cupom)})` : ""}</dt><dd>− ${money(o.descontoCents)}</dd></div>` : ""}<div><dt>Pagamento</dt><dd>${escapeHtml(paymentLabels[o.pagamento] || o.pagamento)}${o.parcelas > 1 ? ` em ${o.parcelas}x` : ""}</dd></div><div><dt>Entrega</dt><dd>${escapeHtml(deliveryLabels[o.entrega] || o.entrega)}</dd></div><div class="wide"><dt>Endereço</dt><dd>${escapeHtml(o.endereco)}</dd></div><div class="wide"><dt>Número completo</dt><dd>${escapeHtml(o.id)}</dd></div></dl>${admin ? `<label for="status-${o.id}">Status do pedido</label><select class="order-status" id="status-${o.id}" data-order="${o.id}">${["Recebido", "Em preparação", "Enviado", "Concluído", "Cancelado"].map((s) => `<option${o.status === s ? " selected" : ""}>${s}</option>`).join("")}</select>` : ""}</div></details>`,
     )
     .join("");
 }

@@ -10,7 +10,8 @@ import {
   pushRecent,
   isWished,
 } from "../common.js";
-import { stockState, wishLabel, handleWish } from "../components.js";
+import { stockState, wishLabel, handleWish, installmentText } from "../components.js";
+import { delivery, shipping, FREE_SHIPPING_CENTS } from "../pricing.js";
 
 export default async function detail() {
   const container = document.querySelector("#product-detail");
@@ -27,10 +28,10 @@ export default async function detail() {
     container.className = "detail-grid";
     container.removeAttribute("aria-busy");
     container.innerHTML = `<div class="detail-media"><img class="detail-image" src="${esc(productImage(p))}" alt="${esc(name)}" width="640" height="640"><button type="button" class="wish-button" data-wish="${esc(p.id)}" data-name="${esc(name)}" aria-pressed="${wished}" aria-label="${esc(wishLabel(name, wished))}">${icon("heart")}</button></div>
-<section class="detail-info" data-name="${esc(name)}"><span class="eyebrow">${esc(p.categoria)} · ${esc(p.marca)}</span><h1>${esc(p.modelo)}</h1><p class="detail-price">${money(p.priceCents)}</p><p class="stock-pill stock-${stock.key}">${icon(stock.key === "out" ? "clock" : "check", { size: 16 })}${stock.key === "out" ? "Produto esgotado" : stock.key === "low" ? `Últimas unidades: ${p.estoque} em estoque` : `${p.estoque} unidades em estoque`}</p><p class="lead">${esc(p.descricao)}</p>
+<section class="detail-info" data-name="${esc(name)}"><span class="eyebrow">${esc(p.categoria)} · ${esc(p.marca)}</span><h1>${esc(p.modelo)}</h1><p class="detail-price">${money(p.priceCents)}</p>${installmentText(p.priceCents) ? `<p class="detail-installments">${installmentText(p.priceCents)}</p>` : ""}<p class="stock-pill stock-${stock.key}">${icon(stock.key === "out" ? "clock" : "check", { size: 16 })}${stock.key === "out" ? "Produto esgotado" : stock.key === "low" ? `Últimas unidades: ${p.estoque} em estoque` : `${p.estoque} unidades em estoque`}</p><p class="lead">${esc(p.descricao)}</p>
 <form id="add-product" class="buy-box"><div class="field quantity"><label for="quantidade">Quantidade</label><input id="quantidade" name="quantidade" type="number" value="1" min="1" max="${Math.min(99, p.estoque)}" inputmode="numeric" required${p.estoque ? "" : " disabled"}></div><button type="submit"${p.estoque ? "" : " disabled"}>${icon("bag", { size: 18 })}Adicionar ao carrinho</button></form>
 <p class="cart-feedback" role="status"></p>
-<ul class="perk-list"><li>${icon("store", { size: 18 })}Retirada na loja sem custo</li><li>${icon("truck", { size: 18 })}Entrega padrão ou expressa para todo o Brasil</li><li>${icon("refresh", { size: 18 })}Troca em até 7 dias após o recebimento</li></ul>
+<ul class="perk-list delivery-list">${Object.entries(delivery).map(([id, d]) => `<li>${icon(id === "retirada" ? "store" : "truck", { size: 18 })}<span><strong>${d.label}</strong><small>${d.prazo}</small></span><span class="option-price">${id === "padrao" && p.priceCents >= FREE_SHIPPING_CENTS ? "Grátis" : shipping[id] ? money(shipping[id]) : "Grátis"}</span></li>`).join("")}<li>${icon("refresh", { size: 18 })}<span><strong>Troca em até 7 dias</strong><small>Após o recebimento</small></span></li></ul><p class="small muted">Frete grátis na entrega padrão para compras a partir de ${money(FREE_SHIPPING_CENTS)}.</p>
 <section class="product-specs"><h2>Sobre este equipamento</h2><dl><div><dt>Marca</dt><dd>${esc(p.marca)}</dd></div><div><dt>Modelo</dt><dd>${esc(p.modelo)}</dd></div><div><dt>Categoria</dt><dd>${esc(p.categoria)}</dd></div></dl><a class="text-link" href="/catalogo.html?categoria=${encodeURIComponent(p.categoria)}">Explorar ${esc(p.categoria)} ${icon("arrowRight", { size: 16 })}</a></section></section>`;
     container.querySelector("[data-wish]").addEventListener("click", (event) => handleWish(event.currentTarget.dataset.wish));
     const feedback = container.querySelector(".cart-feedback");

@@ -1,4 +1,5 @@
 import { icon } from "./icons.js";
+import { freeShippingHTML } from "./components.js";
 import {
   getCart,
   setCart,
@@ -93,7 +94,7 @@ async function render() {
       return `<li class="drawer-item"><img src="${esc(productImage(p))}" alt="" width="72" height="72"><div class="drawer-item-info">${p ? `<a href="/produto.html?id=${encodeURIComponent(p.id)}">${esc(name)}</a><span class="small muted">${money(p.priceCents)} cada</span>` : `<strong>${esc(name)}</strong>`}${!p || r.quantidade > max ? '<span class="field-error">Indisponível nessa quantidade.</span>' : ""}<div class="stepper" role="group" aria-label="Quantidade de ${esc(name)}"><button type="button" data-step="-1" data-id="${esc(r.id)}" data-max="${max}" aria-label="Diminuir quantidade"${r.quantidade <= 1 ? " disabled" : ""}>${icon("minus", { size: 16 })}</button><output aria-live="polite">${r.quantidade}</output><button type="button" data-step="1" data-id="${esc(r.id)}" data-max="${max}" aria-label="Aumentar quantidade"${r.quantidade >= max ? " disabled" : ""}>${icon("plus", { size: 16 })}</button></div></div><div class="drawer-item-end"><strong>${money((p?.priceCents || 0) * r.quantidade)}</strong><button type="button" class="icon-button" data-remove data-id="${esc(r.id)}" aria-label="Remover ${esc(name)}">${icon("trash", { size: 18 })}</button></div></li>`;
     })
     .join("")}</ul>`;
-  footer.innerHTML = `<div class="summary-line summary-total"><span>Subtotal</span><span>${money(subtotal)}</span></div><p class="small muted">Frete e prazo calculados no checkout.</p>${invalid ? '<p class="field-error">Ajuste os itens indisponíveis antes de finalizar.</p>' : ""}<a class="button full" href="/checkout.html"${invalid ? ' aria-disabled="true" data-blocked' : ""}>Finalizar compra ${icon("arrowRight", { size: 18 })}</a><a class="button secondary full" href="/carrinho.html">Ver carrinho completo</a>`;
+  footer.innerHTML = `${freeShippingHTML(subtotal)}<div class="summary-line summary-total"><span>Subtotal</span><span>${money(subtotal)}</span></div><p class="small muted">Frete, cupom e parcelas no checkout.</p>${invalid ? '<p class="field-error">Ajuste os itens indisponíveis antes de finalizar.</p>' : ""}<a class="button full" href="/checkout.html"${invalid ? ' aria-disabled="true" data-blocked' : ""}>Finalizar compra ${icon("arrowRight", { size: 18 })}</a><a class="button secondary full" href="/carrinho.html">Ver carrinho completo</a>`;
   footer.querySelector("[data-blocked]")?.addEventListener("click", (event) => {
     event.preventDefault();
     location.href = "/carrinho.html";

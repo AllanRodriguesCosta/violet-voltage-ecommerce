@@ -75,7 +75,7 @@ Senha administrativa: 12 a 72 caracteres e até 72 bytes UTF-8. Bootstrap reapli
 
 ## Funcionalidades e API
 
-Home de descoberta, catálogo com busca instantânea e filtros com contagens, sugestões de busca, favoritos, minicarrinho, cadastro/login/perfil, histórico próprio, checkout demonstrativo e painel com produtos, imagens, clientes, pedidos e indicadores. Upload PNG/JPEG/WebP até 5 MB. Fretes em centavos: padrão 2500, expresso 4500, retirada zero.
+Home de descoberta, catálogo com busca instantânea e filtros com contagens, sugestões de busca, favoritos, minicarrinho, cadastro/login/perfil, histórico próprio, checkout demonstrativo e painel com produtos, imagens, clientes, pedidos e indicadores. Upload PNG/JPEG/WebP até 5 MB. Fretes em centavos: padrão 2500 (grátis a partir de 99900 de subtotal), expresso 4500, retirada zero. Cartão em até 10x sem juros, com parcela mínima de 5000. Cupons de teste: `VOLTAGE10` (10% nos produtos, até R$ 500), `PRIMEIROACORDE` (R$ 30 a partir de R$ 200) e `FRETEVOLT` (frete padrão ou expresso grátis). Regras em `src/services/pricing.js`.
 
 Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..." } }`, campo `field` opcional.
 
@@ -87,6 +87,7 @@ Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..."
 | GET | `/api/auth/session` | Público; usuário da sessão ou `null` |
 | GET | `/api/products`, `/api/products/:id`, `/api/images/:id` | Público |
 | PATCH | `/api/profile` | Autenticado |
+| POST | `/api/checkout/quote` | Público; cotação sem gravar pedido |
 | GET / POST | `/api/orders` | Histórico próprio / checkout |
 | GET | `/api/admin/summary` | Admin |
 | POST | `/api/admin/products` | Admin |
@@ -97,7 +98,7 @@ Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..."
 | GET | `/api/admin/orders` | Admin |
 | PATCH | `/api/admin/orders/:id` | Admin, campo `status` |
 
-Filtros: `q`, `marca`, `modelo`, `categoria`, `min`, `max` (centavos). Checkout: `items: [{id, quantidade}]`, `pagamento`, `entrega`, `endereco`, `requestId`. Valores enviados pelo navegador são ignorados; repetir um pedido persistido com o mesmo identificador devolve esse pedido.
+Filtros: `q`, `marca`, `modelo`, `categoria`, `min`, `max` (centavos). Checkout: `items: [{id, quantidade}]`, `pagamento`, `entrega`, `endereco`, `requestId` e, opcionalmente, `cupom` e `parcelas` (cartão). A cotação recebe `items`, `entrega` e `cupom` e devolve subtotal, frete, desconto, total, parcelas máximas e opções de entrega. Valores enviados pelo navegador são ignorados; repetir um pedido persistido com o mesmo identificador devolve esse pedido.
 
 ## Limites
 

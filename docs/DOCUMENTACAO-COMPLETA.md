@@ -25,7 +25,8 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/routes/api.js` | Rotas ativas de catálogo, sessão, pedidos e administração |
 | `src/middleware/auth.js` | Autenticação e autorização |
 | `src/controllers/serialization.js` | Projeções públicas das entidades |
-| `src/services/checkout.js` | Preço, frete, estoque e idempotência |
+| `src/services/checkout.js` | Itens, estoque e idempotência do pedido |
+| `src/services/pricing.js` | Frete, frete grátis, cupons, parcelas e opções de entrega |
 | `src/services/bootstrap.js` | Criação/atualização privada do administrador |
 | `src/services/seed*.js` | Manifesto e carga dos 22 produtos/imagens |
 | `src/repositories/factory.js`, `postgres.js` | Seleção de backend e persistência PostgreSQL |
@@ -66,8 +67,13 @@ limite de 99 e estoque acumulado; falha de armazenamento não anuncia sucesso.
 Remoção e alteração de quantidade possuem mensagens de erro. Checkout exige
 sessão e espera carregar os dados antes de liberar confirmação.
 
-O servidor relê produtos e recalcula valores em centavos: frete padrão 2500,
-expresso 4500 e retirada zero. Pix/cartão/boleto são opções demonstrativas;
+O servidor relê produtos e recalcula valores em centavos com um único módulo de
+preços (`src/services/pricing.js`), usado pela cotação `POST /api/checkout/quote`
+e pelo pedido: frete padrão 2500 (grátis a partir de R$ 999 de subtotal),
+expresso 4500 e retirada zero; cupons `VOLTAGE10`, `PRIMEIROACORDE` e
+`FRETEVOLT`; cartão em até 10x sem juros com parcela mínima de R$ 50. O carrinho
+mostra progresso para frete grátis, estimativa de entrega e cupom; o checkout
+tem seções de entrega, pagamento e cupom com resumo fixo. Pix/cartão/boleto são opções demonstrativas;
 nenhum dado de cartão é coletado. Pedido e estoque compartilham transação
 serializável no PostgreSQL. Repetir requestId do mesmo cliente devolve o pedido
 já registrado. Falhar ao limpar o carrinho depois do sucesso não oculta o pedido.

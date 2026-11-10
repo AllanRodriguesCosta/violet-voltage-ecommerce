@@ -108,16 +108,18 @@ preço no servidor e ciclo de vida dos pedidos.
 
 ### 9. Carrinho, checkout e regras de preço
 
-- [ ] Módulo único de preços no servidor: frete padrão grátis acima de R$ 999,
-      cupons e até 10x sem juros (parcela mínima de R$ 50).
-- [ ] Cotação `POST /api/checkout/quote` usada pelo carrinho e pelo checkout, com
-      testes.
-- [ ] Parcelamento nos cards e no produto; progresso para frete grátis no
-      minicarrinho e no carrinho.
-- [ ] Carrinho com seletor de quantidade, desfazer remoção, salvar para depois e
-      sugestões.
-- [ ] Checkout em seções (entrega, pagamento e cupom), resumo fixo e confirmação
-      animada.
+- [x] Módulo único de preços no servidor (`src/services/pricing.js`): frete
+      padrão grátis a partir de R$ 999, cupons e até 10x sem juros (parcela
+      mínima de R$ 50).
+- [x] Cotação `POST /api/checkout/quote` usada pelo carrinho e pelo checkout, com
+      testes; um teste garante que as regras exibidas no navegador são as do
+      servidor.
+- [x] Parcelamento nos cards e no produto; progresso para frete grátis no
+      minicarrinho e no carrinho; prazos por forma de entrega.
+- [x] Carrinho com seletor de quantidade, desfazer remoção, salvar para depois,
+      estimativa de entrega, cupom e sugestões.
+- [x] Checkout em seções (entrega, pagamento com parcelas e cupom), resumo fixo
+      e confirmação animada.
 
 ### 10. Pedidos, conta e administração
 

@@ -19,6 +19,9 @@ initMotion();
 initDrawer();
 initSearch();
 initAlerts();
+// Instalação e páginas já visitadas disponíveis sem conexão (somente em HTTPS ou localhost).
+if ("serviceWorker" in navigator && (location.protocol === "https:" || ["localhost", "127.0.0.1"].includes(location.hostname)))
+  addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
 const routes = {
   "/": "home",
   "/index.html": "home",

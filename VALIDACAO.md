@@ -1,3 +1,41 @@
+# Fase 2, etapa 16 — 10/11/2026
+
+- Testes novos em `tests/http-cache.test.js`: negociação de codificação (com
+  `q=0`), cache por tipo de arquivo, CSS em Brotli e página em gzip idênticos ao
+  arquivo depois de descomprimidos, 304 com ETag, HEAD, fonte sem recompressão
+  e com cache longo, caminhos com `..` recusados e JSON da API comprimido só a
+  partir de 1 KB.
+- Removidos o adaptador Azure (`src/repositories/storage.js`), os nomes de
+  tabelas e contêiner Azure da configuração e o teste de contrato Azure; os
+  testes importam `MemoryStorage` de `memory.js`. O `package-lock.json` foi
+  ajustado como faria `npm uninstall`: os dois SDKs e 26 pacotes alcançáveis só
+  por eles. O `npm ci` do CI confere a consistência.
+- No navegador (10 verificações): CSS e JS em Brotli, manifesto sem erros,
+  service worker controlando a página, instalável segundo o Chromium
+  (`Page.getInstallabilityErrors` vazio), arquivos essenciais em cache, página
+  visitada aberta sem servidor, página nunca aberta mostrando `offline.html`,
+  volta ao site com o servidor de novo no ar e API fora do cache.
+- Auditoria de acessibilidade com privacidade e termos (claro e escuro, 360 e
+  1440 px), sem problemas; regressão completa das etapas 6 a 15 e falhas
+  simuladas da API sem regressões.
+
+## Medição local depois da compressão
+
+Mesmas condições da etapa 13 (RTT 150 ms, 1,6 Mbps, CPU 4x, mediana de 3 cargas):
+
+| Página | FCP | LCP | CLS | Transferido |
+| --- | --- | --- | --- | --- |
+| `/` | 0,9 s | 1,4 s | 0,000 | 79 KB |
+| `/catalogo.html` | 0,9 s | 0,9 s | 0,000 | 79 KB |
+| `/produto.html?id=demo-004` | 0,8 s | 1,9 s | 0,001 | 80 KB |
+| `/carrinho.html` | 0,8 s | 0,8 s | 0,000 | 79 KB |
+| `/ajuda.html` | 0,8 s | 0,8 s | 0,000 | 75 KB |
+
+Antes da etapa, cada página transferia cerca de 200 KB e o FCP ficava entre 1,4 e
+1,6 s.
+
+---
+
 # Fase 2, etapa 15 — 10/11/2026
 
 - Testes novos em `tests/search-client.test.js`: distância de edição, correção

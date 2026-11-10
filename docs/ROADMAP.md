@@ -148,8 +148,9 @@ preço no servidor e ciclo de vida dos pedidos.
       `sitemap.xml` gerados pelo servidor.
 - [ ] Medições Lighthouse da versão publicada registradas.
 - [x] O app deixa de carregar os SDKs Azure (memória em `memory.js`).
-- [ ] Remover o adaptador Azure legado e suas dependências (exige regenerar o
-      `package-lock.json` com npm).
+- [x] Remover o adaptador Azure legado e suas dependências: `@azure/data-tables`,
+      `@azure/storage-blob` e 26 pacotes usados só por eles saíram do
+      `package.json` e do `package-lock.json` (etapa 16).
 
 ### 12. Aparência e microinterações
 
@@ -216,11 +217,15 @@ preço no servidor e ciclo de vida dos pedidos.
 
 ### 16. Desempenho, instalação e conteúdo
 
-- [ ] Cache HTTP por tipo de arquivo e compressão das respostas de texto.
-- [ ] Manifesto do app, ícones e página offline com service worker de rede
-      primeiro.
-- [ ] Páginas de privacidade (dados guardados, cookie de sessão e armazenamento
-      local) e termos de uso.
+- [x] Compressão Brotli/gzip dos arquivos de texto (comprimidos uma vez por
+      versão) e das respostas JSON a partir de 1 KB; cache HTTP por tipo de
+      arquivo (HTML, CSS e JS revalidam com ETag; fonte por 30 dias; imagens por
+      7 dias). Peso por página caiu de cerca de 200 KB para cerca de 80 KB.
+- [x] Manifesto do app, ícones (inclusive maskable), atalhos e service worker de
+      rede primeiro: páginas já abertas funcionam sem conexão e as demais
+      mostram `offline.html`. A API nunca passa pelo cache.
+- [x] Páginas de privacidade (dados guardados, cookie de sessão e armazenamento
+      local) e termos de uso, com links no rodapé e no sitemap.
 
 ## Fase 3 — Agentes (depois da Fase 2)
 

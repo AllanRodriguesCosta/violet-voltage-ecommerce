@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Central de ajuda da Violet Voltage: pedidos, entregas, frete grátis, parcelamento, cupons, trocas e conta." />
+    <meta name="theme-color" content="#120b19" />
+    <meta property="og:site_name" content="Violet Voltage" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content="Central de ajuda | Violet Voltage" />
+    <meta property="og:description" content="Central de ajuda da Violet Voltage: pedidos, entregas, frete grátis, parcelamento, cupons, trocas e conta." />
+    <title>Central de ajuda | Violet Voltage</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/ui.css" />
+    <script type="module" src="/js/app.js"></script>
+  </head>
+  <body>
+    <div id="header"></div>
+    <main id="main" tabindex="-1">
+      <div class="container page-wrap help-page">
+        <nav class="breadcrumb" aria-label="Trilha de navegação"><a href="/">Início</a><span aria-hidden="true">/</span><span aria-current="page">Ajuda</span></nav>
+        <header class="help-hero">
+          <span class="eyebrow">Central de ajuda</span>
+          <h1 class="page-title">Como podemos ajudar?</h1>
+          <p class="lead">Pedidos, entregas, pagamentos, cupons e trocas em respostas diretas.</p>
+          <form class="help-search" role="search"><label class="sr-only" for="faq-q">Buscar na ajuda</label><span data-icon="search" data-size="18"></span><input id="faq-q" type="search" placeholder="Busque por frete, parcelas, troca…" autocomplete="off" /></form>
+          <nav class="help-topics chip-row" aria-label="Assuntos"><a class="chip" href="#pedidos">Pedidos</a><a class="chip" href="#entregas">Entregas</a><a class="chip" href="#pagamentos">Pagamentos e cupons</a><a class="chip" href="#trocas">Trocas</a><a class="chip" href="#conta">Conta</a></nav>
+        </header>
+        <p class="catalog-meta" id="faq-status" aria-live="polite"></p>
+        <section class="faq-group" id="pedidos" aria-labelledby="faq-pedidos"><h2 id="faq-pedidos">Pedidos</h2>
+          <details class="faq-item"><summary>Como acompanho meu pedido?</summary><p>Em <a href="/minha-conta.html#pedidos">Minha conta</a>, cada pedido mostra a linha do tempo com as etapas Recebido, Em preparação, Enviado e Concluído e a data de cada uma.</p></details>
+          <details class="faq-item"><summary>Posso cancelar um pedido?</summary><p>Sim, enquanto o status for “Recebido”: use “Cancelar pedido” em Minha conta. Os itens voltam para o estoque e o pedido não pode ser reaberto. Depois que a preparação começa, o cancelamento passa a ser feito pela loja.</p></details>
+          <details class="faq-item"><summary>Como compro os mesmos itens de novo?</summary><p>Em Minha conta, “Comprar novamente” coloca no carrinho os itens do pedido que ainda estão disponíveis.</p></details>
+        </section>
+        <section class="faq-group" id="entregas" aria-labelledby="faq-entregas"><h2 id="faq-entregas">Entregas e retirada</h2>
+          <details class="faq-item"><summary>Quais são as formas de entrega e os prazos?</summary><p>Entrega padrão em 5 a 8 dias úteis (R$ 25,00), entrega expressa em 1 a 3 dias úteis (R$ 45,00) e retirada na loja sem custo, disponível em 1 dia útil.</p></details>
+          <details class="faq-item"><summary>Como funciona o frete grátis?</summary><p>A entrega padrão fica grátis quando os produtos somam R$ 999,00 ou mais. O minicarrinho e o carrinho mostram quanto falta.</p></details>
+          <details class="faq-item"><summary>O que levo para retirar na loja?</summary><p>Um documento com foto e o número do pedido, que aparece na confirmação e em Minha conta.</p></details>
+        </section>
+        <section class="faq-group" id="pagamentos" aria-labelledby="faq-pagamentos"><h2 id="faq-pagamentos">Pagamentos e cupons</h2>
+          <details class="faq-item"><summary>Quais formas de pagamento são aceitas?</summary><p>Pix, cartão de crédito e boleto. A escolha é feita no checkout.</p></details>
+          <details class="faq-item"><summary>Como funciona o parcelamento?</summary><p>No cartão de crédito, em até 10x sem juros, com parcela mínima de R$ 50,00. As opções aparecem no checkout de acordo com o total do pedido.</p></details>
+          <details class="faq-item"><summary>Como uso um cupom de desconto?</summary><p>Digite o código no carrinho ou no checkout. Cupons ativos: <strong>VOLTAGE10</strong> (10% nos produtos, até R$ 500,00), <strong>PRIMEIROACORDE</strong> (R$ 30,00 em compras a partir de R$ 200,00) e <strong>FRETEVOLT</strong> (frete padrão ou expresso grátis). Vale um cupom por pedido.</p></details>
+        </section>
+        <section class="faq-group" id="trocas" aria-labelledby="faq-trocas"><h2 id="faq-trocas">Trocas e devoluções</h2>
+          <details class="faq-item"><summary>Qual é o prazo para troca?</summary><p>Até 7 dias após o recebimento, com o produto sem sinais de uso, acompanhado de acessórios e embalagem original.</p></details>
+          <details class="faq-item"><summary>O preço muda depois que eu coloco no carrinho?</summary><p>Preço e estoque são conferidos novamente ao confirmar o pedido. Se algo mudar, o checkout avisa antes de concluir.</p></details>
+        </section>
+        <section class="faq-group" id="conta" aria-labelledby="faq-conta"><h2 id="faq-conta">Conta e favoritos</h2>
+          <details class="faq-item"><summary>Como altero meus dados?</summary><p>Em <a href="/minha-conta.html">Minha conta</a>, na seção Meus dados. O e-mail de acesso não pode ser alterado.</p></details>
+          <details class="faq-item"><summary>Esqueci minha senha. E agora?</summary><p>A recuperação de senha ainda não está disponível. Você pode criar uma conta com outro e-mail.</p></details>
+          <details class="faq-item"><summary>Onde ficam meus favoritos?</summary><p>Neste navegador. Em outro aparelho ou navegador, a lista começa vazia.</p></details>
+        </section>
+        <div id="faq-empty" hidden></div>
+      </div>
+    </main>
+    <div id="footer"></div>
+  </body>
+</html>

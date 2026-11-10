@@ -131,3 +131,12 @@ export function confirmDialog({ title, text, confirm = "Confirmar", cancel = "Vo
     dialog.querySelector('button[value="cancel"]').focus();
   });
 }
+// Formata telefone brasileiro ao sair do campo, sem atrapalhar a digitação.
+export function maskPhone(input) {
+  if (!input) return;
+  input.addEventListener("blur", () => {
+    const d = input.value.replace(/\D/g, "");
+    if (d.length === 10) input.value = `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+    else if (d.length === 11) input.value = `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  });
+}

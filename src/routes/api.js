@@ -12,7 +12,7 @@ import {
   productInput,
   profileInput,
 } from "../utils/validation.js";
-import { placeOrder, exclusive, calculate } from "../services/checkout.js";
+import { placeOrder, exclusive, calculate, itemIds } from "../services/checkout.js";
 import { quote, deliveryOptions } from "../services/pricing.js";
 import { updateOrderStatus, summary } from "../services/orders.js";
 import { publicProduct, publicOrder } from "../controllers/serialization.js";
@@ -76,17 +76,13 @@ export function apiRouter(storage, config) {
       cookie,
     );
   const product = async (id) => {
-    const p = (await storage.list("products")).find(
-      (p) => p.rowKey === id && p.ativo,
-    );
-    if (!p) throw new AppError(404, "Produto não encontrado.");
+    const p = await storage.getByRowKey("products", String(id));
+    if (!p?.ativo) throw new AppError(404, "Produto não encontrado.");
     return p;
   };
   const customer = async (id) => {
-    const u = (await storage.list("customers")).find(
-      (u) => u.id === id && u.ativo,
-    );
-    if (!u) throw new AppError(404, "Cliente não encontrado.");
+    const u = await storage.findCustomerById(String(id));
+    if (!u?.ativo) throw new AppError(404, "Cliente não encontrado.");
     return u;
   };
   async function createCustomer(body, role = "customer") {
@@ -217,7 +213,10 @@ export function apiRouter(storage, config) {
   });
   // Cotação pública: mesmo cálculo do pedido, sem gravar nada.
   r.post("/checkout/quote", async (req, res) => {
-    const items = calculate(req.body.items, await storage.list("products"));
+    const items = calculate(
+      req.body.items,
+      await storage.getManyByRowKeys("products", itemIds(req.body.items)),
+    );
     const totals = quote(items, { entrega: req.body.entrega || "padrao", cupom: req.body.cupom });
     res.json({
       data: {
@@ -229,9 +228,7 @@ export function apiRouter(storage, config) {
   });
   r.get("/orders", authenticated, async (req, res) =>
     res.json({
-      data: (await storage.list("orders"))
-        .filter((o) => o.partitionKey === req.user.id)
-        .map(publicOrder),
+      data: (await storage.listByPartition("orders", req.user.id)).map(publicOrder),
     }),
   );
   r.post("/orders", authenticated, async (req, res) =>

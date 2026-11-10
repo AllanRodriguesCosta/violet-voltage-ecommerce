@@ -1,3 +1,15 @@
+# Fase 2, etapa 11 — 10/11/2026
+
+- Teste PostgreSQL novo (PGlite, no CI): consultas por chave e índices únicos,
+  pedido por `requestId`, histórico por cliente e cancelamento que devolve
+  estoque na transação. Testes novos de `robots.txt`, `sitemap.xml` e do log de
+  inicialização sem segredos.
+- No navegador: busca e âncoras da central de ajuda, mostrar senha, validação
+  ao sair do campo, indicador de força, telefone formatado e cadastro que volta
+  ao checkout; regressão completa dos fluxos das etapas 6 a 10 sem erros novos.
+
+---
+
 # Fase 2, etapa 10 — 10/11/2026
 
 - Testes novos em `tests/orders.test.js`: transições permitidas (com paridade

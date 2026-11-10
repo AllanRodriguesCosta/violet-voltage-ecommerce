@@ -86,6 +86,44 @@ export class PostgresStorage {
     );
     return entity(result.rows[0]);
   }
+  // Consultas pontuais usam a chave primária ou os índices únicos da migração.
+  async getByRowKey(table, rowKey) {
+    const result = await this.pool.query(
+      `SELECT data, version FROM ${tableName(table)} WHERE row_key=$1`,
+      [rowKey],
+    );
+    return entity(result.rows[0]);
+  }
+  async getManyByRowKeys(table, rowKeys) {
+    const keys = [...new Set(rowKeys)].slice(0, 100);
+    if (!keys.length) return [];
+    const result = await this.pool.query(
+      `SELECT data, version FROM ${tableName(table)} WHERE row_key IN (${keys.map((_, i) => `$${i + 1}`).join(",")})`,
+      keys,
+    );
+    return result.rows.map(entity);
+  }
+  async listByPartition(table, partitionKey) {
+    const result = await this.pool.query(
+      `SELECT data, version FROM ${tableName(table)} WHERE partition_key=$1 ORDER BY row_key`,
+      [partitionKey],
+    );
+    return result.rows.map(entity);
+  }
+  async findCustomerById(id) {
+    const result = await this.pool.query(
+      "SELECT data, version FROM violet_voltage.customers WHERE data->>'id'=$1",
+      [id],
+    );
+    return entity(result.rows[0]);
+  }
+  async findOrderByRequest(customerId, requestId) {
+    const result = await this.pool.query(
+      "SELECT data, version FROM violet_voltage.orders WHERE partition_key=$1 AND data->>'requestId'=$2",
+      [customerId, requestId],
+    );
+    return entity(result.rows[0]);
+  }
   async create(table, item) {
     try {
       await this.pool.query(
@@ -141,6 +179,7 @@ export class PostgresStorage {
   async transaction(work) {
     for (let attempt = 0; attempt < 3; attempt++) {
       const client = await this.pool.connect();
+      let broken = false;
       try {
         await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
         const scoped = Object.create(PostgresStorage.prototype);
@@ -150,12 +189,17 @@ export class PostgresStorage {
         await client.query("COMMIT");
         return result;
       } catch (error) {
-        await client.query("ROLLBACK");
+        // Falha no ROLLBACK não mascara o erro original; a conexão é descartada.
+        try {
+          await client.query("ROLLBACK");
+        } catch {
+          broken = true;
+        }
         if (error.code === "40001" && attempt < 2) continue;
         if (error.code === "40001") throw conflict(412);
         throw error;
       } finally {
-        client.release();
+        client.release(broken || undefined);
       }
     }
   }

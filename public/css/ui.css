@@ -313,3 +313,34 @@ td .badge-out { background: var(--ink); color: #fff; }
 @media (min-width: 480px) { .buy-actions { grid-template-columns: 1.4fr 1fr; } }
 @media (min-width: 900px) { .sticky-buy { display: none; } }
 @media (prefers-reduced-motion: reduce) { .zoom-frame img { transition: none; } }
+
+/* Central de ajuda */
+.help-hero { padding: 28px 22px; margin-bottom: 20px; border-radius: var(--radius-lg); background: radial-gradient(70% 90% at 90% 10%, rgb(124 77 255 / 22%), transparent 60%), var(--surface); border: 1px solid var(--line); }
+.help-hero .lead { margin-bottom: 18px; }
+.help-search { position: relative; display: flex; align-items: center; max-width: 560px; margin-bottom: 14px; }
+.help-search .icon { position: absolute; left: 16px; color: var(--muted); pointer-events: none; }
+.help-search input[type="search"] { padding-left: 46px; border-radius: 999px; min-height: 50px; }
+.faq-group { margin: 8px 0 28px; scroll-margin-top: calc(var(--header-h) + 16px); }
+.faq-group h2 { font-size: 22px; margin: 0 0 12px; }
+.faq-item { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 8px; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.faq-item[open] { border-color: #d6c4f7; box-shadow: var(--shadow-sm); }
+.faq-item summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 18px; cursor: pointer; font-weight: 600; list-style: none; }
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after { content: "+"; display: grid; place-items: center; flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); color: var(--violet); font-weight: 700; transition: transform 0.2s ease; }
+.faq-item[open] summary::after { content: "−"; }
+.faq-item p { margin: 0; padding: 0 18px 18px; color: var(--ink-2); line-height: 1.7; }
+.faq-item a { color: var(--violet); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Acesso: senha visível e força */
+.password-field { position: relative; display: flex; align-items: center; }
+.password-field input { padding-right: 52px; }
+.password-field .icon-button { position: absolute; right: 2px; }
+.strength { margin-top: 8px; }
+.strength-bar { display: block; height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.strength-bar span { display: block; height: 100%; width: 0; border-radius: inherit; transition: width 0.25s ease, background-color 0.25s ease; }
+.strength small { display: block; margin-top: 6px; font-size: 12.5px; color: var(--muted); }
+.strength[data-level="weak"] .strength-bar span { width: 33%; background: var(--danger); }
+.strength[data-level="medium"] .strength-bar span { width: 66%; background: #d08a00; }
+.strength[data-level="strong"] .strength-bar span { width: 100%; background: var(--success); }
+.nav-help { margin-left: auto; }
+@media (min-width: 640px) { .help-hero { padding: 40px; } }

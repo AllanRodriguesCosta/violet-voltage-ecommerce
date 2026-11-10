@@ -24,6 +24,7 @@ const routes = {
   "/minha-conta.html": "account",
   "/login.html": "auth",
   "/cadastro.html": "auth",
+  "/ajuda.html": "help",
 };
 try {
   if (location.pathname === "/admin.html") {

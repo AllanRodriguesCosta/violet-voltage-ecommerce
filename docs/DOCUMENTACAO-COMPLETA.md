@@ -31,7 +31,9 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/services/bootstrap.js` | Criação/atualização privada do administrador |
 | `src/services/seed*.js` | Manifesto e carga dos 22 produtos/imagens |
 | `src/repositories/factory.js`, `postgres.js` | Seleção de backend e persistência PostgreSQL |
-| `src/repositories/storage.js` | Memória e adaptador Azure legado |
+| `src/repositories/memory.js` | Armazenamento volátil de desenvolvimento e testes |
+| `src/repositories/storage.js` | Adaptador Azure legado (somente testes) |
+| `src/utils/startup-error.js` | Mensagem de falha na inicialização sem segredos |
 | `migrations/001-postgres.sql` | Estrutura idempotente do schema privado |
 | `public/js/common.js` | API cliente, sessão, formulários, carrinho, favoritos, avisos e layout comum |
 | `public/js/app.js` | Entrada: cabeçalho, minicarrinho, busca e carregamento da página |
@@ -92,6 +94,13 @@ mostra volume, pedidos, ticket médio, pedidos por status, vendas dos últimos 1
 dias e estoque baixo, com busca e filtros. Status só avançam no fluxo; o
 cancelamento, permitido até a preparação, devolve os itens ao estoque na mesma
 transação do pedido. Exclusões são lógicas para preservar histórico. Não há modo público de edição nem conta admin compartilhada.
+
+### Ajuda e acesso
+
+`ajuda.html` reúne perguntas frequentes sobre pedidos, entregas, pagamentos,
+cupons, trocas e conta, com busca. Login e cadastro oferecem mostrar senha,
+indicador de força, validação ao sair do campo e retorno ao destino (por exemplo,
+o checkout). O servidor gera `robots.txt` e `sitemap.xml`.
 
 ### Interface e recuperação
 

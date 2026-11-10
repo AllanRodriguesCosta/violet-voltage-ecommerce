@@ -135,10 +135,18 @@ preço no servidor e ciclo de vida dos pedidos.
 
 ### 11. Qualidade técnica e conteúdo
 
-- [ ] Consultas por chave e por cliente no PostgreSQL, sem varrer tabelas inteiras.
-- [ ] Log de inicialização com o código do erro, sem segredos.
-- [ ] Central de ajuda com perguntas frequentes; login e cadastro renovados.
-- [ ] Meta tags por página e medições registradas.
+- [x] Consultas por chave e por cliente no PostgreSQL (chave primária e índices
+      únicos) para produto, cliente, histórico, cotação, pedido e cancelamento.
+      Catálogo e listagens do painel continuam lendo a tabela inteira.
+- [x] Log de inicialização com a causa (mensagem própria ou código do erro), sem
+      segredos; ROLLBACK com falha não mascara o erro original.
+- [x] Central de ajuda (`ajuda.html`) com busca; login e cadastro com mostrar
+      senha, força da senha, validação ao sair do campo, telefone formatado e
+      retorno ao destino.
+- [x] Meta tags Open Graph, `noindex` nas páginas privadas, `robots.txt` e
+      `sitemap.xml` gerados pelo servidor.
+- [ ] Medições Lighthouse da versão publicada registradas.
+- [x] O app deixa de carregar os SDKs Azure (memória em `memory.js`).
 - [ ] Remover o adaptador Azure legado e suas dependências (exige regenerar o
       `package-lock.json` com npm).
 

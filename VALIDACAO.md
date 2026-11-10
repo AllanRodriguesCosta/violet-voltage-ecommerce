@@ -1,3 +1,13 @@
+# CI remoto — 10/11/2026
+
+- Workflow **Qualidade**, execução #1 no commit `a136a39` de `main`: job
+  `lint-and-test` aprovado (instalação com `npm ci`, lint e suíte completa,
+  incluindo PostgreSQL via PGlite).
+- A partir desta data, cada entrega segue por pull request e só entra em `main`
+  com o CI verde. Os registros abaixo permanecem como histórico.
+
+---
+
 # Evolução de portfólio — 08/11/2026
 
 ## Evidência visual recebida do usuário

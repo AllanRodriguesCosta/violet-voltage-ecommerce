@@ -82,7 +82,8 @@ acessibilidade ou publicação de todas as melhorias.
   rollback PostgreSQL e testes de cliente para falhas de comunicação/carrinho.
 - Seed cloud confirmado com 22 produtos e 22 imagens legíveis em nova conexão.
 - Funcionamento da versão migrada no Render confirmado pelo autor.
-- Workflow de CI preparado; primeira execução real no GitHub ainda pendente.
+- CI no GitHub Actions aprovado na primeira execução remota, em 10/11/2026, e
+  executado em cada pull request para `main`.
 - Sem medições publicadas de desempenho, auditoria visual completa ou testes
   de carga. Os resultados automatizados não substituem essas verificações.
 
@@ -92,7 +93,8 @@ fictícios, incluindo o painel sem divulgar acesso administrativo.
 
 ## Próximos marcos
 
-Concluir revisão visual, mobile e fluxos; registrar evidências; executar o CI
-remoto após envio autorizado e publicar a versão revisada. Agentes serão uma
+Executar a Fase 2 do [roadmap](ROADMAP.md): sistema visual, descoberta,
+produto, regras de preço no servidor e ciclo de vida dos pedidos, com uma
+entrega revisada e com CI verde por pull request. Agentes serão uma
 etapa posterior, com função, permissões, custo e avaliações definidos antes da
 implementação. Não fazem parte das capacidades atuais do site.

@@ -1,78 +1,146 @@
 # Roadmap de evolução — Violet Voltage
 
-Objetivo: apresentar um portfólio profissional de desenvolvimento full stack, sem vendas reais. Manter Express, JavaScript sem frameworks, PostgreSQL e hospedagem atual. Agentes ficam para uma fase posterior.
+Objetivo: apresentar um portfólio profissional de desenvolvimento full stack, com
+uma loja de instrumentos completa e moderna, sem vendas reais. Manter Express,
+JavaScript sem frameworks, PostgreSQL e a hospedagem atual. Agentes ficam para
+uma fase posterior.
 
-Cada etapa termina com revisão local, correções e registro de evidências. Publicação ocorre após validar a versão; não executar Git sem solicitação do usuário.
+Site publicado: <https://violet-voltage-ecommerce-1.onrender.com/>. CI: workflow
+**Qualidade** (lint e testes) em cada push e pull request para `main`.
 
-## 1. Identidade visual e home — em andamento
+## Como as entregas acontecem
 
-Revisão desktop parcial realizada com capturas fornecidas pelo usuário: home,
-catálogo, produto, carrinho, conta e checkout. Caminho de sucesso até o histórico
-observado nas capturas. Revisão mobile, teclado e cenários de erro ainda pendente.
+- Uma branch e um pull request por entrega, com o que mudou e como foi verificado.
+- Merge somente com o CI verde. O Render publica a versão de `main`.
+- Revisão no navegador em 360, 768 e 1440 px antes do merge; cada entrega marca
+  seus itens neste arquivo.
 
-- [x] Definir direção: visual musical editorial, roxo profundo, lilás e superfícies claras.
-- [x] Refinar abertura, hierarquia tipográfica, botões e cards do catálogo.
-- [x] Acrescentar apresentação da marca e navegação para ela.
-- [ ] Revisar visualmente home, produto e checkout em desktop e mobile.
-- [ ] Ajustar detalhes identificados na revisão.
+## Princípios
 
-Critério de conclusão: identidade consistente entre páginas, textos legíveis, imagens sem cortes, links funcionais e ausência de rolagem horizontal em 360, 768 e 1440 px.
+- Valores em centavos inteiros; o servidor recalcula preço, frete, desconto e parcelas.
+- Sem notas, estrelas ou avaliações. Informações dos cards vêm do catálogo ou de
+  regras implementadas no servidor.
+- Interface pública sem avisos de simulação, verificada por teste automatizado.
+- Sem frameworks de frontend e sem dependências novas sem necessidade. Animações
+  respeitam `prefers-reduced-motion`.
+- Heurísticas de usabilidade como critério de revisão: status visível, controle e
+  desfazer, prevenção de erros, reconhecimento em vez de memorização,
+  consistência e ajuda.
 
-Validação da primeira implementação: lint aprovado e 28 testes aprovados. A prévia no navegador não alcançou o servidor local (timeout); revisão visual e medidas de viewport permanecem pendentes. Alterações ainda locais, sem publicação.
+## Fase 1 — Base (etapas 1 a 5)
 
-## 2. Catálogo e produto — próxima entrega
+### 1. Identidade visual e home
 
-- [x] Ordenação por preço e nome; preservar busca e categoria na URL (implementado; revisão no navegador pendente).
-- [x] Exibir filtros aplicados, limpeza rápida e resultados vazios com ação útil (implementado; validação de interação pendente).
-- [x] Organizar descrição e especificações usando apenas dados disponíveis, sem inventar características (marca, modelo e categoria).
-- [x] Implementar apresentação e validação de disponibilidade/quantidade; revisão mobile do produto pendente.
+- [x] Direção: visual musical editorial, roxo profundo, lilás e superfícies claras.
+- [x] Abertura, hierarquia tipográfica, botões e cards do catálogo.
+- [x] Apresentação da marca e navegação para ela.
+- [ ] Revisar home, produto e checkout em 360, 768 e 1440 px (passa a fazer parte
+      de cada entrega da Fase 2).
 
-Critério: combinar filtros, atualizar a página e compartilhar a URL mantém os resultados; ordenação correta; produto ausente ou esgotado tem tratamento claro.
+### 2. Catálogo e produto
 
-## 3. Mobile e acessibilidade
+- [x] Ordenação por preço e nome; busca e categoria preservadas na URL.
+- [x] Filtros aplicados visíveis, limpeza rápida e resultado vazio com ação útil.
+- [x] Descrição e especificações apenas com dados disponíveis.
+- [x] Disponibilidade e validação de quantidade.
 
-Prioridade atual: responsividade mobile e testes de interação/erro. Revisão de
-navegação por teclado adiada por solicitação do usuário, sem marcar conclusão.
-Layout mobile refinado; conferência visual em aparelho/navegador ainda pendente.
+### 3. Mobile e acessibilidade
 
-- [x] Menu móvel com fechamento por Escape e retorno do foco ao botão; fecha também ao selecionar link ou clicar fora (implementado; revisão mobile pendente).
-- [x] Implementar filtros recolhíveis, áreas de toque e formulários mobile (validação completa pendente).
-- [ ] Revisar contraste, títulos, labels, mensagens, teclado e zoom de 200%.
-- [ ] Respeitar redução de movimento e conferir alternativas textuais.
+- [x] Menu móvel com Escape, retorno do foco e fechamento ao clicar fora.
+- [x] Filtros recolhíveis, áreas de toque de 44 px e formulários mobile.
+- [ ] Contraste, títulos, labels, mensagens e zoom de 200%.
+- [ ] Navegação completa por teclado (adiada a pedido do autor).
 
-Critério: completar navegação, cadastro e checkout por teclado e em tela pequena, sem conteúdo inacessível.
+### 4. Acabamento dos fluxos
 
-## 4. Acabamento dos fluxos
+- [x] Feedback do carrinho e prevenção de cliques repetidos.
+- [x] Recuperação de rede e mensagens nos fluxos principais.
+- [x] Confirmação do pedido com foco e acesso ao histórico.
+- [ ] Padronizar carregamento, falha, vazio e sucesso em todas as telas (etapa 6).
 
-Em implementação: confirmação na página de produto com acesso ao carrinho,
-validação defensiva de quantidade, mensagem para falha no armazenamento local
-e recuperação de erro ao consultar produto. Revisão de interação pendente.
+### 5. Apresentação técnica
 
-Confirmação de pedido refinada com foco, histórico e retorno ao catálogo.
-Falha de limpeza local do carrinho não oculta sucesso já confirmado pelo servidor.
-Testes de cliente cobrem quantidade inválida, estoque acumulado e armazenamento
-bloqueado; não substituem a revisão no navegador.
+- [x] CI de lint e testes no GitHub Actions, sem credenciais de produção.
+- [x] Primeira execução real do CI aprovada em 10/11/2026.
+- [x] Estudo de caso e roteiro de demonstração.
+- [ ] README com capturas da versão publicada.
+- [ ] Medição de desempenho e acessibilidade registrada.
 
-- [ ] Padronizar carregamento, falha, vazio e sucesso em cada tela.
-- [x] Implementar feedback do carrinho e prevenção de cliques repetidos; testes simulados aprovados.
-- [x] Implementar recuperação de rede e mensagens nos fluxos principais; revisão no browser pendente.
-- [x] Refinar confirmação e acesso ao histórico; sucesso observado em capturas desktop.
-- [x] Planejar apresentação do painel com capturas fictícias, sem compartilhar administrador. Capturas ainda pendentes.
+## Fase 2 — Experiência de loja completa
 
-Critério: preço e estoque continuam validados pelo servidor; erros permitem nova tentativa; pedidos não duplicam; nenhuma integração financeira real.
+Amplia o antigo "Roadmap 2" (descoberta separada dos resultados, cards ricos,
+lista de desejos, busca fixa e navegação inferior) com sistema visual, regras de
+preço no servidor e ciclo de vida dos pedidos.
 
-## 5. Apresentação técnica
+### 6. Sistema visual e navegação
 
-- [x] Preparar CI de lint e testes no GitHub Actions, sem credenciais de produção.
-- [ ] Confirmar primeira execução real do CI no GitHub após envio autorizado.
-- [ ] Atualizar README com capturas, arquitetura e instruções reproduzíveis.
-- [x] Escrever estudo de caso: problema, decisões, migração Azure/PostgreSQL, testes e limites.
-- [ ] Registrar medição de desempenho/acessibilidade e corrigir os problemas encontrados.
-- [x] Preparar texto-base e roteiro em docs/DEMONSTRACAO.md (capturas pendentes).
+- [ ] Fonte Geist (licença OFL) servida pelo próprio site; tokens de cor, espaço,
+      raio, sombra e movimento.
+- [ ] Cabeçalho fixo com busca, favoritos, conta e carrinho; atalhos de categorias.
+- [ ] Navegação inferior no celular: início, buscar, favoritos, carrinho e conta.
+- [ ] Minicarrinho lateral com quantidades, remoção, subtotal e progresso para
+      frete grátis.
+- [ ] Avisos por tipo (sucesso, erro, informação) com ação, como "Desfazer" e
+      "Ver carrinho".
+- [ ] Esqueletos de carregamento e estados padronizados de vazio e erro.
+- [ ] Transições entre páginas e animações de entrada, desligadas com redução de
+      movimento.
 
-Critério: clone novo roda conforme documentação; CI verde; evidências sem dados pessoais; materiais representam a implementação real.
+### 7. Descoberta e catálogo
 
-## Depois das cinco etapas
+- [ ] Home de descoberta: categorias com contagem, destaques em carrossel, setups
+      prontos e vistos recentemente.
+- [ ] Página de resultados própria, com busca fixa no topo, filtros de categoria,
+      marca, faixa de preço e disponibilidade, ordenação e URL compartilhável.
+- [ ] Sugestões de busca instantâneas, sem diferenciar acentos.
+- [ ] Cards ricos: parcelamento, últimas unidades, esgotado, favoritar e
+      adicionar rápido.
+- [ ] Lista de desejos no celular e no desktop.
 
-Escolher um agente com utilidade comprovável, definir permissões e dados necessários, custo e avaliação. Nenhum agente será integrado durante este roadmap.
+### 8. Página de produto
 
+- [ ] Zoom da imagem e visualização ampliada.
+- [ ] Seletor de quantidade, "Comprar agora", parcelas e opções de entrega com prazo.
+- [ ] Produtos relacionados, vistos recentemente e barra de compra fixa no celular.
+- [ ] Compartilhar link e dados estruturados schema.org `Product`, sem avaliações.
+
+### 9. Carrinho, checkout e regras de preço
+
+- [ ] Módulo único de preços no servidor: frete padrão grátis acima de R$ 999,
+      cupons e até 10x sem juros (parcela mínima de R$ 50).
+- [ ] Cotação `POST /api/checkout/quote` usada pelo carrinho e pelo checkout, com
+      testes.
+- [ ] Carrinho com seletor de quantidade, desfazer remoção, salvar para depois e
+      sugestões.
+- [ ] Checkout em seções (entrega, pagamento e cupom), resumo fixo e confirmação
+      animada.
+
+### 10. Pedidos, conta e administração
+
+- [ ] Histórico de status com datas e transições válidas; cancelamento devolve
+      os itens ao estoque.
+- [ ] Cliente cancela pedido ainda "Recebido" e pode comprar novamente.
+- [ ] Minha conta com linha do tempo de cada pedido.
+- [ ] Painel com ticket médio, pedidos por status, vendas dos últimos 14 dias,
+      estoque baixo, busca e filtros.
+
+### 11. Qualidade técnica e conteúdo
+
+- [ ] Consultas por chave e por cliente no PostgreSQL, sem varrer tabelas inteiras.
+- [ ] Log de inicialização com o código do erro, sem segredos.
+- [ ] Central de ajuda com perguntas frequentes; login e cadastro renovados.
+- [ ] Meta tags por página e medições registradas.
+- [ ] Remover o adaptador Azure legado e suas dependências (exige regenerar o
+      `package-lock.json` com npm).
+
+## Fase 3 — Agentes (depois da Fase 2)
+
+Escolher um agente com utilidade comprovável. Primeiro candidato: assistente de
+descoberta com consulta somente leitura ao catálogo real. Segundo, opcional:
+qualidade do catálogo para o administrador, inicialmente só com sugestões;
+qualquer escrita futura exige revisão e autorização no backend. Antes de
+implementar, definir provedor, custo mensal, limites, dados permitidos, fallback
+e avaliações.
+
+Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
+[estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

@@ -75,7 +75,7 @@ Senha administrativa: 12 a 72 caracteres e até 72 bytes UTF-8. Bootstrap reapli
 
 ## Funcionalidades e API
 
-Catálogo com filtros, carrinho, cadastro/login/perfil, histórico próprio, checkout demonstrativo e painel com produtos, imagens, clientes, pedidos e indicadores. Upload PNG/JPEG/WebP até 5 MB. Fretes em centavos: padrão 2500, expresso 4500, retirada zero.
+Home de descoberta, catálogo com busca instantânea e filtros com contagens, sugestões de busca, favoritos, minicarrinho, cadastro/login/perfil, histórico próprio, checkout demonstrativo e painel com produtos, imagens, clientes, pedidos e indicadores. Upload PNG/JPEG/WebP até 5 MB. Fretes em centavos: padrão 2500, expresso 4500, retirada zero.
 
 Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..." } }`, campo `field` opcional.
 
@@ -84,6 +84,7 @@ Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..."
 | GET | `/api/health` | Público; consulta o banco, 503 se indisponível |
 | POST | `/api/auth/register`, `/api/auth/login`, `/api/auth/logout` | Público |
 | GET | `/api/auth/me` | Autenticado |
+| GET | `/api/auth/session` | Público; usuário da sessão ou `null` |
 | GET | `/api/products`, `/api/products/:id`, `/api/images/:id` | Público |
 | PATCH | `/api/profile` | Autenticado |
 | GET / POST | `/api/orders` | Histórico próprio / checkout |

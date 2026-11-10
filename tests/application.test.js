@@ -236,6 +236,10 @@ test("API: autenticação, administração, estoque, imagens e páginas", async 
       "/cadastro.html",
       "/minha-conta.html",
       "/admin.html",
+      "/catalogo.html",
+      "/favoritos.html",
+      "/fonts/geist-latin.woff2",
+      "/js/pages/catalog.js",
       "/css/style.css",
       "/css/ui.css",
       "/js/app.js",
@@ -328,6 +332,17 @@ test("API: autenticação, administração, estoque, imagens e páginas", async 
       );
     },
   );
+  await t.test("sessão pública responde sem erro para visitante", async () => {
+    const anonymous = await request("/auth/session");
+    assert.equal(anonymous.status, 200);
+    assert.equal(anonymous.body.data, null);
+    assert.equal(anonymous.headers.get("cache-control"), "no-store");
+    const invalid = await request("/auth/session", { cookie: "vv_session=invalido" });
+    assert.equal(invalid.body.data, null);
+    const admin = await request("/auth/session", { cookie: adminCookie });
+    assert.equal(admin.body.data.role, "admin");
+    assert.equal(admin.body.data.passwordHash, undefined);
+  });
   await t.test("cadastro e edição de produtos; filtros", async () => {
     let r = await request("/admin/products", {
       method: "POST",

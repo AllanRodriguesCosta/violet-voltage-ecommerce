@@ -1,0 +1,92 @@
+import { icon } from "./icons.js";
+import {
+  money,
+  escapeHtml as esc,
+  productImage,
+  isWished,
+  toggleWishlist,
+  addCart,
+  toast,
+} from "./common.js";
+
+export const categoryInfo = {
+  Guitarras: "Corpos marcantes e acabamentos feitos para o palco.",
+  Pedais: "Efeitos, pedaleiras e pedalboards para moldar o timbre.",
+  Amplificadores: "Valvulados e combos para ensaio, estúdio e show.",
+  Cabos: "Conexões firmes do instrumento ao amplificador.",
+  Correias: "Conforto e personalidade para tocar em pé.",
+  Acessórios: "Suportes, palhetas e o que mais o setup pede.",
+};
+export function stockState(product) {
+  if (!product.estoque) return { key: "out", label: "Esgotado" };
+  if (product.estoque <= 5) return { key: "low", label: "Últimas unidades" };
+  return { key: "in", label: "Em estoque" };
+}
+export const productUrl = (p) => `/produto.html?id=${encodeURIComponent(p.id)}`;
+export function wishLabel(name, wished) {
+  return wished ? `Remover ${name} dos favoritos` : `Salvar ${name} nos favoritos`;
+}
+export function productCard(p, index = 0) {
+  const stock = stockState(p);
+  const name = `${p.marca} ${p.modelo}`;
+  const wished = isWished(p.id);
+  return `<article class="product-card${stock.key === "out" ? " is-out" : ""}" style="--i:${index % 12}">
+<div class="product-media"><img src="${esc(productImage(p))}" alt="" loading="lazy" decoding="async" width="480" height="480"><div class="product-badges"><span class="badge badge-category">${esc(p.categoria)}</span>${stock.key === "in" ? "" : `<span class="badge badge-${stock.key}">${stock.label}</span>`}</div><button type="button" class="wish-button" data-wish="${esc(p.id)}" aria-pressed="${wished}" aria-label="${esc(wishLabel(name, wished))}">${icon("heart")}</button></div>
+<div class="product-body"><span class="product-brand">${esc(p.marca)}</span><h3 class="product-title"><a href="${productUrl(p)}"><span class="sr-only">${esc(p.marca)} </span>${esc(p.modelo)}</a></h3><p class="product-price">${money(p.priceCents)}</p><button type="button" class="button add-button" data-add="${esc(p.id)}"${stock.key === "out" ? " disabled" : ""} aria-label="${stock.key === "out" ? `${esc(name)} esgotado` : `Adicionar ${esc(name)} ao carrinho`}">${icon(stock.key === "out" ? "clock" : "bag", { size: 18 })}<span>${stock.key === "out" ? "Esgotado" : "Adicionar"}</span></button></div>
+</article>`;
+}
+export const skeletonCards = (count = 6) =>
+  Array.from(
+    { length: count },
+    () =>
+      '<div class="product-card skeleton" aria-hidden="true"><div class="product-media"></div><div class="product-body"><span class="sk-line w40"></span><span class="sk-line w80"></span><span class="sk-line w50"></span><span class="sk-block"></span></div></div>',
+  ).join("");
+export function emptyState({ symbol = "search", title, text = "", actions = "" }) {
+  return `<div class="empty">${icon(symbol, { size: 30 })}<h3>${title}</h3>${text ? `<p>${text}</p>` : ""}${actions ? `<div class="row center">${actions}</div>` : ""}</div>`;
+}
+export function errorState(container, error, retry) {
+  container.innerHTML = emptyState({
+    symbol: "alert",
+    title: "Não foi possível carregar.",
+    text: esc(error.message),
+    actions: '<button type="button" data-retry>Tentar novamente</button>',
+  });
+  container.querySelector("[data-retry]").addEventListener("click", retry);
+}
+// Atualiza todos os botões de favorito do mesmo produto na página.
+export function syncWishButtons(id, wished) {
+  document.querySelectorAll(`[data-wish="${CSS.escape(id)}"]`).forEach((button) => {
+    button.setAttribute("aria-pressed", String(wished));
+    const card = button.closest("[data-name]") || button.closest(".product-card");
+    const name = button.dataset.name || card?.querySelector(".product-title")?.textContent.trim() || "produto";
+    button.setAttribute("aria-label", wishLabel(name, wished));
+    button.classList.remove("pop");
+    void button.offsetWidth;
+    button.classList.add("pop");
+  });
+}
+export function handleWish(id, onChange) {
+  const wished = toggleWishlist(id);
+  syncWishButtons(id, wished);
+  toast(wished ? "Salvo nos favoritos." : "Removido dos favoritos.", {
+    type: "success",
+    action: wished
+      ? { label: "Ver favoritos", onClick: () => (location.href = "/favoritos.html") }
+      : { label: "Desfazer", onClick: () => { toggleWishlist(id); syncWishButtons(id, true); onChange?.(); } },
+  });
+  onChange?.();
+  return wished;
+}
+// Delegação de eventos para grades que são renderizadas novamente.
+export function bindCards(container, getProducts, { onWishChange } = {}) {
+  if (container.dataset.cardsBound) return;
+  container.dataset.cardsBound = "true";
+  container.addEventListener("click", (event) => {
+    const add = event.target.closest("[data-add]");
+    const wish = event.target.closest("[data-wish]");
+    if (add) {
+      const product = getProducts().find((p) => p.id === add.dataset.add);
+      if (product) addCart(product);
+    } else if (wish) handleWish(wish.dataset.wish, onWishChange);
+  });
+}

@@ -1,3 +1,59 @@
+# Fase 2, etapa 13 — 10/11/2026
+
+- Testes novos em `tests/states-client.test.js` (estados com título e alerta
+  corretos, mensagem escapada, nova tentativa e saída; mensagens de validação) e
+  pares de borda de campo (3:1) em `tests/theme.test.js`.
+- Auditoria local no Chromium (árvore de acessibilidade via CDP e verificações no
+  DOM), temas claro e escuro, 360 e 1440 px, em 25 telas e diálogos (home,
+  catálogo, catálogo vazio, produto, esgotado, inexistente, favoritos, carrinho,
+  ajuda, login, cadastro, 404, menu, visualização rápida, aviso do carrinho,
+  minicarrinho, checkout, confirmação, conta e as três abas do painel): nenhum
+  controle sem nome, nenhum texto abaixo de 4,5:1 (3:1 para texto grande, com
+  cada parada dos gradientes), campos com borda de pelo menos 3:1, um `h1` por
+  página sem saltos de nível, sem IDs duplicados, imagens com `alt` e alvos de
+  toque de 24 px ou com espaçamento equivalente.
+- Reflow sem rolagem horizontal em 320, 360 e 640 px (200% de zoom em 1280 px).
+- Falha simulada da API (500) em home, catálogo, produto, favoritos, carrinho,
+  checkout, conta e painel: nenhuma tela presa carregando; mensagem, nova
+  tentativa e caminho de saída.
+- Formulários (14 verificações): mensagens em português, foco no primeiro erro,
+  validação ao sair do campo sem perder o clique em "Enviar", erro do servidor no
+  formulário, quantidade fora do estoque e endereço obrigatório só na entrega.
+- Corrigido: `ajuda.html` sem âncora exibia "Cannot read properties of undefined"
+  no topo da página (erro desde a etapa 11).
+
+## Medição local de desempenho
+
+Chromium com limitação semelhante à do Lighthouse móvel (RTT 150 ms, 1,6 Mbps,
+CPU 4x), 412 × 823 px, cache desligado, mediana de 3 cargas, app em memória sem
+compressão HTTP. Não substitui o Lighthouse do site publicado.
+
+Antes (início da etapa):
+
+| Página | FCP | LCP | CLS | TBT aprox. | Transferido |
+| --- | --- | --- | --- | --- | --- |
+| `/` | 1,5 s | 1,5 s | 0,000 | 1001 ms | 203 KB |
+| `/catalogo.html` | 1,6 s | 2,5 s | 0,226 | 770 ms | 204 KB |
+| `/produto.html?id=demo-004` | 1,3 s | 2,8 s | 0,001 | 442 ms | 202 KB |
+| `/carrinho.html` | 1,5 s | 2,2 s | 0,226 | 326 ms | 200 KB |
+| `/ajuda.html` | 1,4 s | 1,4 s | 0,075 | 207 ms | 183 KB |
+
+Depois (espaço do cabeçalho reservado, rodapé abaixo da dobra, `modulepreload`,
+catálogo pedido no `<head>` e `content-visibility` abaixo da dobra na home):
+
+| Página | FCP | LCP | CLS | TBT aprox. | Transferido |
+| --- | --- | --- | --- | --- | --- |
+| `/` | 1,6 s | 1,6 s | 0,000 | 497 ms | 204 KB |
+| `/catalogo.html` | 1,4 s | 2,5 s | 0,000 | 280 ms | 205 KB |
+| `/produto.html?id=demo-004` | 1,4 s | 2,3 s | 0,000 | 213 ms | 203 KB |
+| `/carrinho.html` | 1,4 s | 1,4 s | 0,000 | 144 ms | 201 KB |
+| `/ajuda.html` | 1,5 s | 1,5 s | 0,000 | 215 ms | 184 KB |
+
+O peso transferido é sem compressão; compressão e cache HTTP ficam para a
+etapa 16.
+
+---
+
 # Fase 2, etapa 12 — 10/11/2026
 
 - Testes novos em `tests/theme.test.js`: contraste AA (4,5:1 para texto, 3:1 para

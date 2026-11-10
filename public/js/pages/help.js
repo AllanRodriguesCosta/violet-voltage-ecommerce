@@ -7,7 +7,8 @@ export default function help() {
   const status = document.querySelector("#faq-status");
   const empty = document.querySelector("#faq-empty");
   const openFromHash = () => {
-    const group = location.hash && document.querySelector(location.hash);
+    // getElementById aceita qualquer âncora; sem âncora não há grupo para abrir.
+    const group = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
     if (group?.classList.contains("faq-group")) group.querySelector(".faq-item")?.setAttribute("open", "");
   };
   input.addEventListener("input", () => {

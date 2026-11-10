@@ -51,17 +51,21 @@ export const skeletonCards = (count = 6) =>
     () =>
       '<div class="product-card skeleton" aria-hidden="true"><div class="product-media"></div><div class="product-body"><span class="sk-line w40"></span><span class="sk-line w80"></span><span class="sk-line w50"></span><span class="sk-block"></span></div></div>',
   ).join("");
-export function emptyState({ symbol = "search", title, text = "", actions = "" }) {
-  return `<div class="empty">${icon(symbol, { size: 30 })}<h3>${title}</h3>${text ? `<p>${text}</p>` : ""}${actions ? `<div class="row center">${actions}</div>` : ""}</div>`;
+// Estados padronizados (vazio, erro, sucesso e informação): mesmo visual, título no nível
+// certo da página e semântica de alerta apenas para falhas.
+export function stateHTML({ tone = "empty", symbol, title, text = "", actions = "", level = 2 }) {
+  const symbols = { empty: "search", error: "alert", success: "check", info: "info" };
+  const role = tone === "error" ? ' role="alert"' : "";
+  return `<div class="empty state-${tone}"${role}>${icon(symbol || symbols[tone], { size: 30 })}<h${level}>${title}</h${level}>${text ? `<p>${text}</p>` : ""}${actions ? `<div class="row center">${actions}</div>` : ""}</div>`;
 }
-export function errorState(container, error, retry) {
-  container.innerHTML = emptyState({
-    symbol: "alert",
-    title: "Não foi possível carregar.",
-    text: esc(error.message),
-    actions: '<button type="button" data-retry>Tentar novamente</button>',
-  });
-  container.querySelector("[data-retry]").addEventListener("click", retry);
+export const emptyState = ({ symbol = "search", title, text = "", actions = "", level = 2 }) =>
+  stateHTML({ tone: "empty", symbol, title, text, actions, level });
+export const loadingHTML = (text = "Carregando…") => `<div class="loading" role="status">${text}</div>`;
+// Falha com explicação, nova tentativa (quando faz sentido) e um caminho de saída.
+export function errorState(container, error, retry, { title = "Não foi possível carregar.", text, level = 2, back } = {}) {
+  const actions = `${retry ? '<button type="button" data-retry>Tentar novamente</button>' : ""}${back ? `<a class="button secondary" href="${back.href}">${back.label}</a>` : ""}`;
+  container.innerHTML = stateHTML({ tone: "error", title, text: text ?? esc(error.message), actions, level });
+  if (retry) container.querySelector("[data-retry]").addEventListener("click", retry);
 }
 // Atualiza todos os botões de favorito do mesmo produto na página.
 export function syncWishButtons(id, wished) {

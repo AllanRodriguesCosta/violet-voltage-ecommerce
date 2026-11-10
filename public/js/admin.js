@@ -1,7 +1,7 @@
 import { icon } from "./icons.js";
-import { api, send, money, productImage, escapeHtml as esc, bindForm, toast, requireUser, showError, normalize, categories } from "./common.js";
+import { api, send, money, productImage, escapeHtml as esc, bindForm, toast, requireUser, normalize, categories } from "./common.js";
 import { orderCardHTML, statuses, statusClass } from "./orders.js";
-import { confirmDialog, emptyState } from "./components.js";
+import { confirmDialog, emptyState, errorState, loadingHTML } from "./components.js";
 
 const field = (key, label, value = "", type = "text", attributes = "") =>
   `<div class="field"><label for="edit-${key}">${label}</label><input id="edit-${key}" name="${key}" type="${type}" value="${esc(value)}" ${attributes}></div>`;
@@ -85,10 +85,10 @@ export async function adminPage(user) {
       .join("");
     panel.querySelector("#order-list").innerHTML = list.length
       ? list.map((o) => orderCardHTML(o, { admin: true, customer: names.get(o.partitionKey) || "Cliente" })).join("")
-      : emptyState({ symbol: "package", title: "Nenhum pedido encontrado." });
+      : emptyState({ symbol: "package", title: "Nenhum pedido encontrado.", level: 3 });
   }
   async function load() {
-    panel.innerHTML = '<div class="loading">Carregando…</div>';
+    panel.innerHTML = loadingHTML();
     if (tab === "orders") {
       [items, customers] = await Promise.all([api("/admin/orders"), api("/admin/customers")]);
       panel.innerHTML = `${toolbar("Pedidos", "")}<p class="form-help">Status avançam no fluxo; o cancelamento, permitido até a preparação, devolve os itens ao estoque.</p><div class="chip-row" id="order-chips"></div><div class="order-list" id="order-list"></div>`;
@@ -131,8 +131,8 @@ export async function adminPage(user) {
               (i) =>
                 `<tr data-search="${esc(normalize(product ? `${i.marca} ${i.modelo} ${i.categoria}` : `${i.nome} ${i.email}`))}"><td>${product ? `<div class="admin-product"><img src="${esc(productImage(i))}" alt="" loading="lazy"><div><strong>${esc(i.modelo)}</strong><small>${esc(i.marca)} · ${esc(i.categoria)}</small></div></div>` : `<strong>${esc(i.nome)}</strong><small>${esc(i.email)}</small>`}</td><td>${product ? money(i.priceCents) : esc(i.telefone || "—")}</td><td>${product ? `<span class="badge ${i.estoque === 0 ? "badge-out" : i.estoque <= 5 ? "badge-low" : ""}">${i.estoque} un.</span>` : esc(i.role === "admin" ? "Administrador" : "Cliente")}</td><td class="actions"><button class="secondary" data-edit="${i.id}">Editar</button>${product ? `<button class="secondary" data-image="${i.id}">Imagem</button>` : `<button class="secondary" data-history="${i.id}">Compras</button>`}${i.role === "admin" ? "" : `<button class="danger" data-delete="${i.id}">Excluir</button>`}</td></tr>`,
             )
-            .join("")}</tbody></table><div id="no-results" hidden>${emptyState({ symbol: "search", title: "Nada encontrado com essa busca." })}</div></div>`
-        : emptyState({ symbol: "grid", title: "Nenhum registro cadastrado." })
+            .join("")}</tbody></table><div id="no-results" hidden>${emptyState({ symbol: "search", title: "Nada encontrado com essa busca.", level: 3 })}</div></div>`
+        : emptyState({ symbol: "grid", title: "Nenhum registro cadastrado.", level: 3 })
     }`;
     panel.querySelector("#new-record").onclick = () => edit();
     panel.querySelectorAll("[data-edit]").forEach((b) => (b.onclick = () => edit(items.find((i) => i.id === b.dataset.edit))));
@@ -209,7 +209,7 @@ export async function adminPage(user) {
       try {
         await load();
       } catch (e) {
-        showError(panel, e);
+        errorState(panel, e, () => b.click(), { title: "Não foi possível carregar esta aba." });
       }
     };
     b.onkeydown = (e) => {
@@ -221,6 +221,20 @@ export async function adminPage(user) {
       }
     };
   });
-  await stats();
-  await load();
+  // Indicadores e lista falham de forma independente, cada um com nova tentativa.
+  const retryStats = async () => {
+    try {
+      await stats();
+    } catch (e) {
+      errorState(document.querySelector("#stats"), e, retryStats, { title: "Não foi possível carregar os indicadores." });
+    }
+  };
+  const retryLoad = async () => {
+    try {
+      await load();
+    } catch (e) {
+      errorState(panel, e, retryLoad, { title: "Não foi possível carregar esta aba." });
+    }
+  };
+  await Promise.all([retryStats(), retryLoad()]);
 }

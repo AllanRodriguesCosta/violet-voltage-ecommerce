@@ -28,12 +28,14 @@ function highlights(products) {
   const rest = available.filter((p) => !flagship.includes(p)).sort((a, b) => b.priceCents - a.priceCents);
   return [...flagship, ...rest].slice(0, 8);
 }
+// Sem catálogo (falha de rede), as categorias continuam navegáveis, só sem contagem.
 function renderCategories(products) {
   document.querySelector("#category-grid").innerHTML = categories
     .map((c) => {
-      const items = products.filter((p) => p.categoria === c);
+      const items = (products || []).filter((p) => p.categoria === c);
       const cover = items.sort((a, b) => b.priceCents - a.priceCents)[0];
-      return `<a class="category-tile" href="/catalogo.html?categoria=${encodeURIComponent(c)}"><span class="category-copy"><strong>${c}</strong><span>${categoryInfo[c]}</span><span class="category-count">${items.length} ${items.length === 1 ? "item" : "itens"} ${icon("arrowRight", { size: 16 })}</span></span><img src="${esc(productImage(cover || { categoria: c }))}" alt="" loading="lazy" width="160" height="160"></a>`;
+      const count = products ? `${items.length} ${items.length === 1 ? "item" : "itens"}` : "Ver itens";
+      return `<a class="category-tile" href="/catalogo.html?categoria=${encodeURIComponent(c)}"><span class="category-copy"><strong>${c}</strong><span>${categoryInfo[c]}</span><span class="category-count">${count} ${icon("arrowRight", { size: 16 })}</span></span><img src="${esc(productImage(cover || { categoria: c }))}" alt="" loading="lazy" width="160" height="160"></a>`;
     })
     .join("");
 }
@@ -98,7 +100,9 @@ export default async function home() {
   try {
     products = await catalogProducts();
   } catch (error) {
-    errorState(document.querySelector("#highlights"), error, () => home());
+    renderCategories(null);
+    document.querySelector("#setups").hidden = true;
+    errorState(document.querySelector("#highlights"), error, () => home(), { level: 3, title: "Não foi possível carregar os destaques." });
     return;
   }
   renderCategories(products);

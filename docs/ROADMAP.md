@@ -48,7 +48,7 @@ Site publicado: <https://violet-voltage-ecommerce-1.onrender.com/>. CI: workflow
 
 - [x] Menu móvel com Escape, retorno do foco e fechamento ao clicar fora.
 - [x] Filtros recolhíveis, áreas de toque de 44 px e formulários mobile.
-- [ ] Contraste, títulos, labels, mensagens e zoom de 200% (etapa 13).
+- [x] Contraste, títulos, labels, mensagens e zoom de 200% (etapa 13).
 - [ ] Navegação completa por teclado (adiada a pedido do autor).
 
 ### 4. Acabamento dos fluxos
@@ -56,7 +56,7 @@ Site publicado: <https://violet-voltage-ecommerce-1.onrender.com/>. CI: workflow
 - [x] Feedback do carrinho e prevenção de cliques repetidos.
 - [x] Recuperação de rede e mensagens nos fluxos principais.
 - [x] Confirmação do pedido com foco e acesso ao histórico.
-- [ ] Padronizar carregamento, falha, vazio e sucesso em todas as telas (etapa 13).
+- [x] Padronizar carregamento, falha, vazio e sucesso em todas as telas (etapa 13).
 
 ### 5. Apresentação técnica
 
@@ -64,7 +64,8 @@ Site publicado: <https://violet-voltage-ecommerce-1.onrender.com/>. CI: workflow
 - [x] Primeira execução real do CI aprovada em 10/11/2026.
 - [x] Estudo de caso e roteiro de demonstração.
 - [ ] README com capturas da versão publicada.
-- [ ] Medição de desempenho e acessibilidade registrada.
+- [x] Medição local de desempenho e acessibilidade registrada (etapa 13); a do
+      site publicado segue na etapa 11.
 
 ## Fase 2 — Experiência de loja completa
 
@@ -169,16 +170,22 @@ preço no servidor e ciclo de vida dos pedidos.
 
 ### 13. Acessibilidade e estados (fecha pendências da Fase 1)
 
-- [ ] Auditoria automatizada no navegador: nomes acessíveis, rótulos, hierarquia
-      de títulos, contraste do texto renderizado nos dois temas, IDs duplicados e
-      imagens.
-- [ ] Bordas de campos e controles com contraste de 3:1; zoom de 200% e reflow em
-      320 px sem rolagem horizontal.
-- [ ] Estados padronizados de carregamento, falha, vazio e sucesso em produto,
-      carrinho, checkout, conta, painel e acesso.
-- [ ] Erros de formulário ligados aos campos, com foco no primeiro erro.
-- [ ] Medição local de desempenho (LCP, CLS e peso por página) registrada em
-      `VALIDACAO.md`.
+- [x] Auditoria automatizada no navegador, nos temas claro e escuro, em 360 e
+      1440 px: nomes acessíveis, rótulos, hierarquia de títulos, contraste do
+      texto renderizado, contraste dos campos, IDs duplicados, imagens e alvos de
+      toque.
+- [x] Bordas de campos e controles com contraste de 3:1; zoom de 200% (640 px) e
+      reflow em 320 px sem rolagem horizontal.
+- [x] Estados padronizados de carregamento, falha, vazio e sucesso em produto,
+      carrinho, checkout, conta, painel e acesso, sempre com nova tentativa ou
+      caminho de saída.
+- [x] Erros de formulário em português ligados aos campos, validação ao sair do
+      campo e foco no primeiro erro.
+- [x] Medição local de desempenho (LCP, CLS e peso por página) registrada em
+      `VALIDACAO.md`; o deslocamento causado pelo cabeçalho e pelo rodapé foi
+      eliminado e os módulos passaram a ser baixados em paralelo.
+- [x] Corrigido: a central de ajuda exibia um erro de script quando aberta sem
+      âncora.
 
 ### 14. Conta completa
 

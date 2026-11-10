@@ -129,6 +129,7 @@ export default async function catalog() {
     grid.innerHTML = list.length
       ? list.map((p, i) => productCard(p, i)).join("")
       : emptyState({
+          level: 3,
           title: state.q ? `Nada encontrado para “${esc(state.q)}”.` : "Nenhum equipamento com esses filtros.",
           text: "Confira a grafia, use menos palavras ou remova um filtro.",
           actions: `<button type="button" data-remove="all">Limpar filtros</button><a class="button secondary" href="/catalogo.html">Ver todo o catálogo</a>`,

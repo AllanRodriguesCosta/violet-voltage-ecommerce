@@ -52,8 +52,8 @@ export default async function account(session) {
     list.innerHTML = shown.length
       ? shown.map((o) => orderCardHTML(o, { products })).join("")
       : orders.length
-        ? emptyState({ symbol: "package", title: "Nenhum pedido neste filtro." })
-        : emptyState({ symbol: "package", title: "Nenhuma compra por aqui ainda.", text: "Quando você finalizar um pedido, ele aparece aqui com cada etapa da entrega.", actions: '<a class="button" href="/catalogo.html">Explorar equipamentos</a>' });
+        ? emptyState({ symbol: "package", title: "Nenhum pedido neste filtro.", level: 3 })
+        : emptyState({ symbol: "package", level: 3, title: "Nenhuma compra por aqui ainda.", text: "Quando você finalizar um pedido, ele aparece aqui com cada etapa da entrega.", actions: '<a class="button" href="/catalogo.html">Explorar equipamentos</a>' });
   }
   async function load() {
     list.setAttribute("aria-busy", "true");
@@ -62,7 +62,7 @@ export default async function account(session) {
       [orders, products] = await Promise.all([api("/orders"), catalogProducts().catch(() => [])]);
       render();
     } catch (error) {
-      errorState(list, error, load);
+      errorState(list, error, load, { level: 3, title: "Não foi possível carregar seus pedidos." });
     } finally {
       list.setAttribute("aria-busy", "false");
     }

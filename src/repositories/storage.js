@@ -1,56 +1,8 @@
 import { TableClient } from "@azure/data-tables";
 import { BlobServiceClient } from "@azure/storage-blob";
 import { tableNames, containerName } from "../config/index.js";
-export class MemoryStorage {
-  constructor() {
-    this.tables = Object.fromEntries(
-      Object.keys(tableNames).map((k) => [k, new Map()]),
-    );
-    this.blobs = new Map();
-  }
-  async init() {}
-  async list(table) {
-    return structuredClone([...this.tables[table].values()]);
-  }
-  async get(table, partitionKey, rowKey) {
-    return structuredClone(
-      this.tables[table].get(`${partitionKey}|${rowKey}`) || null,
-    );
-  }
-  async create(table, item) {
-    const key = `${item.partitionKey}|${item.rowKey}`;
-    if (this.tables[table].has(key)) {
-      const e = new Error("Conflict");
-      e.statusCode = 409;
-      throw e;
-    }
-    this.tables[table].set(
-      key,
-      structuredClone({ ...item, etag: crypto.randomUUID() }),
-    );
-  }
-  async save(table, item, etag) {
-    const current = await this.get(table, item.partitionKey, item.rowKey);
-    if (etag && current?.etag !== etag) {
-      const e = new Error("Conflict");
-      e.statusCode = 412;
-      throw e;
-    }
-    this.tables[table].set(
-      `${item.partitionKey}|${item.rowKey}`,
-      structuredClone({ ...item, etag: crypto.randomUUID() }),
-    );
-  }
-  async upload(name, buffer, type) {
-    this.blobs.set(name, { buffer, type });
-  }
-  async blob(name) {
-    return this.blobs.get(name) || null;
-  }
-  async removeBlob(name) {
-    this.blobs.delete(name);
-  }
-}
+// Legado: só testes importam este módulo; a aplicação usa memory.js e postgres.js.
+export { MemoryStorage } from "./memory.js";
 export class AzureStorage {
   constructor(connection) {
     this.tables = Object.fromEntries(

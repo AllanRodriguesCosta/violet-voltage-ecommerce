@@ -26,14 +26,15 @@ Checkout recalcula valores em centavos no servidor. Estoque e pedido são gravad
 | `src/app.js`, `src/server.js` | Express, segurança e inicialização |
 | `src/config/index.js` | Ambiente |
 | `src/repositories/factory.js` | Seleção de PostgreSQL ou memória |
-| `src/repositories/postgres.js` | Consultas parametrizadas, imagens e transações |
+| `src/repositories/postgres.js` | Consultas parametrizadas por chave e índices, imagens e transações |
+| `src/repositories/memory.js` | Armazenamento volátil de desenvolvimento e testes |
 | `migrations/001-postgres.sql` | Estrutura idempotente, sem apagar registros |
 | `src/routes/api.js` | API ativa |
-| `src/services/` | Checkout, administrador e seed |
+| `src/services/` | Preços, checkout, pedidos, administrador e seed |
 | `public/` | Interface |
 | `tests/` | Regras, HTTP e PostgreSQL via PGlite |
 
-O adaptador Azure e seus testes permanecem como legado; a fábrica ativa não o seleciona. Nenhuma credencial Azure é necessária.
+O adaptador Azure e seus testes permanecem como legado em `src/repositories/storage.js`; a aplicação usa `memory.js` ou `postgres.js` e não carrega os SDKs Azure. Nenhuma credencial Azure é necessária.
 
 ## Execução
 
@@ -109,6 +110,8 @@ Filtros: `q`, `marca`, `modelo`, `categoria`, `min`, `max` (centavos). Checkout:
 - Status seguem Recebido → Em preparação → Enviado → Concluído (pode pular etapas, não volta). Cancelamento só até a preparação, devolve os itens ao estoque e é definitivo. Consultas ainda listam registros e filtram em memória, adequadas ao pequeno catálogo.
 - Upload valida MIME e assinatura básica. Substituição administrativa de imagem não é uma transação global; falhas de limpeza podem deixar arquivos órfãos.
 - Sem gateway, frete real, recuperação de senha, e-mail ou integração fiscal. Uma instância é suficiente para a demonstração.
+- `robots.txt` e `sitemap.xml` são gerados pelo servidor com o endereço da requisição; páginas privadas usam `noindex`.
+- Falhas de inicialização registram a causa (mensagem de configuração ou código do erro) sem valores secretos.
 
 ## Validação e evolução
 

@@ -6,6 +6,7 @@ import { configuration } from "../src/config/index.js";
 import { databaseOptions } from "../src/repositories/postgres.js";
 import { seed } from "../src/services/seed.js";
 import { placeOrder } from "../src/services/checkout.js";
+import { updateOrderStatus } from "../src/services/orders.js";
 import { bootstrapAdmin } from "../src/services/bootstrap.js";
 import { createApp } from "../src/app.js";
 import { seedFixture, fixturePng } from "./helpers/seed-fixture.js";
@@ -200,4 +201,36 @@ test("PostgreSQL: API autentica, serve imagens e mantém pedido e estoque", asyn
     ).data.passwordHash,
     undefined,
   );
+});
+
+test("PostgreSQL: consultas por chave, índices únicos e cancelamento transacional", async (t) => {
+  const { storage } = await postgresFixture(t);
+  await seed(storage, await seedFixture(t));
+  assert.equal((await storage.getByRowKey("products", "demo-004")).modelo, "AC15 Valvulado");
+  assert.equal(await storage.getByRowKey("products", "inexistente"), null);
+  assert.deepEqual(
+    (await storage.getManyByRowKeys("products", ["demo-002", "demo-001", "demo-002", "x"])).map((p) => p.rowKey).sort(),
+    ["demo-001", "demo-002"],
+  );
+  assert.deepEqual(await storage.getManyByRowKeys("products", []), []);
+  const user = { id: randomUUID() };
+  const body = {
+    requestId: randomUUID(),
+    items: [{ id: "demo-001", quantidade: 2 }],
+    pagamento: "pix",
+    entrega: "retirada",
+    endereco: "Retirada na loja",
+  };
+  const order = await placeOrder(storage, user, body);
+  assert.equal((await storage.findOrderByRequest(user.id, body.requestId)).rowKey, order.rowKey);
+  assert.equal(await storage.findOrderByRequest(randomUUID(), body.requestId), null);
+  assert.equal((await storage.listByPartition("orders", user.id)).length, 1);
+  assert.equal((await storage.get("products", "correias", "demo-001")).estoque, 23);
+  const canceled = await updateOrderStatus(storage, order.rowKey, "Cancelado");
+  assert.equal(canceled.status, "Cancelado");
+  assert.equal((await storage.get("products", "correias", "demo-001")).estoque, 25);
+  await assert.rejects(updateOrderStatus(storage, order.rowKey, "Enviado"), (e) => e.status === 409);
+  await storage.create("customers", { partitionKey: "cliente", rowKey: "pg@example.test", id: "cliente-pg", nome: "PG", ativo: true });
+  assert.equal((await storage.findCustomerById("cliente-pg")).rowKey, "pg@example.test");
+  assert.equal(await storage.findCustomerById("nenhum"), null);
 });

@@ -18,9 +18,8 @@ export async function updateOrderStatus(storage, orderId, status, options = {}) 
     return storage.transaction((scoped) => updateOrderStatus(scoped, orderId, status, options));
   return exclusive(async () => {
     if (!statuses.includes(status)) throw new AppError(400, "Status inválido.");
-    const order = (await storage.list("orders")).find(
-      (o) => o.rowKey === orderId && (!options.customerId || o.partitionKey === options.customerId),
-    );
+    const found = await storage.getByRowKey("orders", String(orderId));
+    const order = found && (!options.customerId || found.partitionKey === options.customerId) ? found : null;
     if (!order) throw new AppError(404, "Pedido não encontrado.");
     if (order.status === status) return order;
     const allowed = options.onlyFrom && !options.onlyFrom.includes(order.status) ? [] : allowedNext(order.status);
@@ -33,8 +32,9 @@ export async function updateOrderStatus(storage, orderId, status, options = {}) 
     };
     if (status === "Cancelado") {
       // Devolve os itens ao estoque; no PostgreSQL, na mesma transação do pedido.
-      const products = await storage.list("products");
-      for (const item of JSON.parse(order.itens)) {
+      const items = JSON.parse(order.itens);
+      const products = await storage.getManyByRowKeys("products", items.map((i) => i.id));
+      for (const item of items) {
         const p = products.find((x) => x.rowKey === item.id);
         if (!p) continue;
         await storage.save("products", { ...p, estoque: p.estoque + item.quantidade }, p.etag);

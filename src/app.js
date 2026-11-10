@@ -3,7 +3,7 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { fileURLToPath } from "node:url";
 import { apiRouter } from "./routes/api.js";
-import { AppError } from "./utils/validation.js";
+import { AppError, categories } from "./utils/validation.js";
 const publicDir = fileURLToPath(new URL("../public", import.meta.url));
 export function createApp(storage, config) {
   const app = express();
@@ -45,6 +45,33 @@ export function createApp(storage, config) {
   app.use("/api", (_req, _res, next) =>
     next(new AppError(404, "Rota não encontrada.")),
   );
+  // Endereço público para robots e sitemap; host inválido usa caminho relativo.
+  const origin = (req) => {
+    const host = req.get("host") || "";
+    return /^[a-z0-9.-]+(:\d{1,5})?$/i.test(host) ? `${req.protocol}://${host}` : "";
+  };
+  const xml = (value) =>
+    String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[c]);
+  app.get("/robots.txt", (req, res) =>
+    res
+      .set("Content-Type", "text/plain; charset=utf-8")
+      .send(
+        `User-agent: *\nDisallow: /admin.html\nDisallow: /checkout.html\nDisallow: /minha-conta.html\nDisallow: /api/\nAllow: /api/images/\nSitemap: ${origin(req)}/sitemap.xml\n`,
+      ),
+  );
+  app.get("/sitemap.xml", async (req, res) => {
+    const base = origin(req);
+    const products = (await storage.list("products")).filter((p) => p.ativo);
+    const urls = [
+      ...["/", "/catalogo.html", "/ajuda.html", ...categories.map((c) => `/catalogo.html?categoria=${encodeURIComponent(c)}`)].map((path) => ({ loc: base + path })),
+      ...products.map((p) => ({ loc: `${base}/produto.html?id=${encodeURIComponent(p.rowKey)}`, lastmod: p.updatedAt?.slice(0, 10) })),
+    ];
+    res
+      .set("Content-Type", "application/xml; charset=utf-8")
+      .send(
+        `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((u) => `<url><loc>${xml(u.loc)}</loc>${u.lastmod ? `<lastmod>${xml(u.lastmod)}</lastmod>` : ""}</url>`).join("")}</urlset>\n`,
+      );
+  });
   app.use(express.static(publicDir));
   app.use((_req, res) => res.status(404).sendFile(`${publicDir}/404.html`));
   app.use((err, _req, res, _next) => {

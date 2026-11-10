@@ -2,6 +2,7 @@ import { configuration } from "./config/index.js";
 import { createStorage } from "./repositories/factory.js";
 import { bootstrapAdmin } from "./services/bootstrap.js";
 import { createApp } from "./app.js";
+import { startupError } from "./utils/startup-error.js";
 try {
   const config = configuration();
   const storage = createStorage(config);
@@ -12,9 +13,7 @@ try {
       `Violet Voltage disponível na porta ${config.port}. Armazenamento: ${config.memory ? "MEMÓRIA DE DESENVOLVIMENTO (dados voláteis)" : "PostgreSQL"}.`,
     ),
   );
-} catch {
-  console.error(
-    "Inicialização falhou. Verifique variáveis obrigatórias, permissões, TLS e conectividade com PostgreSQL.",
-  );
+} catch (error) {
+  console.error(startupError(error));
   process.exitCode = 1;
 }

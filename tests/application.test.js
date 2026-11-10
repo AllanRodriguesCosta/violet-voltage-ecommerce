@@ -12,6 +12,7 @@ import {
 import { productInput, email, integer } from "../src/utils/validation.js";
 import { calculate, placeOrder } from "../src/services/checkout.js";
 import { bootstrapAdmin } from "../src/services/bootstrap.js";
+import { startupError } from "../src/utils/startup-error.js";
 import { seed } from "../src/services/seed.js";
 import { seedFixture } from "./helpers/seed-fixture.js";
 const sample = {
@@ -45,6 +46,19 @@ test("produção exige PostgreSQL e segredo forte; nomes Azure legados preservad
     "AllanRibeiroPedidos",
   ]);
   assert.equal(containerName, "allan-ribeiro-produtos");
+});
+test("log de inicialização mostra a causa sem expor segredos", () => {
+  let config;
+  try {
+    configuration({});
+  } catch (error) {
+    config = startupError(error);
+  }
+  assert.match(config, /Configure DATABASE_URL/);
+  const remote = Object.assign(new Error("password authentication failed for user secret-user"), { code: "28P01" });
+  const message = startupError(remote);
+  assert.match(message, /28P01/);
+  assert.doesNotMatch(message, /secret-user/);
 });
 test("checkout ignora preços do cliente e rejeita duplicados, inativos e excesso", () => {
   const products = [{ ...sample, rowKey: "p1", ativo: true }];
@@ -238,6 +252,7 @@ test("API: autenticação, administração, estoque, imagens e páginas", async 
       "/admin.html",
       "/catalogo.html",
       "/favoritos.html",
+      "/ajuda.html",
       "/fonts/geist-latin.woff2",
       "/js/pages/catalog.js",
       "/css/style.css",
@@ -251,6 +266,12 @@ test("API: autenticação, administração, estoque, imagens e páginas", async 
       assert.equal(r.status, 200, page);
     }
     assert.equal((await fetch(base + "/nao-existe")).status, 404);
+    const robots = await (await fetch(base + "/robots.txt")).text();
+    assert.match(robots, /Disallow: \/admin\.html/);
+    assert.match(robots, new RegExp(`Sitemap: ${base}/sitemap.xml`));
+    const sitemap = await fetch(base + "/sitemap.xml");
+    assert.match(sitemap.headers.get("content-type"), /xml/);
+    assert.match(await sitemap.text(), /<loc>http:\/\/127\.0\.0\.1:\d+\/catalogo\.html\?categoria=Guitarras<\/loc>/);
     assert.equal((await request("/inexistente")).status, 404);
   });
   await t.test(

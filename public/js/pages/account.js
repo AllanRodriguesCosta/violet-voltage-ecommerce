@@ -1,7 +1,7 @@
 import { icon } from "../icons.js";
 import { api, send, toast, bindForm, requireUser, catalogProducts, getCart, setCart, money } from "../common.js";
 import { orderCardHTML } from "../orders.js";
-import { confirmDialog, emptyState, errorState } from "../components.js";
+import { confirmDialog, emptyState, errorState, maskPhone } from "../components.js";
 import { openCart } from "../drawer.js";
 
 const groups = {
@@ -15,6 +15,7 @@ export default async function account(session) {
   if (!requireUser(user)) return;
   const form = document.querySelector("#profile-form");
   for (const key of ["nome", "email", "telefone", "endereco"]) form.elements[key].value = user[key] || "";
+  maskPhone(form.elements.telefone);
   document.querySelector("#account-greeting").textContent = `Olá, ${user.nome.split(" ")[0]}.`;
   bindForm(form, async (data) => {
     await send("/profile", data, "PATCH");

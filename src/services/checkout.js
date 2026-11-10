@@ -2,6 +2,11 @@ import { randomUUID } from "node:crypto";
 import { AppError, integer, text } from "../utils/validation.js";
 import { quote, installments, shipping } from "./pricing.js";
 export { shipping };
+// IDs pedidos pelo cliente, para buscar só os produtos necessários.
+export const itemIds = (items) =>
+  Array.isArray(items)
+    ? items.slice(0, 30).map((i) => i?.id).filter((id) => typeof id === "string")
+    : [];
 export function calculate(items, products) {
   if (!Array.isArray(items) || items.length === 0 || items.length > 30)
     throw new AppError(400, "Carrinho inválido.");
@@ -40,9 +45,7 @@ export async function placeOrder(storage, user, body) {
     const requestId = text(body.requestId, "requestId", 16, 100);
     if (!/^[a-zA-Z0-9-]+$/.test(requestId))
       throw new AppError(400, "Identificador inválido.");
-    const previous = (await storage.list("orders")).find(
-      (o) => o.partitionKey === user.id && o.requestId === requestId,
-    );
+    const previous = await storage.findOrderByRequest(user.id, requestId);
     if (previous) return previous;
     if (
       !["pix", "cartao", "boleto"].includes(body.pagamento) ||
@@ -50,7 +53,7 @@ export async function placeOrder(storage, user, body) {
     )
       throw new AppError(400, "Pagamento ou entrega inválidos.");
     const endereco = text(body.endereco, "endereco", 5, 500);
-    const products = await storage.list("products");
+    const products = await storage.getManyByRowKeys("products", itemIds(body.items));
     const items = calculate(body.items, products);
     const totals = quote(items, { entrega: body.entrega, cupom: body.cupom });
     const parcelas = installments(body.pagamento, body.parcelas, totals.totalCents);

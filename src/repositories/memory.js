@@ -6,7 +6,13 @@ const conflict = (status) => {
 };
 export class MemoryStorage {
   constructor() {
-    this.tables = { products: new Map(), customers: new Map(), orders: new Map() };
+    this.tables = {
+      products: new Map(),
+      customers: new Map(),
+      orders: new Map(),
+      alerts: new Map(),
+      notifications: new Map(),
+    };
     this.blobs = new Map();
   }
   async init() {}
@@ -43,6 +49,9 @@ export class MemoryStorage {
     const current = await this.get(table, item.partitionKey, item.rowKey);
     if (etag && current?.etag !== etag) throw conflict(412);
     this.tables[table].set(`${item.partitionKey}|${item.rowKey}`, structuredClone({ ...item, etag: crypto.randomUUID() }));
+  }
+  async remove(table, partitionKey, rowKey) {
+    this.tables[table].delete(`${partitionKey}|${rowKey}`);
   }
   async upload(name, buffer, type) {
     this.blobs.set(name, { buffer, type });

@@ -3,6 +3,7 @@ import { send, money, productImage, escapeHtml as esc, getCart, setCart, bindFor
 import { emptyState, errorState } from "../components.js";
 import { cartData, prefs, fetchQuote, totalsHTML } from "./cart.js";
 import { installmentValue } from "../pricing.js";
+import { formatAddress } from "../address.js";
 
 const payments = [
   ["pix", "pix", "Pix", "Aprovação imediata após o pagamento"],
@@ -34,8 +35,27 @@ export default async function checkout(session) {
     return;
   }
   const address = form.elements.endereco;
-  if (!address.value) address.value = user.endereco || "";
   const $ = (s) => form.querySelector(s);
+  // Endereços salvos (principal primeiro), o do cadastro e a opção de digitar outro.
+  const saved = user.enderecos || [];
+  const legacy = (user.endereco || "").trim();
+  const choices = [
+    ...saved.map((a) => ({ id: a.id, title: a.apelido || "Endereço", text: formatAddress(a), main: a.principal })),
+    ...(legacy && !saved.some((a) => formatAddress(a) === legacy) ? [{ id: "cadastro", title: "Endereço do cadastro", text: legacy }] : []),
+  ];
+  state.endereco = choices[0]?.id || "novo";
+  function renderAddress() {
+    const pickup = state.entrega === "retirada";
+    const box = $("#address-choices");
+    box.hidden = pickup || !choices.length;
+    if (choices.length && !box.firstChild)
+      box.innerHTML = `<fieldset class="address-choices"><legend>Entregar em</legend><div class="option-cards">${[...choices, { id: "novo", title: "Outro endereço", text: "Digite o endereço completo só para este pedido." }]
+        .map((c) => `<label class="option-card"><input type="radio" name="endereco-escolha" value="${esc(c.id)}"${state.endereco === c.id ? " checked" : ""}><span class="option-icon">${icon(c.id === "novo" ? "plus" : "pin", { size: 22 })}</span><span class="option-text"><strong>${esc(c.title)}${c.main ? ' <span class="badge badge-main">Principal</span>' : ""}</strong><small>${esc(c.text)}</small></span></label>`)
+        .join("")}</div></fieldset><a class="text-link small" href="/minha-conta.html#enderecos">Gerenciar endereços ${icon("arrowRight", { size: 16 })}</a>`;
+    const typing = state.endereco === "novo";
+    $("#address-field").hidden = pickup || !typing;
+    address.required = !pickup && typing;
+  }
 
   function renderOptions() {
     const q = state.quote;
@@ -52,9 +72,8 @@ export default async function checkout(session) {
       .join("");
     $("#installments-field").hidden = state.pagamento !== "cartao";
     const pickup = state.entrega === "retirada";
-    $("#address-field").hidden = pickup;
     $("#pickup-note").hidden = !pickup;
-    address.required = !pickup;
+    renderAddress();
   }
   function renderCoupon(error = "") {
     const q = state.quote;
@@ -111,6 +130,10 @@ export default async function checkout(session) {
     } else if (t.id === "parcelas") {
       state.parcelas = Number(t.value);
       renderSummary();
+    } else if (t.name === "endereco-escolha") {
+      state.endereco = t.value;
+      renderAddress();
+      if (t.value === "novo") address.focus();
     }
   });
   form.addEventListener("click", (event) => {
@@ -133,7 +156,7 @@ export default async function checkout(session) {
   bindForm(form, async () => {
     const pickup = state.entrega === "retirada";
     const order = await send("/orders", {
-      endereco: pickup ? "Retirada na loja" : address.value,
+      endereco: pickup ? "Retirada na loja" : state.endereco === "novo" ? address.value : choices.find((c) => c.id === state.endereco).text,
       entrega: state.entrega,
       pagamento: state.pagamento,
       ...(state.pagamento === "cartao" ? { parcelas: state.parcelas } : {}),

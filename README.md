@@ -76,7 +76,7 @@ Senha administrativa: 12 a 72 caracteres e até 72 bytes UTF-8. Bootstrap reapli
 
 ## Funcionalidades e API
 
-Home de descoberta, catálogo com busca instantânea e filtros com contagens, sugestões de busca, visualização rápida, favoritos, minicarrinho com aviso de item adicionado, tema claro/escuro/automático, cadastro/login/perfil, histórico próprio, checkout demonstrativo e painel com produtos, imagens, clientes, pedidos e indicadores. Upload PNG/JPEG/WebP até 5 MB. Fretes em centavos: padrão 2500 (grátis a partir de 99900 de subtotal), expresso 4500, retirada zero. Cartão em até 10x sem juros, com parcela mínima de 5000. Cupons de teste: `VOLTAGE10` (10% nos produtos, até R$ 500), `PRIMEIROACORDE` (R$ 30 a partir de R$ 200) e `FRETEVOLT` (frete padrão ou expresso grátis). Regras em `src/services/pricing.js`.
+Home de descoberta, catálogo com busca instantânea e filtros com contagens, sugestões de busca, visualização rápida, favoritos, minicarrinho com aviso de item adicionado, tema claro/escuro/automático, cadastro/login/perfil, endereços de entrega, "Avise-me" para itens esgotados, notificações da conta, histórico próprio, checkout demonstrativo e painel com produtos, imagens, clientes, pedidos e indicadores. Upload PNG/JPEG/WebP até 5 MB. Fretes em centavos: padrão 2500 (grátis a partir de 99900 de subtotal), expresso 4500, retirada zero. Cartão em até 10x sem juros, com parcela mínima de 5000. Cupons de teste: `VOLTAGE10` (10% nos produtos, até R$ 500), `PRIMEIROACORDE` (R$ 30 a partir de R$ 200) e `FRETEVOLT` (frete padrão ou expresso grátis). Regras em `src/services/pricing.js`.
 
 Acessibilidade: contraste AA verificado por teste nos dois temas, bordas de campos com 3:1, mensagens de erro em português ligadas aos campos, estados de carregamento, vazio e falha com nova tentativa e reflow até 320 px.
 
@@ -92,6 +92,12 @@ Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..."
 | PATCH | `/api/profile` | Autenticado |
 | POST | `/api/checkout/quote` | Público; cotação sem gravar pedido |
 | GET / POST | `/api/orders` | Histórico próprio / checkout |
+| GET / POST | `/api/addresses` | Autenticado; endereços de entrega (até 5) |
+| PATCH / DELETE | `/api/addresses/:id` | Autenticado; editar, tornar principal ou excluir |
+| GET / POST | `/api/alerts` | Autenticado; avisos "Avise-me" (só itens esgotados) |
+| DELETE | `/api/alerts/:productId` | Autenticado |
+| GET | `/api/notifications` | Autenticado; últimas 30 e contagem de não lidas |
+| POST | `/api/notifications/read` | Autenticado; `ids` opcionais, sem eles marca todas |
 | POST | `/api/orders/:id/cancel` | Autenticado; só o dono e só com status `Recebido` |
 | GET | `/api/admin/summary` | Admin |
 | POST | `/api/admin/products` | Admin |

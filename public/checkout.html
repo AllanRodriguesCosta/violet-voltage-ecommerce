@@ -26,8 +26,10 @@
     <link rel="modulepreload" href="/js/pricing.js" />
     <link rel="modulepreload" href="/js/motion.js" />
     <link rel="modulepreload" href="/js/search.js" />
+    <link rel="modulepreload" href="/js/alerts.js" />
     <link rel="modulepreload" href="/js/pages/checkout.js" />
     <link rel="modulepreload" href="/js/pages/cart.js" />
+    <link rel="modulepreload" href="/js/address.js" />
   </head>
   <body>
     <div id="header"></div>
@@ -42,6 +44,7 @@
               <section class="panel checkout-section" aria-labelledby="delivery-title">
                 <h2 id="delivery-title"><span class="step-num">1</span>Entrega</h2>
                 <fieldset><legend class="sr-only">Forma de entrega</legend><div class="option-cards" id="delivery-options"><div class="loading">Calculando opções…</div></div></fieldset>
+                <div id="address-choices"></div>
                 <div class="field" id="address-field"><label for="endereco">Endereço completo</label><input id="endereco" name="endereco" type="text" required minlength="5" maxlength="500" autocomplete="street-address" aria-describedby="address-help" /><p class="form-help" id="address-help">Rua, número, complemento, bairro, cidade, estado e CEP.</p></div>
                 <p class="pickup-note" id="pickup-note" hidden>Retire na loja Violet Voltage a partir de 1 dia útil após a confirmação. Leve um documento com foto.</p>
               </section>

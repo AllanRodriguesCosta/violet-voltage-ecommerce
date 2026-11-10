@@ -189,12 +189,17 @@ preço no servidor e ciclo de vida dos pedidos.
 
 ### 14. Conta completa
 
-- [ ] Endereços salvos (até 5) com CEP formatado, UF e endereço principal; o
-      checkout oferece os endereços salvos.
-- [ ] "Avise-me" em itens esgotados: aviso na conta quando o estoque volta e
-      procura por item no painel.
-- [ ] Central de notificações: mudanças de status do pedido e estoque de volta,
-      com contador no cabeçalho e marcação de lidas.
+- [x] Endereços salvos (até 5) com CEP formatado, UF sugerida pelo CEP e
+      endereço principal; o checkout oferece os endereços salvos, o do cadastro
+      e a opção de digitar outro.
+- [x] "Avise-me" em itens esgotados (cards, produto e visualização rápida): aviso
+      na conta quando o estoque volta, inclusive por cancelamento, e procura por
+      item no painel.
+- [x] Central de notificações: mudanças de status feitas pela loja e estoque de
+      volta, com contador no cabeçalho (sino) e na navegação inferior, e
+      marcação de lidas.
+- [x] Tabelas `alerts` e `notifications` na migração idempotente; reposição,
+      aviso e notificação na mesma transação no PostgreSQL.
 
 ### 15. Descoberta e conversão
 

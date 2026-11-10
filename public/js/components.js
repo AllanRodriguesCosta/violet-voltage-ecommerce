@@ -1,5 +1,6 @@
 import { icon } from "./icons.js";
 import { FREE_SHIPPING_CENTS, maxInstallments, installmentValue } from "./pricing.js";
+import { alertButtonHTML } from "./alerts.js";
 import {
   money,
   escapeHtml as esc,
@@ -42,7 +43,7 @@ export function productCard(p, index = 0) {
   const wished = isWished(p.id);
   return `<article class="product-card${stock.key === "out" ? " is-out" : ""}" style="--i:${index % 12}">
 <div class="product-media"><img src="${esc(productImage(p))}" alt="" loading="lazy" decoding="async" width="480" height="480"><div class="product-badges"><span class="badge badge-category">${esc(p.categoria)}</span>${stock.key === "in" ? "" : `<span class="badge badge-${stock.key}">${stock.label}</span>`}</div><button type="button" class="wish-button" data-wish="${esc(p.id)}" aria-pressed="${wished}" aria-label="${esc(wishLabel(name, wished))}">${icon("heart")}</button><button type="button" class="quick-button" data-quick="${esc(p.id)}" aria-label="Visualização rápida de ${esc(name)}">${icon("eye", { size: 18 })}<span>Ver rápido</span></button></div>
-<div class="product-body"><span class="product-brand">${esc(p.marca)}</span><h3 class="product-title"><a href="${productUrl(p)}"><span class="sr-only">${esc(p.marca)} </span>${esc(p.modelo)}</a></h3><p class="product-price">${money(p.priceCents)}</p>${installmentText(p.priceCents) ? `<p class="product-installments">${installmentText(p.priceCents)}</p>` : ""}<button type="button" class="button add-button" data-add="${esc(p.id)}"${stock.key === "out" ? " disabled" : ""} aria-label="${stock.key === "out" ? `${esc(name)} esgotado` : `Adicionar ${esc(name)} ao carrinho`}">${icon(stock.key === "out" ? "clock" : "bag", { size: 18 })}<span>${stock.key === "out" ? "Esgotado" : "Adicionar"}</span></button></div>
+<div class="product-body"><span class="product-brand">${esc(p.marca)}</span><h3 class="product-title"><a href="${productUrl(p)}"><span class="sr-only">${esc(p.marca)} </span>${esc(p.modelo)}</a></h3><p class="product-price">${money(p.priceCents)}</p>${installmentText(p.priceCents) ? `<p class="product-installments">${installmentText(p.priceCents)}</p>` : ""}${stock.key === "out" ? alertButtonHTML(p, { short: true, className: "button secondary add-button" }) : `<button type="button" class="button add-button" data-add="${esc(p.id)}" aria-label="Adicionar ${esc(name)} ao carrinho">${icon("bag", { size: 18 })}<span>Adicionar</span></button>`}</div>
 </article>`;
 }
 export const skeletonCards = (count = 6) =>

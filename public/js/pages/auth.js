@@ -48,9 +48,10 @@ function strengthMeter(input) {
 }
 export default function authentication() {
   const next = new URLSearchParams(location.search).get("next");
-  const target = allowed.includes(next) ? next : "/minha-conta.html";
-  if (allowed.includes(next))
-    document.querySelectorAll('.auth-bottom a[href="/cadastro.html"], .auth-bottom a[href="/login.html"]').forEach((a) => (a.href += `?next=${encodeURIComponent(next)}`));
+  const safe = allowed.includes(next) || /^\/produto\.html\?id=[A-Za-z0-9-]{1,100}$/.test(next || "");
+  const target = safe ? next : "/minha-conta.html";
+  if (safe)
+    document.querySelectorAll('.auth-bottom a[href="/cadastro.html"], .auth-bottom a[href="/login.html"]').forEach((a) => a.setAttribute("href", `${a.getAttribute("href")}?next=${encodeURIComponent(next)}`));
   for (const form of document.querySelectorAll("#login-form, #register-form")) {
     form.querySelectorAll('input[type="password"]').forEach(passwordToggle);
   }

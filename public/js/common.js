@@ -414,6 +414,7 @@ function headerHTML() {
 <button type="button" class="icon-button search-trigger" data-open-search aria-haspopup="dialog" aria-label="Buscar">${icon("search")}</button>
 <button type="button" class="icon-button theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Tema escuro">${icon("moon")}</button>
 <a class="icon-button wish-link" href="/favoritos.html" aria-label="Favoritos">${icon("heart")}<span class="count" data-wishlist-count hidden>0</span></a>
+<a class="icon-button notif-link" href="/minha-conta.html#notificacoes" aria-label="Notificações" hidden>${icon("bell")}<span class="count" data-notification-count hidden>0</span></a>
 <a class="account-link" href="/login.html" id="account-link">${icon("user")}<span class="account-label">Entrar</span></a>
 <a class="icon-button cart-link" href="/carrinho.html" data-open-cart aria-label="Carrinho">${icon("bag")}<span class="count" id="cart-count" data-cart-count hidden>0</span></a>
 </nav></div></header>
@@ -436,7 +437,7 @@ function bottomNavHTML() {
     ["/catalogo.html", "grid", "Catálogo"],
     ["/favoritos.html", "heart", "Favoritos", "data-wishlist-count"],
     ["/carrinho.html", "bag", "Carrinho", "data-cart-count"],
-    ["/minha-conta.html", "user", "Conta"],
+    ["/minha-conta.html", "user", "Conta", "data-notification-count"],
   ];
   return `<nav class="bottom-nav" aria-label="Navegação rápida">${items
     .map(
@@ -466,7 +467,21 @@ function wireDialogs() {
     });
   }
 }
-export async function shell() {
+// Sessão compartilhada pelos módulos (avisos de estoque, visualização rápida etc.).
+export let sessionReady = Promise.resolve(null);
+export function setNotificationCount(count) {
+  document.querySelectorAll("[data-notification-count]").forEach((el) => {
+    el.textContent = count > 99 ? "99+" : count;
+    el.hidden = !count;
+  });
+  const link = document.querySelector(".notif-link");
+  if (link) link.setAttribute("aria-label", count ? `Notificações: ${count} não ${count === 1 ? "lida" : "lidas"}` : "Notificações");
+}
+export function shell() {
+  sessionReady = loadShell();
+  return sessionReady;
+}
+async function loadShell() {
   document.querySelector("#header").innerHTML = headerHTML();
   document.querySelector("#footer").innerHTML = footerHTML();
   document.body.insertAdjacentHTML("beforeend", bottomNavHTML());
@@ -485,6 +500,8 @@ export async function shell() {
     account.querySelector(".account-label").textContent = `Olá, ${user.nome.split(" ")[0]}`;
     account.setAttribute("aria-label", `Minha conta, ${user.nome}`);
     document.querySelectorAll(".admin-link").forEach((a) => (a.hidden = user.role !== "admin"));
+    document.querySelector(".notif-link").hidden = false;
+    setNotificationCount(user.naoLidas || 0);
   } catch {
     user = undefined;
     toast("Não foi possível verificar sua sessão.", { type: "error" });

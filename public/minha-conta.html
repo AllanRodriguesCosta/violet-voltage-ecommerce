@@ -26,8 +26,10 @@
     <link rel="modulepreload" href="/js/pricing.js" />
     <link rel="modulepreload" href="/js/motion.js" />
     <link rel="modulepreload" href="/js/search.js" />
+    <link rel="modulepreload" href="/js/alerts.js" />
     <link rel="modulepreload" href="/js/pages/account.js" />
     <link rel="modulepreload" href="/js/orders.js" />
+    <link rel="modulepreload" href="/js/address.js" />
   </head>
   <body>
     <div id="header"></div>
@@ -35,28 +37,43 @@
       <div class="container page-wrap">
         <nav class="breadcrumb" aria-label="Trilha de navegação"><a href="/">Início</a><span aria-hidden="true">/</span><span aria-current="page">Minha conta</span></nav>
         <header class="page-head">
-          <div><span class="eyebrow">Minha conta</span><h1 class="page-title" id="account-greeting">Seu espaço, seu som.</h1><p class="lead">Acompanhe seus pedidos e mantenha seus dados em dia.</p></div>
+          <div><span class="eyebrow">Minha conta</span><h1 class="page-title" id="account-greeting">Seu espaço, seu som.</h1><p class="lead">Acompanhe pedidos, endereços e avisos em um só lugar.</p></div>
           <button type="button" id="logout" class="secondary"><span data-icon="logout" data-size="18"></span>Sair da conta</button>
         </header>
         <div class="account-stats" id="account-stats"></div>
+        <section class="panel notifications-panel" id="notificacoes" aria-labelledby="notifications-title" hidden>
+          <div class="panel-head"><h2 id="notifications-title">Notificações <span class="chip-count" id="notifications-unread" hidden></span></h2><button type="button" class="text-button" id="notifications-read" hidden>Marcar todas como lidas</button></div>
+          <ul class="notification-list" id="notification-list"></ul>
+        </section>
         <div class="account-grid">
           <section id="pedidos" aria-labelledby="orders-title">
             <div class="orders-head">
               <h2 id="orders-title">Meus pedidos</h2>
               <div class="chip-row" id="order-filters" role="group" aria-label="Filtrar pedidos"><button type="button" class="chip" data-group="todos" aria-pressed="true">Todos <span class="chip-count">0</span></button><button type="button" class="chip" data-group="andamento" aria-pressed="false">Em andamento <span class="chip-count">0</span></button><button type="button" class="chip" data-group="concluidos" aria-pressed="false">Concluídos <span class="chip-count">0</span></button><button type="button" class="chip" data-group="cancelados" aria-pressed="false">Cancelados <span class="chip-count">0</span></button></div>
             </div>
-            <div id="orders" class="order-list"><div class="loading">Carregando compras…</div></div>
+            <div id="orders" class="order-list"><div class="loading" role="status">Carregando compras…</div></div>
           </section>
-          <section class="panel profile-panel" aria-labelledby="profile-title">
-            <h2 id="profile-title">Meus dados</h2>
-            <form id="profile-form">
-              <div class="field"><label for="nome">Nome completo</label><input id="nome" name="nome" type="text" required minlength="2" maxlength="200" autocomplete="name" /></div>
-              <div class="field"><label for="email">E-mail de acesso</label><input id="email" name="email" type="email" readonly /></div>
-              <div class="field"><label for="telefone">Telefone</label><input id="telefone" name="telefone" type="tel" maxlength="30" autocomplete="tel" /></div>
-              <div class="field"><label for="endereco">Endereço</label><input id="endereco" name="endereco" type="text" maxlength="500" autocomplete="street-address" /></div>
-              <button type="submit" class="full">Salvar meus dados</button>
-            </form>
-          </section>
+          <div class="account-side">
+            <section class="panel profile-panel" aria-labelledby="profile-title">
+              <h2 id="profile-title">Meus dados</h2>
+              <form id="profile-form">
+                <div class="field"><label for="nome">Nome completo</label><input id="nome" name="nome" type="text" required minlength="2" maxlength="200" autocomplete="name" /></div>
+                <div class="field"><label for="email">E-mail de acesso</label><input id="email" name="email" type="email" readonly /></div>
+                <div class="field"><label for="telefone">Telefone</label><input id="telefone" name="telefone" type="tel" maxlength="30" autocomplete="tel" /></div>
+                <div class="field"><label for="endereco">Endereço do cadastro (opcional)</label><input id="endereco" name="endereco" type="text" maxlength="500" autocomplete="street-address" aria-describedby="endereco-help" /><p class="form-help" id="endereco-help">Para entregas, prefira os endereços abaixo: eles aparecem prontos no checkout.</p></div>
+                <button type="submit" class="full">Salvar meus dados</button>
+              </form>
+            </section>
+            <section class="panel address-panel" id="enderecos" aria-labelledby="addresses-title">
+              <div class="panel-head"><h2 id="addresses-title">Endereços de entrega</h2><button type="button" class="text-button" id="address-add"><span data-icon="plus" data-size="18"></span>Adicionar</button></div>
+              <div class="address-list" id="address-list"></div>
+              <div id="address-editor"></div>
+            </section>
+            <section class="panel" id="avisos" aria-labelledby="alerts-title">
+              <h2 id="alerts-title">Avisos de estoque</h2>
+              <div id="alert-list"><div class="loading" role="status">Carregando avisos…</div></div>
+            </section>
+          </div>
         </div>
       </div>
     </main>

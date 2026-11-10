@@ -6,6 +6,7 @@ export const safeCustomer = (u) => ({
   email: u.rowKey,
   telefone: u.telefone,
   endereco: u.endereco,
+  enderecos: u.enderecos || [],
   role: u.role,
   ativo: u.ativo,
 });

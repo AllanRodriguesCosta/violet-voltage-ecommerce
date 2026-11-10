@@ -26,7 +26,7 @@ const contrast = (a, b) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
-// Pares de texto e fundo usados pelos componentes (4,5:1) e anel de foco (3:1).
+// Pares de texto e fundo usados pelos componentes (4,5:1); anel de foco e borda de campos (3:1).
 const pairs = [
   ["ink", "bg"], ["ink", "surface"], ["ink-2", "surface"], ["muted", "surface"], ["muted", "bg"],
   ["muted", "surface-2"], ["violet", "surface"], ["violet", "bg"], ["violet", "surface-2"],
@@ -35,6 +35,7 @@ const pairs = [
   ["success", "success-soft"], ["warning", "warning-soft"], ["danger", "danger-soft"], ["info", "info-soft"],
   ["success", "surface"], ["danger", "surface"], ["media-ink", "media-bg"],
   ["focus", "surface", 3], ["focus", "bg", 3],
+  ["field-line", "surface", 3], ["field-line", "bg", 3], ["field-line", "surface-2", 3],
 ];
 
 test("tokens de cor mantêm contraste AA nos temas claro e escuro", () => {

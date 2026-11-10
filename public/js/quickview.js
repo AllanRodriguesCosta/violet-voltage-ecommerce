@@ -1,7 +1,7 @@
 // Visualização rápida a partir dos cards: preço, parcelas, estoque, quantidade e favoritos
 // sem sair da vitrine. A página do produto continua sendo o detalhe completo.
 import { icon } from "./icons.js";
-import { money, escapeHtml as esc, productImage, addCart, isWished } from "./common.js";
+import { money, escapeHtml as esc, productImage, addCart, isWished, validateForm } from "./common.js";
 import { stockState, installmentText, productUrl, handleWish, wishLabel } from "./components.js";
 
 let dialog;
@@ -55,7 +55,7 @@ export function openQuickView(product, from) {
   qty.addEventListener("input", sync);
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    if (!form.reportValidity()) return;
+    if (!validateForm(form)) return;
     const image = dialog.querySelector(".qv-media img");
     if (addCart(p, Number(qty.value), { source: image })) dialog.close();
   });

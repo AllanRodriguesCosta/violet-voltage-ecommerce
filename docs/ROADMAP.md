@@ -203,13 +203,16 @@ preço no servidor e ciclo de vida dos pedidos.
 
 ### 15. Descoberta e conversão
 
-- [ ] Monte seu setup: escolha guiada por etapa (guitarra, amplificador, pedais,
-      cabos e acessórios), total com parcelas, link compartilhável e tudo no
-      carrinho de uma vez.
-- [ ] Compre junto na página do produto, com itens complementares selecionáveis
-      e total combinado.
-- [ ] Busca tolerante a erros de digitação ("Você quis dizer") e buscas recentes
-      nas sugestões.
+- [x] Monte seu setup (`setup.html`): escolha guiada em seis etapas (guitarra,
+      amplificador, efeitos, cabos, correia e acessórios), resumo com total,
+      parcelas e frete grátis, link compartilhável (`?itens=`), barra fixa no
+      celular e tudo no carrinho de uma vez. Setups prontos da home podem ser
+      personalizados.
+- [x] Compre junto na página do produto: itens complementares de outras
+      categorias, selecionáveis, com total combinado.
+- [x] Busca tolerante a erros de digitação ("Você quis dizer" nas sugestões e
+      correção automática no catálogo, com opção de buscar o termo exato) e
+      buscas recentes ao focar o campo vazio.
 
 ### 16. Desempenho, instalação e conteúdo
 

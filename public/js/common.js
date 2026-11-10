@@ -122,6 +122,73 @@ export function searchProducts(products, query) {
     .map((r) => r.p);
 }
 
+// Tolerância a erros de digitação: distância de edição entre palavras (com transposição).
+export function editDistance(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+    }
+  return d[a.length][b.length];
+}
+// "Você quis dizer": troca termos desconhecidos pela palavra mais próxima do catálogo
+// (marca, modelo, categoria e descrição); devolve null quando a correção não traz resultados.
+export function correctQuery(products, query) {
+  const vocabulary = new Set(categories.map(normalize));
+  for (const p of products)
+    for (const word of normalize(`${p.marca} ${p.modelo} ${p.categoria} ${p.descricao || ""}`).split(/[^a-z0-9]+/))
+      if (word.length >= 3) vocabulary.add(word);
+  const words = [...vocabulary];
+  let changed = false;
+  const fixed = normalize(query)
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((term) => {
+      if (term.length < 4 || words.some((w) => w.startsWith(term))) return term;
+      const limit = term.length >= 7 ? 2 : 1;
+      let best = null;
+      let bestDistance = limit + 1;
+      for (const w of words) {
+        if (Math.abs(w.length - term.length) > limit) continue;
+        const distance = editDistance(term, w);
+        if (distance < bestDistance) [best, bestDistance] = [w, distance];
+      }
+      if (!best) return term;
+      changed = true;
+      return best;
+    })
+    .join(" ");
+  return changed && searchProducts(products, fixed).length ? fixed : null;
+}
+// Buscas recentes neste navegador (até 5), mostradas nas sugestões.
+export const recentSearches = () => {
+  try {
+    const list = JSON.parse(localStorage.getItem("vv_searches") || "[]");
+    return Array.isArray(list) ? list.filter((q) => typeof q === "string" && q.length <= 80).slice(0, 5) : [];
+  } catch {
+    return [];
+  }
+};
+export function rememberSearch(query) {
+  const q = String(query || "").trim().slice(0, 80);
+  if (normalize(q).length < 2) return;
+  try {
+    localStorage.setItem("vv_searches", JSON.stringify([q, ...recentSearches().filter((x) => normalize(x) !== normalize(q))].slice(0, 5)));
+  } catch {
+    // Sem armazenamento local, a busca segue sem histórico.
+  }
+}
+export function clearSearches() {
+  try {
+    localStorage.removeItem("vv_searches");
+  } catch {
+    // Nada a limpar.
+  }
+}
+
 // Eventos internos da loja; ignorados quando não há DOM (testes).
 export function emit(name, detail) {
   const doc = globalThis.document;
@@ -418,8 +485,8 @@ function headerHTML() {
 <a class="account-link" href="/login.html" id="account-link">${icon("user")}<span class="account-label">Entrar</span></a>
 <a class="icon-button cart-link" href="/carrinho.html" data-open-cart aria-label="Carrinho">${icon("bag")}<span class="count" id="cart-count" data-cart-count hidden>0</span></a>
 </nav></div></header>
-<nav class="category-nav" aria-label="Categorias"><div class="container category-nav-inner"><a href="/catalogo.html">Todo o catálogo</a>${categories.map((c) => `<a href="${categoryLink(c)}">${c}</a>`).join("")}<a href="/ajuda.html" class="nav-help">Ajuda</a><a href="/admin.html" class="admin-link" hidden>Painel</a></div></nav>
-<dialog class="menu-dialog" id="menu-dialog" aria-label="Menu"><div class="menu-panel"><div class="menu-head"><span class="brand-words">VIOLET VOLTAGE<small>TURN UP YOUR TONE</small></span><button type="button" class="icon-button" data-close-dialog aria-label="Fechar menu">${icon("close")}</button></div><nav aria-label="Menu principal"><p class="menu-title">Categorias</p><a href="/catalogo.html">${icon("grid")}Todo o catálogo</a>${categories.map((c) => `<a href="${categoryLink(c)}">${icon("chevronRight", { size: 16 })}${c}</a>`).join("")}<p class="menu-title">Sua conta</p><a href="/minha-conta.html" class="menu-account">${icon("user")}Minha conta</a><a href="/favoritos.html">${icon("heart")}Favoritos</a><a href="/carrinho.html">${icon("bag")}Carrinho</a><p class="menu-title">Atendimento</p><a href="/ajuda.html">${icon("info")}Central de ajuda</a><a href="/admin.html" class="admin-link" hidden>${icon("grid")}Painel administrativo</a></nav>${themeSwitchHTML("theme-menu")}</div></dialog>
+<nav class="category-nav" aria-label="Categorias"><div class="container category-nav-inner"><a href="/catalogo.html">Todo o catálogo</a>${categories.map((c) => `<a href="${categoryLink(c)}">${c}</a>`).join("")}<a href="/setup.html" class="nav-setup">${icon("sparkle", { size: 16 })}Monte seu setup</a><a href="/ajuda.html" class="nav-help">Ajuda</a><a href="/admin.html" class="admin-link" hidden>Painel</a></div></nav>
+<dialog class="menu-dialog" id="menu-dialog" aria-label="Menu"><div class="menu-panel"><div class="menu-head"><span class="brand-words">VIOLET VOLTAGE<small>TURN UP YOUR TONE</small></span><button type="button" class="icon-button" data-close-dialog aria-label="Fechar menu">${icon("close")}</button></div><nav aria-label="Menu principal"><p class="menu-title">Categorias</p><a href="/catalogo.html">${icon("grid")}Todo o catálogo</a>${categories.map((c) => `<a href="${categoryLink(c)}">${icon("chevronRight", { size: 16 })}${c}</a>`).join("")}<a href="/setup.html">${icon("sparkle")}Monte seu setup</a><p class="menu-title">Sua conta</p><a href="/minha-conta.html" class="menu-account">${icon("user")}Minha conta</a><a href="/favoritos.html">${icon("heart")}Favoritos</a><a href="/carrinho.html">${icon("bag")}Carrinho</a><p class="menu-title">Atendimento</p><a href="/ajuda.html">${icon("info")}Central de ajuda</a><a href="/admin.html" class="admin-link" hidden>${icon("grid")}Painel administrativo</a></nav>${themeSwitchHTML("theme-menu")}</div></dialog>
 <dialog class="search-dialog" id="search-dialog" aria-label="Buscar"><form class="search-box" role="search" action="/catalogo.html"><label class="sr-only" for="dialog-q">Buscar equipamentos</label><span class="search-icon">${icon("search", { size: 18 })}</span><input id="dialog-q" name="q" type="search" placeholder="O que você procura?" autocomplete="off" maxlength="80" role="combobox" aria-expanded="false" aria-controls="dialog-suggestions" aria-autocomplete="list"><button type="button" class="icon-button" data-close-dialog aria-label="Fechar busca">${icon("close")}</button><div class="suggestions" id="dialog-suggestions" role="listbox" aria-label="Sugestões" hidden></div></form><div class="search-shortcuts"><p class="menu-title">Categorias</p><div class="chip-row">${categories.map((c) => `<a class="chip" href="${categoryLink(c)}">${c}</a>`).join("")}</div></div></dialog>`;
 }
 function footerHTML() {

@@ -1,3 +1,25 @@
+# Fase 2, etapa 15 — 10/11/2026
+
+- Testes novos em `tests/search-client.test.js`: distância de edição, correção
+  só quando o termo não acha nada e a correção acha, prefixos curtos preservados
+  e buscas recentes sem repetição, até cinco e com limpeza. Sitemap passa a
+  incluir `setup.html`.
+- No navegador (29 verificações): montador a partir da home, escolha única e
+  múltipla, total, parcelas e frete grátis no resumo, salto entre etapas, item
+  esgotado bloqueado, remoção pelo resumo, setup inteiro no carrinho, link
+  compartilhado que ignora esgotados e inexistentes, setup pronto personalizável;
+  "Compre junto" com total recalculado e só os itens marcados no carrinho;
+  correção no catálogo e opção de buscar o termo exato; "Você quis dizer" nas
+  sugestões; buscas recentes e limpeza; barra do setup no celular sem rolagem
+  horizontal.
+- Corrigido: sair e voltar rápido ao campo de busca fechava as sugestões recém
+  abertas.
+- Auditoria de acessibilidade com o montador, o "Compre junto" e as sugestões com
+  correção (claro e escuro, 360 e 1440 px), sem problemas; regressão completa das
+  etapas 6 a 14 sem falhas.
+
+---
+
 # Fase 2, etapa 14 — 10/11/2026
 
 - Testes novos em `tests/account.test.js`: validação do endereço (CEP, UF e

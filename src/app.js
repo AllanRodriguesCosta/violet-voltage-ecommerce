@@ -63,7 +63,7 @@ export function createApp(storage, config) {
     const base = origin(req);
     const products = (await storage.list("products")).filter((p) => p.ativo);
     const urls = [
-      ...["/", "/catalogo.html", "/ajuda.html", ...categories.map((c) => `/catalogo.html?categoria=${encodeURIComponent(c)}`)].map((path) => ({ loc: base + path })),
+      ...["/", "/catalogo.html", "/setup.html", "/ajuda.html", ...categories.map((c) => `/catalogo.html?categoria=${encodeURIComponent(c)}`)].map((path) => ({ loc: base + path })),
       ...products.map((p) => ({ loc: `${base}/produto.html?id=${encodeURIComponent(p.rowKey)}`, lastmod: p.updatedAt?.slice(0, 10) })),
     ];
     res

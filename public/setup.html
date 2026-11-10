@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Monte seu setup na Violet Voltage: escolha guitarra, amplificador, efeitos, cabos, correia e acessórios e veja o total com parcelas e frete grátis." />
+    <meta name="theme-color" content="#120b19" />
+    <meta property="og:site_name" content="Violet Voltage" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content="Monte seu setup | Violet Voltage" />
+    <meta property="og:description" content="Monte seu setup na Violet Voltage: escolha guitarra, amplificador, efeitos, cabos, correia e acessórios e veja o total com parcelas e frete grátis." />
+    <title>Monte seu setup | Violet Voltage</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <script src="/js/theme-init.js"></script>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/ui.css" />
+    <script type="module" src="/js/app.js"></script>
+    <link rel="modulepreload" href="/js/common.js" />
+    <link rel="modulepreload" href="/js/icons.js" />
+    <link rel="modulepreload" href="/js/theme.js" />
+    <link rel="modulepreload" href="/js/drawer.js" />
+    <link rel="modulepreload" href="/js/components.js" />
+    <link rel="modulepreload" href="/js/pricing.js" />
+    <link rel="modulepreload" href="/js/motion.js" />
+    <link rel="modulepreload" href="/js/search.js" />
+    <link rel="modulepreload" href="/js/alerts.js" />
+    <link rel="modulepreload" href="/js/pages/setup.js" />
+    <link rel="preload" href="/api/products" as="fetch" crossorigin />
+  </head>
+  <body>
+    <div id="header"></div>
+    <main id="main" tabindex="-1">
+      <div class="container page-wrap setup-page">
+        <nav class="breadcrumb" aria-label="Trilha de navegação"><a href="/">Início</a><span aria-hidden="true">/</span><span aria-current="page">Monte seu setup</span></nav>
+        <header class="page-head"><div><span class="eyebrow">Monte seu setup</span><h1 class="page-title">Do primeiro acorde ao palco.</h1><p class="lead">Escolha cada peça por etapa. O total, as parcelas e o frete grátis aparecem na hora, e você pode pular etapas e voltar quando quiser.</p></div></header>
+        <ol class="setup-steps" id="setup-steps" aria-label="Etapas do setup"></ol>
+        <div class="setup-layout">
+          <section class="setup-stage" id="setup-stage" aria-labelledby="stage-title"></section>
+          <aside class="panel setup-summary" id="setup-summary" aria-labelledby="summary-title"></aside>
+        </div>
+      </div>
+      <aside class="setup-bar" id="setup-bar" aria-label="Resumo do setup" hidden></aside>
+    </main>
+    <div id="footer"></div>
+  </body>
+</html>

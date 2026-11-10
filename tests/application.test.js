@@ -271,7 +271,9 @@ test("API: autenticação, administração, estoque, imagens e páginas", async 
     assert.match(robots, new RegExp(`Sitemap: ${base}/sitemap.xml`));
     const sitemap = await fetch(base + "/sitemap.xml");
     assert.match(sitemap.headers.get("content-type"), /xml/);
-    assert.match(await sitemap.text(), /<loc>http:\/\/127\.0\.0\.1:\d+\/catalogo\.html\?categoria=Guitarras<\/loc>/);
+    const sitemapXml = await sitemap.text();
+    assert.match(sitemapXml, /<loc>http:\/\/127\.0\.0\.1:\d+\/catalogo\.html\?categoria=Guitarras<\/loc>/);
+    assert.match(sitemapXml, /<loc>http:\/\/127\.0\.0\.1:\d+\/setup\.html<\/loc>/);
     assert.equal((await request("/inexistente")).status, 404);
   });
   await t.test(

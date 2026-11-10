@@ -31,6 +31,7 @@ const routes = {
   "/login.html": "auth",
   "/cadastro.html": "auth",
   "/ajuda.html": "help",
+  "/setup.html": "setup",
 };
 try {
   if (location.pathname === "/admin.html") {

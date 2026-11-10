@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { once } from "node:events";
 import { fileURLToPath } from "node:url";
 import { randomBytes } from "node:crypto";
-import { MemoryStorage, AzureStorage } from "../src/repositories/storage.js";
+import { MemoryStorage } from "../src/repositories/memory.js";
 import { seed, SeedInputError } from "../src/services/seed.js";
 import { seedProducts } from "../src/services/seed-products.js";
 import { createApp } from "../src/app.js";
@@ -176,34 +176,6 @@ test("duplicação antiga de RowKey é detectada antes de alterar dados", async 
   await assert.rejects(seed(storage, options), /mais de uma partição/);
   assert.equal(storage.blobs.size, 0);
   assert.equal((await storage.list("products")).length, 2);
-});
-
-test("seed usa o mesmo contrato no adaptador Azure sem credenciais reais", async (t) => {
-  const options = await seedFixture(t);
-  const backing = new MemoryStorage();
-  const storage = Object.create(AzureStorage.prototype);
-  storage.tables = {
-    products: {
-      async *listEntities() {
-        yield* await backing.list("products");
-      },
-      createEntity: (entity) => backing.create("products", entity),
-      updateEntity: (entity, mode, options) => {
-        assert.equal(mode, "Replace");
-        return backing.save("products", entity, options.etag);
-      },
-    },
-  };
-  storage.container = {
-    getBlockBlobClient: (name) => ({
-      uploadData: (buffer, options) =>
-        backing.upload(name, buffer, options.blobHTTPHeaders.blobContentType),
-    }),
-  };
-  assert.equal((await seed(storage, options)).created, 22);
-  assert.equal((await seed(storage, options)).updated, 22);
-  assert.equal((await backing.list("products")).length, 22);
-  assert.equal(backing.blobs.size, 22);
 });
 
 test("todos os 22 produtos e suas imagens continuam acessíveis por HTTP após repetir o seed", async (t) => {

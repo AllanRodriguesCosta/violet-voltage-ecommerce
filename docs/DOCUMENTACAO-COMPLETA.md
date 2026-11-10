@@ -36,9 +36,11 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/utils/startup-error.js` | Mensagem de falha na inicialização sem segredos |
 | `migrations/001-postgres.sql` | Estrutura idempotente do schema privado |
 | `public/js/common.js` | API cliente, sessão, formulários, carrinho, favoritos, avisos e layout comum |
-| `public/js/app.js` | Entrada: cabeçalho, minicarrinho, busca e carregamento da página |
+| `public/js/app.js` | Entrada: tema, cabeçalho, minicarrinho, busca e carregamento da página |
+| `public/js/theme-init.js`, `theme.js` | Tema aplicado antes da primeira pintura; seletores claro, escuro e automático |
+| `public/js/motion.js`, `quickview.js` | Voo até o carrinho, voltar ao topo, sombra do cabeçalho e visualização rápida |
 | `public/js/pages/` | Home, catálogo, favoritos, produto, carrinho, checkout, conta e acesso |
-| `public/js/components.js`, `drawer.js`, `search.js`, `icons.js` | Cards, minicarrinho, sugestões de busca e ícones SVG |
+| `public/js/components.js`, `drawer.js`, `search.js`, `icons.js` | Cards, minicarrinho e aviso de item adicionado, sugestões de busca e ícones SVG |
 | `public/js/admin.js` | Painel administrativo |
 | `public/fonts/` | Fonte Geist (licença OFL) servida pelo próprio site |
 | `public/css/` | Base visual, componentes e regras responsivas |
@@ -49,6 +51,18 @@ Os pontos de entrada ativos são `src/server.js` (servidor), `scripts/seed.js` e
 `scripts/migrate.js`.
 
 ## Capacidades existentes
+
+### Aparência e interação
+
+Tema claro, escuro ou automático (segue o sistema), escolhido no cabeçalho, no
+menu ou no rodapé e salvo no navegador. `theme-init.js` aplica a escolha antes
+das folhas de estilo para a página não piscar; a troca usa uma revelação
+circular quando o navegador suporta View Transitions. Cores vêm de tokens, e um
+teste confere o contraste AA dos pares usados nos dois temas. Ao adicionar um
+produto, a imagem segue até o ícone do carrinho e um aviso compacto, que pausa
+com cursor ou foco, mostra o item, o frete grátis e atalhos; o minicarrinho abre
+só quando pedido. Os cards têm visualização rápida em diálogo (folha inferior no
+celular). Animações respeitam `prefers-reduced-motion`.
 
 ### Catálogo e produto
 

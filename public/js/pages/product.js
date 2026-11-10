@@ -155,7 +155,7 @@ export default async function detail() {
     syncSteps();
     const feedback = container.querySelector(".cart-feedback");
     bindForm(form, (data) => {
-      if (addCart(p, Number(data.quantidade))) feedback.innerHTML = 'Equipamento adicionado. <a href="/carrinho.html">Ver meu carrinho</a>';
+      if (addCart(p, Number(data.quantidade), { source: container.querySelector(".detail-image") })) feedback.innerHTML = 'Equipamento adicionado. <a href="/carrinho.html">Ver meu carrinho</a>';
       else feedback.textContent = "Não foi possível adicionar. Confira a quantidade e a mensagem exibida.";
     });
     container.querySelector("[data-buy-now]").addEventListener("click", () => {
@@ -165,7 +165,7 @@ export default async function detail() {
     // Barra de compra fixa no celular quando o botão principal sai da tela.
     const bar = document.querySelector("#sticky-buy");
     bar.innerHTML = `<img src="${esc(image)}" alt="" width="44" height="44"><span><strong>${esc(p.modelo)}</strong><small>${money(p.priceCents)}</small></span><button type="button"${p.estoque ? "" : " disabled"}>${icon("bag", { size: 18 })}${p.estoque ? "Adicionar" : "Esgotado"}</button>`;
-    bar.querySelector("button").addEventListener("click", () => addCart(p, 1));
+    bar.querySelector("button").addEventListener("click", () => addCart(p, 1, { source: bar.querySelector("img") }));
     let ticking = false;
     const syncBar = () => {
       ticking = false;

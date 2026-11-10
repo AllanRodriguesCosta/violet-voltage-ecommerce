@@ -41,7 +41,7 @@ export function productCard(p, index = 0) {
   const name = `${p.marca} ${p.modelo}`;
   const wished = isWished(p.id);
   return `<article class="product-card${stock.key === "out" ? " is-out" : ""}" style="--i:${index % 12}">
-<div class="product-media"><img src="${esc(productImage(p))}" alt="" loading="lazy" decoding="async" width="480" height="480"><div class="product-badges"><span class="badge badge-category">${esc(p.categoria)}</span>${stock.key === "in" ? "" : `<span class="badge badge-${stock.key}">${stock.label}</span>`}</div><button type="button" class="wish-button" data-wish="${esc(p.id)}" aria-pressed="${wished}" aria-label="${esc(wishLabel(name, wished))}">${icon("heart")}</button></div>
+<div class="product-media"><img src="${esc(productImage(p))}" alt="" loading="lazy" decoding="async" width="480" height="480"><div class="product-badges"><span class="badge badge-category">${esc(p.categoria)}</span>${stock.key === "in" ? "" : `<span class="badge badge-${stock.key}">${stock.label}</span>`}</div><button type="button" class="wish-button" data-wish="${esc(p.id)}" aria-pressed="${wished}" aria-label="${esc(wishLabel(name, wished))}">${icon("heart")}</button><button type="button" class="quick-button" data-quick="${esc(p.id)}" aria-label="Visualização rápida de ${esc(name)}">${icon("eye", { size: 18 })}<span>Ver rápido</span></button></div>
 <div class="product-body"><span class="product-brand">${esc(p.marca)}</span><h3 class="product-title"><a href="${productUrl(p)}"><span class="sr-only">${esc(p.marca)} </span>${esc(p.modelo)}</a></h3><p class="product-price">${money(p.priceCents)}</p>${installmentText(p.priceCents) ? `<p class="product-installments">${installmentText(p.priceCents)}</p>` : ""}<button type="button" class="button add-button" data-add="${esc(p.id)}"${stock.key === "out" ? " disabled" : ""} aria-label="${stock.key === "out" ? `${esc(name)} esgotado` : `Adicionar ${esc(name)} ao carrinho`}">${icon(stock.key === "out" ? "clock" : "bag", { size: 18 })}<span>${stock.key === "out" ? "Esgotado" : "Adicionar"}</span></button></div>
 </article>`;
 }
@@ -94,10 +94,16 @@ export function bindCards(container, getProducts, { onWishChange } = {}) {
   container.addEventListener("click", (event) => {
     const add = event.target.closest("[data-add]");
     const wish = event.target.closest("[data-wish]");
+    const quick = event.target.closest("[data-quick]");
     if (add) {
       const product = getProducts().find((p) => p.id === add.dataset.add);
-      if (product) addCart(product);
+      const source = add.closest(".product-card")?.querySelector(".product-media img");
+      if (product) addCart(product, 1, { source });
     } else if (wish) handleWish(wish.dataset.wish, onWishChange);
+    else if (quick) {
+      const product = getProducts().find((p) => p.id === quick.dataset.quick);
+      if (product) import("./quickview.js").then(({ openQuickView }) => openQuickView(product, quick));
+    }
   });
 }
 // Carrossel horizontal com botões anterior/próximo.

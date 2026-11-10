@@ -1,8 +1,10 @@
 import { icon } from "./icons.js";
 import { freeShippingHTML } from "./components.js";
+import { flyToCart } from "./motion.js";
 import {
   getCart,
   setCart,
+  cartQuantity,
   catalogProducts,
   money,
   productImage,
@@ -107,6 +109,91 @@ export async function openCart(message = "") {
   await render();
   dialog.querySelector(".drawer-panel").focus?.();
 }
+// Aviso compacto de item adicionado: não bloqueia a página, some sozinho e pausa com foco ou cursor.
+const NOTICE_MS = 6000;
+let notice;
+let live;
+let noticeTimer;
+let noticeStarted = 0;
+let noticeLeft = NOTICE_MS;
+function hideNotice() {
+  clearTimeout(noticeTimer);
+  if (!notice || notice.hidden) return;
+  notice.classList.add("is-leaving");
+  setTimeout(() => {
+    notice.hidden = true;
+    notice.classList.remove("is-leaving");
+  }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 160);
+}
+function runNotice() {
+  clearTimeout(noticeTimer);
+  noticeStarted = Date.now();
+  noticeTimer = setTimeout(hideNotice, noticeLeft);
+  notice.classList.remove("is-paused");
+}
+function pauseNotice() {
+  if (notice.hidden || notice.classList.contains("is-paused")) return;
+  clearTimeout(noticeTimer);
+  noticeLeft = Math.max(1200, noticeLeft - (Date.now() - noticeStarted));
+  notice.classList.add("is-paused");
+}
+function ensureNotice() {
+  if (notice) return;
+  notice = document.createElement("section");
+  notice.className = "cart-notice";
+  notice.setAttribute("aria-labelledby", "cart-notice-title");
+  notice.hidden = true;
+  live = document.createElement("p");
+  live.className = "sr-only";
+  live.setAttribute("role", "status");
+  document.body.append(notice, live);
+  notice.addEventListener("click", (event) => {
+    if (event.target.closest("[data-notice-close]")) hideNotice();
+    else if (event.target.closest("[data-notice-cart]") && !event.metaKey && !event.ctrlKey) {
+      event.preventDefault();
+      hideNotice();
+      openCart();
+    }
+  });
+  notice.addEventListener("pointerenter", pauseNotice);
+  notice.addEventListener("pointerleave", () => !notice.contains(document.activeElement) && runNotice());
+  notice.addEventListener("focusin", pauseNotice);
+  notice.addEventListener("focusout", (event) => !notice.contains(event.relatedTarget) && runNotice());
+  notice.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    hideNotice();
+    document.querySelector(".site-header .cart-link")?.focus();
+  });
+}
+async function showNotice(product, quantity) {
+  ensureNotice();
+  const count = cartQuantity();
+  const name = `${product.marca} ${product.modelo}`;
+  live.textContent = `${name} adicionado ao carrinho. ${count} ${count === 1 ? "item" : "itens"} no carrinho.`;
+  const header = document.querySelector(".site-header");
+  const cartLink = document.querySelector(".site-header .cart-link");
+  if (header && cartLink && matchMedia("(min-width: 900px)").matches) {
+    notice.style.top = `${Math.max(0, header.getBoundingClientRect().bottom) + 8}px`;
+    notice.style.right = `${Math.max(12, innerWidth - cartLink.getBoundingClientRect().right - 8)}px`;
+  } else notice.removeAttribute("style");
+  notice.innerHTML = `<div class="cart-notice-head"><span class="cart-notice-check">${icon("check", { size: 16 })}</span><h2 id="cart-notice-title">Adicionado ao carrinho</h2><button type="button" class="icon-button" data-notice-close aria-label="Fechar aviso">${icon("close", { size: 18 })}</button></div>
+<div class="cart-notice-item"><img src="${esc(productImage(product))}" alt="" width="56" height="56"><div><span class="product-brand">${esc(product.marca)}</span><strong>${esc(product.modelo)}</strong><span class="small muted">${quantity} × ${money(product.priceCents)}</span></div></div>
+<div class="cart-notice-ship"></div>
+<div class="cart-notice-actions"><a class="button secondary" href="/carrinho.html" data-notice-cart>Ver carrinho (${count})</a><a class="button" href="/checkout.html">Finalizar compra</a></div><span class="cart-notice-timer" aria-hidden="true"></span>`;
+  notice.style.setProperty("--notice-ms", `${NOTICE_MS}ms`);
+  notice.hidden = false;
+  notice.classList.remove("is-paused", "is-leaving");
+  noticeLeft = NOTICE_MS;
+  runNotice();
+  try {
+    const products = await catalogProducts();
+    const subtotal = getCart().reduce((sum, item) => sum + (products.find((p) => p.id === item.id)?.priceCents || 0) * item.quantidade, 0);
+    notice.querySelector(".cart-notice-ship").innerHTML = freeShippingHTML(subtotal);
+  } catch {
+    // O aviso continua útil sem o progresso de frete.
+  }
+}
+
 export function initDrawer() {
   ensure();
   document.querySelectorAll("[data-open-cart]").forEach((link) =>
@@ -116,12 +203,13 @@ export function initDrawer() {
       openCart();
     }),
   );
-  document.addEventListener("vv:cart-added", (event) => {
+  document.addEventListener("vv:cart-added", async (event) => {
+    const { product, quantity = 1, source } = event.detail;
     if (location.pathname === "/carrinho.html") {
       toast("Produto adicionado ao carrinho.", { type: "success" });
       return;
     }
-    const p = event.detail.product;
-    openCart(`${p.marca} ${p.modelo} foi adicionado ao carrinho.`);
+    await flyToCart(source);
+    showNotice(product, quantity);
   });
 }

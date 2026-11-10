@@ -2,6 +2,8 @@ import { shell, showError } from "./common.js";
 import { icon } from "./icons.js";
 import { initDrawer } from "./drawer.js";
 import { initSearch } from "./search.js";
+import { initTheme } from "./theme.js";
+import { initMotion } from "./motion.js";
 
 document.documentElement.classList.add("js");
 if (!matchMedia("(prefers-reduced-motion: reduce)").matches)
@@ -11,6 +13,8 @@ const session = shell();
 document.querySelectorAll("[data-icon]").forEach((el) => {
   el.outerHTML = icon(el.dataset.icon, { size: Number(el.dataset.size) || 20 });
 });
+initTheme();
+initMotion();
 initDrawer();
 initSearch();
 const routes = {

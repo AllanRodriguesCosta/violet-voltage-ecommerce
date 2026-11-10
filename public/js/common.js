@@ -1,4 +1,5 @@
 import { icon } from "./icons.js";
+import { themeSwitchHTML } from "./theme.js";
 
 export const categories = [
   "Guitarras",
@@ -174,7 +175,7 @@ function updateCounts() {
     el.hidden = wishes === 0;
   });
 }
-export function addCart(product, quantity = 1, { notify = true } = {}) {
+export function addCart(product, quantity = 1, { notify = true, source } = {}) {
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
     toast("Informe uma quantidade inteira entre 1 e 99.", { type: "error" });
     return false;
@@ -196,7 +197,7 @@ export function addCart(product, quantity = 1, { notify = true } = {}) {
     );
     return false;
   }
-  if (notify) emit("vv:cart-added", { product, quantity });
+  if (notify) emit("vv:cart-added", { product, quantity, source });
   return true;
 }
 
@@ -232,7 +233,22 @@ export function pushRecent(id) {
   }
 }
 
+// Aviso com tempo visível; pausa enquanto o cursor ou o foco estão nele.
 let timer;
+let toastLeft = 0;
+let toastStarted = 0;
+function pauseToast(el) {
+  if (el.hidden || el.classList.contains("is-paused")) return;
+  clearTimeout(timer);
+  toastLeft = Math.max(1500, toastLeft - (Date.now() - toastStarted));
+  el.classList.add("is-paused");
+}
+function resumeToast(el) {
+  if (el.hidden || !el.classList.contains("is-paused")) return;
+  el.classList.remove("is-paused");
+  toastStarted = Date.now();
+  timer = setTimeout(() => (el.hidden = true), toastLeft);
+}
 export function toast(message, { type = "info", action } = {}) {
   let el = document.querySelector("#toast");
   if (!el) {
@@ -240,7 +256,12 @@ export function toast(message, { type = "info", action } = {}) {
     el.id = "toast";
     el.setAttribute("role", "status");
     document.body.append(el);
+    el.addEventListener("pointerenter", () => pauseToast(el));
+    el.addEventListener("pointerleave", () => resumeToast(el));
+    el.addEventListener("focusin", () => pauseToast(el));
+    el.addEventListener("focusout", () => resumeToast(el));
   }
+  const duration = action ? 7000 : 4500;
   el.className = `toast toast-${type}`;
   el.textContent = message;
   if (typeof el.insertAdjacentHTML === "function") {
@@ -257,10 +278,13 @@ export function toast(message, { type = "info", action } = {}) {
       });
       el.append(button);
     }
+    el.insertAdjacentHTML("beforeend", `<span class="toast-timer" aria-hidden="true" style="--toast-ms:${duration}ms"></span>`);
   }
   el.hidden = false;
   clearTimeout(timer);
-  timer = setTimeout(() => (el.hidden = true), action ? 7000 : 4500);
+  toastLeft = duration;
+  toastStarted = Date.now();
+  timer = setTimeout(() => (el.hidden = true), duration);
 }
 export function showError(container, error) {
   container.querySelectorAll(".field-error,.error").forEach((e) => e.remove());
@@ -321,12 +345,13 @@ function headerHTML() {
 <form class="header-search search-box" id="header-search" role="search" action="/catalogo.html"><label class="sr-only" for="header-q">Buscar equipamentos</label><span class="search-icon">${icon("search", { size: 18 })}</span><input id="header-q" name="q" type="search" placeholder="Buscar guitarras, pedais, marcas…" autocomplete="off" maxlength="80" role="combobox" aria-expanded="false" aria-controls="header-suggestions" aria-autocomplete="list"><div class="suggestions" id="header-suggestions" role="listbox" aria-label="Sugestões" hidden></div></form>
 <nav class="header-actions" aria-label="Atalhos da loja">
 <button type="button" class="icon-button search-trigger" data-open-search aria-haspopup="dialog" aria-label="Buscar">${icon("search")}</button>
+<button type="button" class="icon-button theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Tema escuro">${icon("moon")}</button>
 <a class="icon-button wish-link" href="/favoritos.html" aria-label="Favoritos">${icon("heart")}<span class="count" data-wishlist-count hidden>0</span></a>
 <a class="account-link" href="/login.html" id="account-link">${icon("user")}<span class="account-label">Entrar</span></a>
 <a class="icon-button cart-link" href="/carrinho.html" data-open-cart aria-label="Carrinho">${icon("bag")}<span class="count" id="cart-count" data-cart-count hidden>0</span></a>
 </nav></div></header>
 <nav class="category-nav" aria-label="Categorias"><div class="container category-nav-inner"><a href="/catalogo.html">Todo o catálogo</a>${categories.map((c) => `<a href="${categoryLink(c)}">${c}</a>`).join("")}<a href="/ajuda.html" class="nav-help">Ajuda</a><a href="/admin.html" class="admin-link" hidden>Painel</a></div></nav>
-<dialog class="menu-dialog" id="menu-dialog" aria-label="Menu"><div class="menu-panel"><div class="menu-head"><span class="brand-words">VIOLET VOLTAGE<small>TURN UP YOUR TONE</small></span><button type="button" class="icon-button" data-close-dialog aria-label="Fechar menu">${icon("close")}</button></div><nav aria-label="Menu principal"><p class="menu-title">Categorias</p><a href="/catalogo.html">${icon("grid")}Todo o catálogo</a>${categories.map((c) => `<a href="${categoryLink(c)}">${icon("chevronRight", { size: 16 })}${c}</a>`).join("")}<p class="menu-title">Sua conta</p><a href="/minha-conta.html" class="menu-account">${icon("user")}Minha conta</a><a href="/favoritos.html">${icon("heart")}Favoritos</a><a href="/carrinho.html">${icon("bag")}Carrinho</a><p class="menu-title">Atendimento</p><a href="/ajuda.html">${icon("info")}Central de ajuda</a><a href="/admin.html" class="admin-link" hidden>${icon("grid")}Painel administrativo</a></nav></div></dialog>
+<dialog class="menu-dialog" id="menu-dialog" aria-label="Menu"><div class="menu-panel"><div class="menu-head"><span class="brand-words">VIOLET VOLTAGE<small>TURN UP YOUR TONE</small></span><button type="button" class="icon-button" data-close-dialog aria-label="Fechar menu">${icon("close")}</button></div><nav aria-label="Menu principal"><p class="menu-title">Categorias</p><a href="/catalogo.html">${icon("grid")}Todo o catálogo</a>${categories.map((c) => `<a href="${categoryLink(c)}">${icon("chevronRight", { size: 16 })}${c}</a>`).join("")}<p class="menu-title">Sua conta</p><a href="/minha-conta.html" class="menu-account">${icon("user")}Minha conta</a><a href="/favoritos.html">${icon("heart")}Favoritos</a><a href="/carrinho.html">${icon("bag")}Carrinho</a><p class="menu-title">Atendimento</p><a href="/ajuda.html">${icon("info")}Central de ajuda</a><a href="/admin.html" class="admin-link" hidden>${icon("grid")}Painel administrativo</a></nav>${themeSwitchHTML("theme-menu")}</div></dialog>
 <dialog class="search-dialog" id="search-dialog" aria-label="Buscar"><form class="search-box" role="search" action="/catalogo.html"><label class="sr-only" for="dialog-q">Buscar equipamentos</label><span class="search-icon">${icon("search", { size: 18 })}</span><input id="dialog-q" name="q" type="search" placeholder="O que você procura?" autocomplete="off" maxlength="80" role="combobox" aria-expanded="false" aria-controls="dialog-suggestions" aria-autocomplete="list"><button type="button" class="icon-button" data-close-dialog aria-label="Fechar busca">${icon("close")}</button><div class="suggestions" id="dialog-suggestions" role="listbox" aria-label="Sugestões" hidden></div></form><div class="search-shortcuts"><p class="menu-title">Categorias</p><div class="chip-row">${categories.map((c) => `<a class="chip" href="${categoryLink(c)}">${c}</a>`).join("")}</div></div></dialog>`;
 }
 function footerHTML() {
@@ -336,7 +361,7 @@ function footerHTML() {
 <nav aria-label="Sua conta"><h2>Sua conta</h2><a href="/minha-conta.html">Minha conta</a><a href="/minha-conta.html#pedidos">Meus pedidos</a><a href="/favoritos.html">Favoritos</a><a href="/carrinho.html">Carrinho</a></nav>
 <nav aria-label="Atendimento"><h2>Atendimento</h2><a href="/ajuda.html">Central de ajuda</a><a href="/ajuda.html#entregas">Entregas e prazos</a><a href="/ajuda.html#pagamentos">Pagamentos e cupons</a><a href="/ajuda.html#trocas">Trocas e devoluções</a></nav>
 <div><h2>Formas de pagamento</h2><ul class="payment-list"><li>${icon("pix", { size: 18 })}Pix</li><li>${icon("card", { size: 18 })}Cartão de crédito</li><li>${icon("barcode", { size: 18 })}Boleto</li></ul></div>
-</div><div class="container footer-bottom"><p>Projeto acadêmico · © ${new Date().getFullYear()} Violet Voltage</p><p>Feito com Node.js, Express e PostgreSQL.</p></div></footer>`;
+</div><div class="container footer-bottom"><p>Projeto acadêmico · © ${new Date().getFullYear()} Violet Voltage</p>${themeSwitchHTML("theme-footer", { compact: true })}<p>Feito com Node.js, Express e PostgreSQL.</p></div></footer>`;
 }
 function bottomNavHTML() {
   const items = [

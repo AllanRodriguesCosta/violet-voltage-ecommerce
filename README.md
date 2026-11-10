@@ -76,7 +76,7 @@ Senha administrativa: 12 a 72 caracteres e até 72 bytes UTF-8. Bootstrap reapli
 
 ## Funcionalidades e API
 
-Home de descoberta, catálogo com busca instantânea e filtros com contagens, sugestões de busca, favoritos, minicarrinho, cadastro/login/perfil, histórico próprio, checkout demonstrativo e painel com produtos, imagens, clientes, pedidos e indicadores. Upload PNG/JPEG/WebP até 5 MB. Fretes em centavos: padrão 2500 (grátis a partir de 99900 de subtotal), expresso 4500, retirada zero. Cartão em até 10x sem juros, com parcela mínima de 5000. Cupons de teste: `VOLTAGE10` (10% nos produtos, até R$ 500), `PRIMEIROACORDE` (R$ 30 a partir de R$ 200) e `FRETEVOLT` (frete padrão ou expresso grátis). Regras em `src/services/pricing.js`.
+Home de descoberta, catálogo com busca instantânea e filtros com contagens, sugestões de busca, visualização rápida, favoritos, minicarrinho com aviso de item adicionado, tema claro/escuro/automático, cadastro/login/perfil, histórico próprio, checkout demonstrativo e painel com produtos, imagens, clientes, pedidos e indicadores. Upload PNG/JPEG/WebP até 5 MB. Fretes em centavos: padrão 2500 (grátis a partir de 99900 de subtotal), expresso 4500, retirada zero. Cartão em até 10x sem juros, com parcela mínima de 5000. Cupons de teste: `VOLTAGE10` (10% nos produtos, até R$ 500), `PRIMEIROACORDE` (R$ 30 a partir de R$ 200) e `FRETEVOLT` (frete padrão ou expresso grátis). Regras em `src/services/pricing.js`.
 
 Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..." } }`, campo `field` opcional.
 

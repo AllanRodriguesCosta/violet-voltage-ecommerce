@@ -1,3 +1,22 @@
+# Fase 2, etapa 12 — 10/11/2026
+
+- Testes novos em `tests/theme.test.js`: contraste AA (4,5:1 para texto, 3:1 para
+  o anel de foco) dos pares de tokens nos temas claro e escuro e presença de
+  `theme-init.js` antes do CSS em todas as páginas.
+- No navegador (Chromium, 360, 390, 768 e 1440 px, temas claro e escuro): tema
+  automático segue o sistema, botão do cabeçalho alterna e persiste entre
+  páginas, rodapé volta ao automático, menu móvel aplica o tema e o tema salvo
+  já vale antes do `app.js` carregar; visualização rápida com estoque baixo e
+  quantidade limitada; voo até o carrinho, aviso com o item, contagem e anúncio
+  para leitores de tela, pausa com o cursor e retomada; "Ver carrinho" abre o
+  minicarrinho; aviso acima da navegação inferior no celular; voltar ao topo;
+  sombra do cabeçalho; avisos com barra de tempo. Regressão completa das etapas
+  6 a 11 atualizada para o aviso e sem erros novos de console ou CSP.
+- Corrigido: o cabeçalho não ficava fixo ao rolar porque o `position: sticky`
+  estava limitado ao bloco `#header`.
+
+---
+
 # Fase 2, etapa 11 — 10/11/2026
 
 - Teste PostgreSQL novo (PGlite, no CI): consultas por chave e índices únicos,

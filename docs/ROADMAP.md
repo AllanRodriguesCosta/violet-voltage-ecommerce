@@ -74,28 +74,30 @@ preço no servidor e ciclo de vida dos pedidos.
 
 ### 6. Sistema visual e navegação
 
-- [ ] Fonte Geist (licença OFL) servida pelo próprio site; tokens de cor, espaço,
+- [x] Fonte Geist (licença OFL) servida pelo próprio site; tokens de cor, espaço,
       raio, sombra e movimento.
-- [ ] Cabeçalho fixo com busca, favoritos, conta e carrinho; atalhos de categorias.
-- [ ] Navegação inferior no celular: início, buscar, favoritos, carrinho e conta.
-- [ ] Minicarrinho lateral com quantidades, remoção, subtotal e progresso para
-      frete grátis.
-- [ ] Avisos por tipo (sucesso, erro, informação) com ação, como "Desfazer" e
-      "Ver carrinho".
-- [ ] Esqueletos de carregamento e estados padronizados de vazio e erro.
-- [ ] Transições entre páginas e animações de entrada, desligadas com redução de
+- [x] Cabeçalho fixo com busca, favoritos, conta e carrinho; atalhos de categorias.
+- [x] Navegação inferior no celular: início, catálogo, favoritos, carrinho e conta.
+- [x] Minicarrinho lateral com quantidades, remoção com "Desfazer" e subtotal.
+- [x] Avisos por tipo (sucesso, erro, informação) com ação, como "Desfazer" e
+      "Ver favoritos".
+- [x] Esqueletos de carregamento e estados de vazio e erro nas vitrines (home,
+      catálogo e favoritos).
+- [x] Transições entre páginas e animações de entrada, desligadas com redução de
       movimento.
+- [x] Sessão consultada por `GET /api/auth/session`: visitante recebe `null`, sem
+      erro 401 no console.
 
 ### 7. Descoberta e catálogo
 
-- [ ] Home de descoberta: categorias com contagem, destaques em carrossel, setups
+- [x] Home de descoberta: categorias com contagem, destaques em carrossel, setups
       prontos e vistos recentemente.
-- [ ] Página de resultados própria, com busca fixa no topo, filtros de categoria,
-      marca, faixa de preço e disponibilidade, ordenação e URL compartilhável.
-- [ ] Sugestões de busca instantâneas, sem diferenciar acentos.
-- [ ] Cards ricos: parcelamento, últimas unidades, esgotado, favoritar e
-      adicionar rápido.
-- [ ] Lista de desejos no celular e no desktop.
+- [x] Página de resultados própria (`catalogo.html`), com busca fixa no topo,
+      filtros de categoria, marca, faixa de preço e disponibilidade com contagens,
+      ordenação e URL compartilhável. Links antigos `/?categoria=` redirecionam.
+- [x] Sugestões de busca instantâneas, sem diferenciar acentos, com teclado.
+- [x] Cards ricos: últimas unidades, esgotado, favoritar e adicionar rápido.
+- [x] Lista de desejos (`favoritos.html`) no celular e no desktop.
 
 ### 8. Página de produto
 
@@ -110,6 +112,8 @@ preço no servidor e ciclo de vida dos pedidos.
       cupons e até 10x sem juros (parcela mínima de R$ 50).
 - [ ] Cotação `POST /api/checkout/quote` usada pelo carrinho e pelo checkout, com
       testes.
+- [ ] Parcelamento nos cards e no produto; progresso para frete grátis no
+      minicarrinho e no carrinho.
 - [ ] Carrinho com seletor de quantidade, desfazer remoção, salvar para depois e
       sugestões.
 - [ ] Checkout em seções (entrega, pagamento e cupom), resumo fixo e confirmação

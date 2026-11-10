@@ -2,152 +2,86 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="Violet Voltage: guitarras e equipamentos. Turn Up Your Tone. Guitarras, pedais, amplificadores e acessórios."
-    />
-    <title>Equipamentos para o seu próximo som | Violet Voltage</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone." />
+    <meta name="theme-color" content="#120b19" />
+    <title>Violet Voltage | Guitarras, pedais e amplificadores</title>
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/ui.css" />
     <script type="module" src="/js/app.js"></script>
   </head>
-  <body>
+  <body class="page-home">
     <div id="header"></div>
-    <main id="main">
+    <main id="main" tabindex="-1">
       <section class="hero">
         <div class="container hero-inner">
           <div class="hero-copy">
             <span class="eyebrow">Volume na sua identidade.</span>
             <h1>Encontre a sua<br /><em>frequência.</em></h1>
-            <p>
-              Da primeira nota ao próximo palco. Encontre o equipamento que dá
-              voz ao seu estilo.
-            </p>
-            <div class="hero-actions"><a class="button" href="#catalogo"
-              >Explore os equipamentos <span aria-hidden="true">↗</span></a
-            ><a class="hero-link" href="#essencia">Conheça a Violet Voltage →</a></div>
-            <div class="hero-foot">GUITARRAS / EFEITOS / AMPLIFICADORES</div>
+            <p>Da primeira nota ao próximo palco. Encontre o equipamento que dá voz ao seu estilo.</p>
+            <div class="hero-actions">
+              <a class="button button-glow" href="/catalogo.html">Explorar equipamentos <span data-icon="arrowRight"></span></a>
+              <a class="hero-link" href="#setups">Monte seu setup</a>
+            </div>
+            <p class="hero-foot">GUITARRAS / EFEITOS / AMPLIFICADORES</p>
           </div>
           <div class="hero-stage">
-          <span class="stage-label" aria-hidden="true">VV / SOUND EXPLORATION</span>
-          <img
-            class="hero-art"
-            src="/assets/hero.svg"
-            alt="Ilustração original de uma guitarra violeta"
-          />
-          <span class="stage-caption" aria-hidden="true">Turn up<br /><strong>your tone.</strong></span>
+            <span class="stage-label" aria-hidden="true">VV / SOUND EXPLORATION</span>
+            <img class="hero-art" src="/assets/hero.svg" alt="Ilustração original de uma guitarra violeta" width="640" height="580" fetchpriority="high" />
+            <span class="stage-caption" aria-hidden="true">Turn up<br /><strong>your tone.</strong></span>
           </div>
         </div>
       </section>
-      <section class="benefits" aria-label="Informações da loja">
-        <div class="container benefit-grid">
-          <div class="benefit">
-            <div class="benefit-icon" aria-hidden="true">◇</div>
-            <div>
-              <b>Seu setup, sua identidade</b
-              ><span>Equipamentos para cada estilo</span>
-            </div>
+      <section class="perks" aria-label="Vantagens da loja">
+        <ul class="container perk-grid">
+          <li><span class="perk-icon"><span data-icon="store" data-size="22"></span></span><span><strong>Retirada na loja</strong><small>Sem custo de frete</small></span></li>
+          <li><span class="perk-icon"><span data-icon="truck" data-size="22"></span></span><span><strong>Entrega expressa</strong><small>Em 1 a 3 dias úteis</small></span></li>
+          <li><span class="perk-icon"><span data-icon="card" data-size="22"></span></span><span><strong>Pix, cartão ou boleto</strong><small>Escolha no checkout</small></span></li>
+          <li><span class="perk-icon"><span data-icon="refresh" data-size="22"></span></span><span><strong>Troca em até 7 dias</strong><small>Após o recebimento</small></span></li>
+        </ul>
+      </section>
+      <section class="section container" id="categorias" aria-labelledby="categories-title">
+        <div class="section-head">
+          <div><span class="eyebrow">Explore</span><h2 id="categories-title">Escolha por categoria</h2></div>
+          <a class="text-link" href="/catalogo.html">Ver todo o catálogo <span data-icon="arrowRight"></span></a>
+        </div>
+        <div class="category-grid" id="category-grid"><div class="category-tile skeleton"></div><div class="category-tile skeleton"></div><div class="category-tile skeleton"></div></div>
+      </section>
+      <section class="section container" id="destaques" aria-labelledby="highlights-title">
+        <div class="section-head">
+          <div><span class="eyebrow">Seleção da casa</span><h2 id="highlights-title">Destaques do palco</h2></div>
+          <div class="carousel-controls"><button type="button" class="icon-button" data-prev aria-label="Destaques anteriores"><span data-icon="chevronLeft"></span></button><button type="button" class="icon-button" data-next aria-label="Próximos destaques"><span data-icon="chevronRight"></span></button></div>
+        </div>
+        <div class="carousel" id="highlights" role="region" aria-label="Destaques" tabindex="0"></div>
+      </section>
+      <section class="setups" id="setups" aria-labelledby="setups-title">
+        <div class="container">
+          <div class="section-head">
+            <div><span class="eyebrow">Monte seu setup</span><h2 id="setups-title">Combinações prontas para tocar</h2><p>Selecionamos itens que conversam entre si. Adicione tudo de uma vez e ajuste no carrinho.</p></div>
           </div>
-          <div class="benefit">
-            <div class="benefit-icon" aria-hidden="true">↗</div>
-            <div>
-              <b>Do estúdio ao palco</b
-              ><span>Explore novas possibilidades sonoras</span>
-            </div>
-          </div>
-          <div class="benefit">
-            <div class="benefit-icon" aria-hidden="true">ϟ</div>
-            <div>
-              <b>Experimente a jornada</b
-              ><span>Encontre seu próximo equipamento</span>
-            </div>
-          </div>
+          <div class="setup-grid" id="setup-grid"></div>
         </div>
       </section>
-      <section class="section container" id="catalogo">
-        <div class="section-heading">
-          <div>
-            <span class="eyebrow">Encontre o seu próximo som</span>
-            <h2>O palco é seu.</h2>
-            <p>Explore nossa seleção e monte seu setup.</p>
-          </div>
+      <section class="section container" id="recentes" aria-labelledby="recent-title" hidden>
+        <div class="section-head">
+          <div><span class="eyebrow">Continue de onde parou</span><h2 id="recent-title">Vistos recentemente</h2></div>
+          <div class="carousel-controls"><button type="button" class="icon-button" data-prev aria-label="Itens anteriores"><span data-icon="chevronLeft"></span></button><button type="button" class="icon-button" data-next aria-label="Próximos itens"><span data-icon="chevronRight"></span></button></div>
         </div>
-        <div class="chips" id="categories" aria-label="Categorias"></div>
-        <div class="catalog-layout">
-          <aside class="filters">
-            <h3>Refine sua busca</h3>
-            <button type="button" id="filters-toggle" class="secondary" aria-controls="filters" aria-expanded="true" hidden>Ocultar filtros</button>
-            <form id="filters">
-              <div class="field">
-                <label for="q">Buscar equipamento</label
-                ><input
-                  id="q"
-                  name="q"
-                  type="search"
-                  placeholder="O que você procura?"
-                />
-              </div>
-              <div class="field">
-                <label for="marca">Marca</label
-                ><input
-                  id="marca"
-                  name="marca"
-                  type="text"
-                  placeholder="Todas as marcas"
-                />
-              </div>
-              <div class="field">
-                <label for="modelo">Modelo</label
-                ><input
-                  id="modelo"
-                  name="modelo"
-                  type="text"
-                  placeholder="Nome do modelo"
-                />
-              </div>
-              <div class="field">
-                <label for="min">Preço mínimo (R$)</label
-                ><input
-                  id="min"
-                  name="min"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="0,00"
-                />
-              </div>
-              <div class="field">
-                <label for="max">Preço máximo (R$)</label
-                ><input
-                  id="max"
-                  name="max"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="Sem limite"
-                />
-              </div>
-              <button type="submit" class="button">Aplicar filtros</button
-              ><button type="button" class="text-button" id="clear-filters">
-                Limpar filtros
-              </button>
-            </form>
-          </aside>
-          <div>
-            <div class="field"><label for="catalog-sort">Ordenar equipamentos</label><select id="catalog-sort"><option value="default">Ordem do catálogo</option><option value="price-asc">Menor preço</option><option value="price-desc">Maior preço</option><option value="name">Nome: A–Z</option></select></div>
-            <p class="catalog-meta" id="catalog-count" aria-live="polite">
-              Carregando equipamentos…
-            </p>
-            <div class="product-grid" id="products">
-              <div class="loading">Preparando seu próximo som…</div>
-            </div>
-          </div>
-        </div>
+        <div class="carousel" role="region" aria-label="Vistos recentemente" tabindex="0"></div>
       </section>
       <section class="brand-story container" id="essencia" aria-labelledby="story-title">
-        <div><span class="eyebrow">A essência Violet Voltage</span><h2 id="story-title">Técnica encontra<br />personalidade.</h2></div>
-        <div><p>Um riff que fica na cabeça. Uma textura diferente. A vontade de tocar mais uma vez. Seu equipamento faz parte dessa descoberta.</p><p>Explore guitarras, amplificadores e efeitos para compor um setup com a sua identidade.</p><a class="text-button" href="#catalogo">Encontre seu próximo som <span aria-hidden="true">↗</span></a></div>
+        <div>
+          <span class="eyebrow">A essência Violet Voltage</span>
+          <h2 id="story-title">Técnica encontra<br />personalidade.</h2>
+          <div class="story-stats" id="story-stats"></div>
+        </div>
+        <div>
+          <p>Um riff que fica na cabeça. Uma textura diferente. A vontade de tocar mais uma vez. Seu equipamento faz parte dessa descoberta.</p>
+          <p>Explore guitarras, amplificadores e efeitos para compor um setup com a sua identidade.</p>
+          <a class="text-link" href="/catalogo.html">Encontre seu próximo som <span data-icon="arrowRight"></span></a>
+        </div>
       </section>
     </main>
     <div id="footer"></div>

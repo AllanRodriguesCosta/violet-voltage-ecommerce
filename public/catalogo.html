@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Catálogo Violet Voltage: filtre guitarras, pedais, amplificadores, cabos, correias e acessórios por marca, preço e disponibilidade." />
+    <meta name="theme-color" content="#120b19" />
+    <title>Catálogo | Violet Voltage</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/ui.css" />
+    <script type="module" src="/js/app.js"></script>
+  </head>
+  <body>
+    <div id="header"></div>
+    <main id="main" tabindex="-1">
+      <div class="container page-wrap catalog-page">
+        <nav class="breadcrumb" aria-label="Trilha de navegação"><a href="/">Início</a><span aria-hidden="true">/</span><span id="crumb-current" aria-current="page">Catálogo</span></nav>
+        <header class="catalog-head">
+          <span class="eyebrow">Catálogo</span>
+          <h1 id="catalog-title">Todos os equipamentos</h1>
+          <p class="lead" id="catalog-lead">Guitarras, efeitos, amplificadores e acessórios em um só lugar.</p>
+        </header>
+        <div class="catalog-toolbar" id="busca">
+          <form class="catalog-search" id="catalog-search" role="search">
+            <label class="sr-only" for="catalog-q">Buscar no catálogo</label>
+            <span class="search-icon" data-icon="search"></span>
+            <input id="catalog-q" name="q" type="search" placeholder="Buscar por modelo, marca ou categoria" maxlength="80" autocomplete="off" enterkeyhint="search" />
+            <button type="button" class="icon-button" id="catalog-q-clear" aria-label="Limpar busca" hidden><span data-icon="close"></span></button>
+          </form>
+          <button type="button" class="button secondary filters-trigger" id="filters-open" aria-controls="filters-panel" aria-expanded="false"><span data-icon="filter"></span>Filtros <span class="count" id="filters-count" hidden></span></button>
+          <div class="sort-field">
+            <label for="catalog-sort">Ordenar</label>
+            <select id="catalog-sort"><option value="default">Relevância</option><option value="price-asc">Menor preço</option><option value="price-desc">Maior preço</option><option value="name">Nome: A–Z</option></select>
+          </div>
+        </div>
+        <div class="applied-filters" id="applied-filters" aria-label="Filtros aplicados"></div>
+        <div class="catalog-layout">
+          <aside class="filters-panel" id="filters-panel" aria-labelledby="filters-title">
+            <div class="filters-head"><h2 id="filters-title">Filtrar</h2><button type="button" class="icon-button" id="filters-close" aria-label="Fechar filtros"><span data-icon="close"></span></button></div>
+            <form id="filters" class="filters-form">
+              <fieldset><legend>Categoria</legend><div class="facet-list" id="facet-category"></div></fieldset>
+              <fieldset><legend>Marca</legend><div class="facet-list" id="facet-brand"></div></fieldset>
+              <fieldset>
+                <legend>Preço</legend>
+                <div class="price-range">
+                  <div class="field"><label for="min">Mínimo (R$)</label><input id="min" name="min" type="number" min="0" max="9999999" step="1" inputmode="numeric" placeholder="0" /></div>
+                  <div class="field"><label for="max">Máximo (R$)</label><input id="max" name="max" type="number" min="0" max="9999999" step="1" inputmode="numeric" placeholder="Sem limite" aria-describedby="price-error" /></div>
+                </div>
+                <p class="field-error" id="price-error" role="alert" hidden></p>
+                <div class="chip-row" id="price-presets"></div>
+              </fieldset>
+              <fieldset><legend>Disponibilidade</legend><label class="check"><input type="checkbox" name="estoque" value="1" /><span>Somente em estoque</span></label></fieldset>
+            </form>
+            <div class="filters-foot"><button type="button" class="button secondary" id="clear-filters">Limpar filtros</button><button type="button" class="button" id="filters-apply">Ver resultados</button></div>
+          </aside>
+          <section class="results" aria-label="Resultados">
+            <p class="catalog-meta" id="catalog-count" aria-live="polite">Carregando equipamentos…</p>
+            <div class="product-grid" id="products"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+    <div id="footer"></div>
+  </body>
+</html>

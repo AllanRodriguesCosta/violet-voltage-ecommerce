@@ -1,3 +1,18 @@
+# Fase 2, etapas 6 e 7 — 10/11/2026
+
+- Revisão em Chromium nas larguras 360, 768 e 1440 px: home, catálogo,
+  catálogo filtrado, produto, favoritos, carrinho, login, cadastro e 404, sem
+  erros de console, sem violações de CSP e sem rolagem horizontal.
+- Fluxos exercitados no navegador: sugestões da busca com teclado, minicarrinho
+  (abrir, alterar quantidade, fechar com Escape), filtros por faceta e busca
+  instantânea, estado vazio com limpeza, URL compartilhável com filtros e
+  ordenação, favoritos com "Desfazer", setup da home, cadastro, checkout e
+  histórico; no celular, painel de filtros, menu, busca e minicarrinho.
+- A revisão usou o app em memória com o catálogo seed e as ilustrações SVG no
+  lugar das fotos privadas. Lint e testes oficiais: CI do pull request.
+
+---
+
 # CI remoto — 10/11/2026
 
 - Workflow **Qualidade**, execução #1 no commit `a136a39` de `main`: job

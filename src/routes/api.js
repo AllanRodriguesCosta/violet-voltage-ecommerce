@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import multer from "multer";
 import { rateLimit } from "express-rate-limit";
 import { randomUUID } from "node:crypto";
-import { auth, admin, safeCustomer } from "../middleware/auth.js";
+import { auth, admin, safeCustomer, sessionUser } from "../middleware/auth.js";
 import {
   AppError,
   email,
@@ -157,6 +157,11 @@ export function apiRouter(storage, config) {
   r.get("/auth/me", authenticated, (req, res) =>
     res.json({ data: safeCustomer(req.user) }),
   );
+  // Visitante sem sessão recebe 200 com null, sem erro no console do navegador.
+  r.get("/auth/session", async (req, res) => {
+    const u = await sessionUser(storage, config, req.cookies.vv_session);
+    res.set("Cache-Control", "no-store").json({ data: u ? safeCustomer(u) : null });
+  });
   r.patch("/profile", authenticated, async (req, res) => {
     const u = {
       ...req.user,

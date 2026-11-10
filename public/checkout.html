@@ -2,64 +2,39 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="Violet Voltage: guitarras e equipamentos. Turn Up Your Tone. Guitarras, pedais, amplificadores e acessórios."
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone." />
+    <meta name="theme-color" content="#120b19" />
     <title>Finalizar pedido | Violet Voltage</title>
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/ui.css" />
     <script type="module" src="/js/app.js"></script>
   </head>
   <body>
     <div id="header"></div>
-    <main id="main">
+    <main id="main" tabindex="-1">
       <div class="container page-wrap">
-        <div class="breadcrumb">
-          <a href="/carrinho.html">Carrinho</a> / Checkout
-        </div>
-        <h1 class="page-title">Quase pronto para tocar.</h1>
+        <nav class="breadcrumb" aria-label="Trilha de navegação"><a href="/">Início</a><span aria-hidden="true">/</span><a href="/carrinho.html">Carrinho</a><span aria-hidden="true">/</span><span aria-current="page">Checkout</span></nav>
+        <header class="page-head"><div><span class="eyebrow">Checkout</span><h1 class="page-title">Quase pronto para tocar.</h1></div></header>
         <div id="checkout-content">
           <div class="cart-layout">
             <section class="panel">
               <form id="checkout-form">
                 <div class="field">
-                  <label for="endereco">Endereço completo de entrega</label
-                  ><input
-                    id="endereco"
-                    name="endereco"
-                    type="text"
-                    required
-                    minlength="5"
-                    maxlength="500"
-                    autocomplete="street-address"
-                  />
+                  <label for="endereco">Endereço completo de entrega</label><input id="endereco" name="endereco" type="text" required minlength="5" maxlength="500" autocomplete="street-address" />
                 </div>
                 <div class="field">
-                  <label for="entrega">Forma de entrega</label
-                  ><select id="entrega" name="entrega">
-                    <option value="padrao">Entrega padrão — R$ 25,00</option>
-                    <option value="expressa">
-                      Entrega expressa — R$ 45,00
-                    </option>
-                    <option value="retirada">Retirada — grátis</option>
-                  </select>
+                  <label for="entrega">Forma de entrega</label><select id="entrega" name="entrega"><option value="padrao">Entrega padrão — R$ 25,00</option><option value="expressa">Entrega expressa — R$ 45,00</option><option value="retirada">Retirada na loja — grátis</option></select>
                 </div>
                 <div class="field">
-                  <label for="pagamento">Pagamento</label
-                  ><select id="pagamento" name="pagamento">
-                    <option value="pix">Pix</option>
-                    <option value="cartao">Cartão</option>
-                    <option value="boleto">Boleto</option>
-                  </select>
+                  <label for="pagamento">Pagamento</label><select id="pagamento" name="pagamento"><option value="pix">Pix</option><option value="cartao">Cartão de crédito</option><option value="boleto">Boleto</option></select>
                 </div>
                 <button type="submit" class="full" disabled>Carregando pedido…</button>
               </form>
             </section>
-            <aside class="panel" id="checkout-summary">
-              <div class="loading">Calculando…</div>
-            </aside>
+            <aside class="panel summary-panel" id="checkout-summary"><div class="loading">Calculando…</div></aside>
           </div>
         </div>
       </div>

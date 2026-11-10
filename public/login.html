@@ -2,55 +2,32 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="Violet Voltage: guitarras e equipamentos. Turn Up Your Tone. Guitarras, pedais, amplificadores e acessórios."
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone." />
+    <meta name="theme-color" content="#120b19" />
     <title>Entrar | Violet Voltage</title>
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/ui.css" />
     <script type="module" src="/js/app.js"></script>
   </head>
-  <body>
+  <body class="page-auth">
     <div id="header"></div>
-    <main id="main">
-      <div class="container">
-        <section class="panel narrow">
+    <main id="main" tabindex="-1">
+      <div class="container auth-wrap">
+        <section class="panel auth-panel">
           <span class="eyebrow">Bem-vindo de volta</span>
           <h1 class="auth-title">Conecte-se ao seu som.</h1>
-          <p class="auth-intro">
-            Entre para acompanhar suas compras e montar seu próximo setup.
-          </p>
+          <p class="auth-intro">Entre para acompanhar suas compras e montar seu próximo setup.</p>
           <form id="login-form">
-            <div class="field">
-              <label for="email">E-mail</label
-              ><input
-                id="email"
-                name="email"
-                type="email"
-                required
-                autocomplete="email"
-                maxlength="200"
-              />
-            </div>
-            <div class="field">
-              <label for="senha">Senha</label
-              ><input
-                id="senha"
-                name="senha"
-                type="password"
-                required
-                autocomplete="current-password"
-                maxlength="72"
-              />
-            </div>
+            <div class="field"><label for="email">E-mail</label><input id="email" name="email" type="email" required autocomplete="email" maxlength="200" /></div>
+            <div class="field"><label for="senha">Senha</label><input id="senha" name="senha" type="password" required autocomplete="current-password" maxlength="72" /></div>
             <button type="submit" class="full">Entrar na minha conta</button>
           </form>
-          <p class="auth-bottom">
-            Ainda não tem conta? <a href="/cadastro.html">Cadastre-se</a>
-          </p>
+          <p class="auth-bottom">Ainda não tem conta? <a href="/cadastro.html">Cadastre-se</a></p>
         </section>
+        <aside class="auth-aside" aria-hidden="true"><span class="eyebrow">Violet Voltage</span><p class="auth-quote">“Cada setup conta uma história. Qual é a sua?”</p><img src="/assets/hero.svg" alt="" width="320" height="290" /></aside>
       </div>
     </main>
     <div id="footer"></div>

@@ -31,8 +31,12 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/repositories/factory.js`, `postgres.js` | Seleção de backend e persistência PostgreSQL |
 | `src/repositories/storage.js` | Memória e adaptador Azure legado |
 | `migrations/001-postgres.sql` | Estrutura idempotente do schema privado |
-| `public/js/common.js` | API cliente, sessão, formulários, carrinho e layout comum |
-| `public/js/app.js`, `admin.js` | Comportamento das telas públicas e administrativas |
+| `public/js/common.js` | API cliente, sessão, formulários, carrinho, favoritos, avisos e layout comum |
+| `public/js/app.js` | Entrada: cabeçalho, minicarrinho, busca e carregamento da página |
+| `public/js/pages/` | Home, catálogo, favoritos, produto, carrinho, checkout, conta e acesso |
+| `public/js/components.js`, `drawer.js`, `search.js`, `icons.js` | Cards, minicarrinho, sugestões de busca e ícones SVG |
+| `public/js/admin.js` | Painel administrativo |
+| `public/fonts/` | Fonte Geist (licença OFL) servida pelo próprio site |
 | `public/css/` | Base visual, componentes e regras responsivas |
 | `tests/` | Testes de domínio, HTTP, PostgreSQL e cliente simulado |
 | `.github/workflows/quality.yml` | CI de lint e testes em cada push e pull request |
@@ -44,9 +48,14 @@ Os pontos de entrada ativos são `src/server.js` (servidor), `scripts/seed.js` e
 
 ### Catálogo e produto
 
-Busca por texto, marca, modelo, categoria e faixa de preço. Ordenação por nome
-ou preço no cliente. Parâmetros preservados na URL, filtros removíveis, limpeza
-completa e nova tentativa em falha. Produto mostra imagem inteira, descrição,
+A home funciona como vitrine de descoberta: categorias com contagem, destaques,
+setups prontos que entram no carrinho de uma vez e vistos recentemente. A página
+`catalogo.html` concentra os resultados: busca instantânea sem diferenciar
+acentos, filtros por categoria, marca, faixa de preço e disponibilidade (com
+contagens), ordenação, parâmetros preservados na URL, filtros removíveis,
+limpeza completa e nova tentativa em falha. O cabeçalho sugere produtos e
+categorias enquanto se digita. Favoritos e vistos recentemente ficam no
+navegador. Produto mostra imagem inteira, descrição,
 marca, modelo, categoria, preço e disponibilidade. Produto inválido tem retorno
 ao catálogo. Não há dados técnicos inventados para preencher especificações.
 

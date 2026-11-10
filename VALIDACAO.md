@@ -1,3 +1,42 @@
+# Evolução de portfólio — 08/11/2026
+
+## Evidência visual recebida do usuário
+
+Dez capturas desktop mostram home, catálogo, essência/rodapé, produto, carrinho,
+perfil, checkout, confirmação e histórico. Nos trechos apresentados, imagens
+carregadas e layout sem sobreposições evidentes. O pedido da confirmação aparece
+no histórico com o mesmo total; subtotal e frete exibidos são consistentes.
+Isso documenta o caminho de sucesso mostrado, sem comprovar teclado, mobile,
+filtros em ação, recuperação de falhas ou persistência após reiniciar o serviço.
+As capturas contêm dados pessoais e não foram copiadas para o repositório.
+
+Observações para revisão: linhas escuras em algumas imagens de correias e pouco
+espaçamento entre campos dos filtros. Conferir a origem das linhas antes de
+atribuir o problema ao CSS. Mobile/tablet e acessibilidade permanecem pendentes.
+
+## Testes e limites
+
+Atualização mobile: lint e suíte completa com 35 testes aprovados. Os dois
+novos testes exercitam bloqueio de submissão repetida e recuperação após falha
+com DOM/eventos simulados; não são testes em um navegador real. Ajustes CSS
+mobile implementados, mas conferência visual em 360/390/768 px ainda pendente.
+Navegação por teclado adiada pelo usuário nesta fase.
+
+- Última execução completa: lint aprovado e 33 testes aprovados, zero falhas.
+- Novos testes de cliente: quantidade inválida, excesso acumulado, armazenamento
+  bloqueado, falha de rede, resposta não JSON e erros de formulário.
+- Supabase: conexão TLS validada, estrutura criada e seed confirmado com 22
+  produtos e 22 imagens legíveis em uma nova conexão.
+- Render: autor confirmou funcionamento da versão migrada. As melhorias
+  posteriores de interface permanecem locais, sem nova publicação confirmada.
+- CI preparado em `.github/workflows/quality.yml`; execução remota pendente.
+- Revisão visual desktop parcial realizada nas capturas acima. Responsividade,
+  acessibilidade e medições de desempenho continuam pendentes. Não inferir
+  aprovação visual dos testes automatizados.
+- Os registros abaixo representam o estado histórico de cada execução.
+
+---
+
 # Migração PostgreSQL — 07/11/2026
 
 - `npm run lint`: aprovado, saída 0.

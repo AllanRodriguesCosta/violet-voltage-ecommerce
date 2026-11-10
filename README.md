@@ -1,5 +1,8 @@
 # Violet Voltage
 
+Consulte a [documentação consolidada](docs/DOCUMENTACAO-COMPLETA.md) para conhecer
+funcionalidades, arquitetura, dependências instaladas e desenvolvimento planejado.
+
 **Turn Up Your Tone** — loja acadêmica de instrumentos, preparada para portfólio. Sem cobranças, entregas ou vendas reais.
 
 ## Voltar ao ar
@@ -101,6 +104,17 @@ Filtros: `q`, `marca`, `modelo`, `categoria`, `min`, `max` (centavos). Checkout:
 - Sem gateway, frete real, recuperação de senha, e-mail ou integração fiscal. Uma instância é suficiente para a demonstração.
 
 ## Validação e evolução
+
+O workflow `.github/workflows/quality.yml` prepara lint e testes em Node 24
+para pushes e pull requests destinados a `main`, sem segredos de produção.
+Sua execução remota ainda deve ser confirmada após o envio ao GitHub.
+Referências das actions: [checkout](https://github.com/actions/checkout) e
+[setup-node](https://github.com/actions/setup-node).
+
+Veja o [roteiro de demonstração](docs/DEMONSTRACAO.md) para apresentar os fluxos
+e o painel administrativo com dados fictícios.
+O [estudo de caso](docs/ESTUDO-DE-CASO.md) descreve arquitetura, decisões da
+migração, evidências e limitações da implementação.
 
 ```powershell
 npm run lint

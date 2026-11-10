@@ -33,17 +33,28 @@ export async function api(path, options = {}) {
     options.body instanceof FormData
       ? {}
       : { "Content-Type": "application/json" };
-  const response = await fetch(`/api${path}`, {
+  let response;
+  try { response = await fetch(`/api${path}`, {
     ...options,
     headers: { ...headers, ...options.headers },
     credentials: "same-origin",
-  });
-  const result = await response.json();
+  }); } catch {
+    throw new Error("Não foi possível conectar. Verifique sua conexão e tente novamente.");
+  }
+  let result;
+  try { result = await response.json(); } catch {
+    const error = new Error("O serviço não respondeu como esperado. Tente novamente em instantes.");
+    error.status = response.status;
+    throw error;
+  }
   if (!response.ok) {
-    const e = new Error(result.error?.message || "Não foi possível concluir.");
-    e.field = result.error?.field;
+    const e = new Error(result?.error?.message || "Não foi possível concluir.");
+    e.field = result?.error?.field;
     e.status = response.status;
     throw e;
+  }
+  if (!result || typeof result !== "object" || !Object.hasOwn(result, "data")) {
+    throw new Error("O serviço retornou dados incompletos. Tente novamente em instantes.");
   }
   return result.data;
 }
@@ -75,14 +86,26 @@ function updateBadge() {
   if (el) el.textContent = getCart().reduce((s, i) => s + i.quantidade, 0);
 }
 export function addCart(product, quantity = 1) {
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
+    toast("Informe uma quantidade inteira entre 1 e 99.");
+    return false;
+  }
   const cart = getCart();
   const current = cart.find((i) => i.id === product.id);
-  if ((current?.quantidade || 0) + quantity > Math.min(99, product.estoque))
-    return toast("Quantidade maior que o estoque disponível.");
+  if ((current?.quantidade || 0) + quantity > Math.min(99, product.estoque)) {
+    toast("Quantidade maior que o estoque disponível.");
+    return false;
+  }
   if (current) current.quantidade += quantity;
   else cart.push({ id: product.id, quantidade: quantity });
-  setCart(cart);
+  try {
+    setCart(cart);
+  } catch {
+    toast("Não foi possível salvar o carrinho. Verifique as permissões de armazenamento do navegador e tente novamente.");
+    return false;
+  }
   toast("Produto adicionado ao carrinho.");
+  return true;
 }
 let timer;
 export function toast(message) {
@@ -122,7 +145,12 @@ export function bindForm(form, handler) {
     form.querySelectorAll(".field-error,.error").forEach((e) => e.remove());
     form
       .querySelectorAll("[aria-invalid]")
-      .forEach((e) => e.removeAttribute("aria-invalid"));
+      .forEach((e) => {
+        e.removeAttribute("aria-invalid");
+        const references = (e.getAttribute("aria-describedby") || "").split(/\s+/).filter(id => id && document.getElementById(id));
+        if (references.length) e.setAttribute("aria-describedby", references.join(" "));
+        else e.removeAttribute("aria-describedby");
+      });
     const button = form.querySelector("[type=submit]");
     const label = button.textContent;
     button.disabled = true;
@@ -140,7 +168,7 @@ export function bindForm(form, handler) {
 }
 export async function shell() {
   document.querySelector("#header").innerHTML =
-    `<a class="skip" href="#main">Pular para o conteúdo</a><div class="announcement">VIOLET VOLTAGE · EQUIPAMENTO CERTO. SEU SOM, MAIS ALTO.</div><header class="site-header"><div class="header-inner"><a class="brand" href="/" aria-label="Violet Voltage, início"><span class="brand-mark" aria-hidden="true">ϟ</span><span class="brand-words">VIOLET VOLTAGE<small>TURN UP YOUR TONE</small></span></a><button class="menu-button" id="menu" aria-controls="navigation" aria-expanded="false">Menu ☰</button><nav class="nav" id="navigation" aria-label="Navegação principal"><a href="/#catalogo">Equipamentos</a><a href="/minha-conta.html" id="account-link">Minha conta</a><a href="/admin.html" id="admin-link" hidden>Administração</a><a href="/login.html" id="login-link">Entrar</a><a class="cart-link" href="/carrinho.html">Carrinho <span class="badge" id="cart-count">0</span></a></nav></div></header>`;
+    `<a class="skip" href="#main">Pular para o conteúdo</a><div class="announcement">VIOLET VOLTAGE · EQUIPAMENTO CERTO. SEU SOM, MAIS ALTO.</div><header class="site-header"><div class="header-inner"><a class="brand" href="/" aria-label="Violet Voltage, início"><span class="brand-mark" aria-hidden="true">ϟ</span><span class="brand-words">VIOLET VOLTAGE<small>TURN UP YOUR TONE</small></span></a><button class="menu-button" id="menu" aria-controls="navigation" aria-expanded="false">Menu ☰</button><nav class="nav" id="navigation" aria-label="Navegação principal"><a href="/#catalogo">Equipamentos</a><a href="/#essencia">Nossa essência</a><a href="/minha-conta.html" id="account-link">Minha conta</a><a href="/admin.html" id="admin-link" hidden>Administração</a><a href="/login.html" id="login-link">Entrar</a><a class="cart-link" href="/carrinho.html">Carrinho <span class="badge" id="cart-count">0</span></a></nav></div></header>`;
   document.querySelector("#footer").innerHTML =
     `<footer class="footer"><div class="container footer-inner"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">ϟ</span><span class="brand-words">VIOLET VOLTAGE<small>TURN UP YOUR TONE</small></span></a><p>Seu próximo som começa aqui.<br>Guitarras, equipamentos e possibilidades.</p><p class="footer-note">Projeto acadêmico<br>© ${new Date().getFullYear()} Violet Voltage</p></div></footer>`;
   document.querySelector("#menu").onclick = () => {
@@ -150,6 +178,24 @@ export async function shell() {
       .querySelector("#menu")
       .setAttribute("aria-expanded", nav.classList.contains("open"));
   };
+  const menu = document.querySelector("#menu");
+  const navigation = document.querySelector("#navigation");
+  const closeMenu = () => {
+    navigation.classList.remove("open");
+    menu.setAttribute("aria-expanded", "false");
+  };
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && navigation.classList.contains("open")) {
+      closeMenu();
+      menu.focus();
+    }
+  });
+  navigation.addEventListener("click", event => {
+    if (event.target.closest("a")) closeMenu();
+  });
+  document.addEventListener("click", event => {
+    if (!event.target.closest(".site-header")) closeMenu();
+  });
   updateBadge();
   let user = null;
   try {
@@ -159,11 +205,20 @@ export async function shell() {
       `Olá, ${user.nome.split(" ")[0]}`;
     document.querySelector("#admin-link").hidden = user.role !== "admin";
   } catch (e) {
-    if (e.status !== 401) toast("Não foi possível verificar sua sessão.");
+    if (e.status !== 401) {
+      user = undefined;
+      toast("Não foi possível verificar sua sessão.");
+    }
   }
   return user;
 }
 export function requireUser(user) {
+  if (user === undefined) {
+    const main = document.querySelector("#main");
+    main.innerHTML = '<section class="panel container"><h1>Não foi possível verificar sua sessão</h1><p>Confira sua conexão e tente novamente. Seus dados não foram alterados.</p><button type="button" id="retry-session">Tentar novamente</button><a class="text-button" href="/">Voltar ao catálogo</a></section>';
+    document.querySelector("#retry-session").onclick = () => location.reload();
+    return false;
+  }
   if (!user) {
     location.href = `/login.html?next=${encodeURIComponent(location.pathname)}`;
     return false;
@@ -181,3 +236,4 @@ export function ordersHTML(orders, admin = false) {
     )
     .join("");
 }
+

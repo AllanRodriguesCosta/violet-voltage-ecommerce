@@ -17,23 +17,27 @@
     <main id="main">
       <section class="hero">
         <div class="container hero-inner">
-          <div>
-            <span class="eyebrow">Para quem vive de volume</span>
-            <h1>Seu som.<br />Sua atitude.<br /><em>Sem limites.</em></h1>
+          <div class="hero-copy">
+            <span class="eyebrow">Volume na sua identidade.</span>
+            <h1>Encontre a sua<br /><em>frequência.</em></h1>
             <p>
               Da primeira nota ao próximo palco. Encontre o equipamento que dá
               voz ao seu estilo.
             </p>
-            <a class="button" href="#catalogo"
+            <div class="hero-actions"><a class="button" href="#catalogo"
               >Explore os equipamentos <span aria-hidden="true">↗</span></a
-            >
-            <div class="hero-foot">TURN UP YOUR TONE.</div>
+            ><a class="hero-link" href="#essencia">Conheça a Violet Voltage →</a></div>
+            <div class="hero-foot">GUITARRAS / EFEITOS / AMPLIFICADORES</div>
           </div>
+          <div class="hero-stage">
+          <span class="stage-label" aria-hidden="true">VV / SOUND EXPLORATION</span>
           <img
             class="hero-art"
             src="/assets/hero.svg"
             alt="Ilustração original de uma guitarra violeta"
           />
+          <span class="stage-caption" aria-hidden="true">Turn up<br /><strong>your tone.</strong></span>
+          </div>
         </div>
       </section>
       <section class="benefits" aria-label="Informações da loja">
@@ -49,7 +53,7 @@
             <div class="benefit-icon" aria-hidden="true">↗</div>
             <div>
               <b>Do estúdio ao palco</b
-              ><span>Entrega padrão, expressa ou retirada</span>
+              ><span>Explore novas possibilidades sonoras</span>
             </div>
           </div>
           <div class="benefit">
@@ -73,6 +77,7 @@
         <div class="catalog-layout">
           <aside class="filters">
             <h3>Refine sua busca</h3>
+            <button type="button" id="filters-toggle" class="secondary" aria-controls="filters" aria-expanded="true" hidden>Ocultar filtros</button>
             <form id="filters">
               <div class="field">
                 <label for="q">Buscar equipamento</label
@@ -130,6 +135,7 @@
             </form>
           </aside>
           <div>
+            <div class="field"><label for="catalog-sort">Ordenar equipamentos</label><select id="catalog-sort"><option value="default">Ordem do catálogo</option><option value="price-asc">Menor preço</option><option value="price-desc">Maior preço</option><option value="name">Nome: A–Z</option></select></div>
             <p class="catalog-meta" id="catalog-count" aria-live="polite">
               Carregando equipamentos…
             </p>
@@ -138,6 +144,10 @@
             </div>
           </div>
         </div>
+      </section>
+      <section class="brand-story container" id="essencia" aria-labelledby="story-title">
+        <div><span class="eyebrow">A essência Violet Voltage</span><h2 id="story-title">Técnica encontra<br />personalidade.</h2></div>
+        <div><p>Um riff que fica na cabeça. Uma textura diferente. A vontade de tocar mais uma vez. Seu equipamento faz parte dessa descoberta.</p><p>Explore guitarras, amplificadores e efeitos para compor um setup com a sua identidade.</p><a class="text-button" href="#catalogo">Encontre seu próximo som <span aria-hidden="true">↗</span></a></div>
       </section>
     </main>
     <div id="footer"></div>

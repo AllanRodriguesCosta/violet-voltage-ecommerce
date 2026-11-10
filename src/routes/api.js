@@ -15,6 +15,15 @@ import {
 import { placeOrder, exclusive, calculate, itemIds } from "../services/checkout.js";
 import { quote, deliveryOptions } from "../services/pricing.js";
 import { updateOrderStatus, summary } from "../services/orders.js";
+import { addressInput, saveAddress, removeAddress } from "../services/addresses.js";
+import {
+  listNotifications,
+  markRead,
+  unreadCount,
+  alertKey,
+  restockAlerts,
+  demandByProduct,
+} from "../services/notifications.js";
 import { publicProduct, publicOrder } from "../controllers/serialization.js";
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -158,7 +167,9 @@ export function apiRouter(storage, config) {
   // Visitante sem sessão recebe 200 com null, sem erro no console do navegador.
   r.get("/auth/session", async (req, res) => {
     const u = await sessionUser(storage, config, req.cookies.vv_session);
-    res.set("Cache-Control", "no-store").json({ data: u ? safeCustomer(u) : null });
+    res
+      .set("Cache-Control", "no-store")
+      .json({ data: u ? { ...safeCustomer(u), naoLidas: await unreadCount(storage, u.id) } : null });
   });
   r.patch("/profile", authenticated, async (req, res) => {
     const u = {
@@ -169,6 +180,55 @@ export function apiRouter(storage, config) {
     await storage.save("customers", u, req.user.etag);
     res.json({ data: safeCustomer(u) });
   });
+  // Endereços de entrega (até 5, um principal), guardados no cadastro do cliente.
+  const storeAddresses = async (req, enderecos) => {
+    await storage.save("customers", { ...req.user, enderecos, updatedAt: new Date().toISOString() }, req.user.etag);
+    return enderecos;
+  };
+  r.get("/addresses", authenticated, (req, res) => res.json({ data: req.user.enderecos || [] }));
+  r.post("/addresses", authenticated, async (req, res) =>
+    res.status(201).json({ data: await storeAddresses(req, saveAddress(req.user.enderecos, addressInput(req.body))) }),
+  );
+  r.patch("/addresses/:id", authenticated, async (req, res) =>
+    res.json({ data: await storeAddresses(req, saveAddress(req.user.enderecos, addressInput(req.body), req.params.id)) }),
+  );
+  r.delete("/addresses/:id", authenticated, async (req, res) =>
+    res.json({ data: await storeAddresses(req, removeAddress(req.user.enderecos, req.params.id)) }),
+  );
+  // "Avise-me": aviso de volta ao estoque para itens esgotados.
+  const publicAlert = (a, p) => ({
+    productId: a.productId,
+    createdAt: a.createdAt,
+    notifiedAt: a.notifiedAt,
+    produto: p?.ativo ? publicProduct(p) : null,
+  });
+  r.get("/alerts", authenticated, async (req, res) => {
+    const alerts = (await storage.listByPartition("alerts", req.user.id)).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const products = await storage.getManyByRowKeys("products", alerts.map((a) => a.productId));
+    res.json({ data: alerts.map((a) => publicAlert(a, products.find((p) => p.rowKey === a.productId))) });
+  });
+  r.post("/alerts", authenticated, async (req, res) => {
+    const p = await product(req.body.productId ?? "");
+    if (p.estoque > 0) throw new AppError(409, "Este produto já está disponível. Aproveite para adicioná-lo ao carrinho.");
+    const key = alertKey(req.user.id, p.rowKey);
+    const existing = await storage.get("alerts", req.user.id, key);
+    if (existing && !existing.notifiedAt) return res.json({ data: publicAlert(existing, p) });
+    const alert = { partitionKey: req.user.id, rowKey: key, productId: p.rowKey, customerId: req.user.id, createdAt: new Date().toISOString(), notifiedAt: null };
+    if (existing) await storage.save("alerts", alert, existing.etag);
+    else await storage.create("alerts", alert);
+    res.status(201).json({ data: publicAlert(alert, p) });
+  });
+  r.delete("/alerts/:productId", authenticated, async (req, res) => {
+    await storage.remove("alerts", req.user.id, alertKey(req.user.id, String(req.params.productId)));
+    res.json({ data: { ok: true } });
+  });
+  // Notificações da conta: últimas 30 e contagem de não lidas.
+  r.get("/notifications", authenticated, async (req, res) =>
+    res.set("Cache-Control", "no-store").json({ data: await listNotifications(storage, req.user.id) }),
+  );
+  r.post("/notifications/read", authenticated, async (req, res) =>
+    res.json({ data: { naoLidas: await markRead(storage, req.user.id, req.body?.ids) } }),
+  );
   r.get("/products", async (req, res) => {
     let products = (await storage.list("products")).filter((p) => p.ativo);
     for (const key of ["marca", "modelo", "categoria"])
@@ -252,7 +312,15 @@ export function apiRouter(storage, config) {
     const [p, c, o] = await Promise.all(
       ["products", "customers", "orders"].map((t) => storage.list(t)),
     );
-    res.json({ data: summary(p, c, o) });
+    // Procura por itens esgotados: avisos "Avise-me" ainda pendentes, por produto.
+    const procura = [...(await demandByProduct(storage))]
+      .map(([id, avisos]) => {
+        const item = p.find((x) => x.rowKey === id && x.ativo);
+        return item && { id, nome: `${item.marca} ${item.modelo}`, estoque: item.estoque, avisos };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.avisos - a.avisos);
+    res.json({ data: { ...summary(p, c, o), procura } });
   });
   r.post("/admin/products", async (req, res) => {
     const input = productInput(req.body);
@@ -279,7 +347,12 @@ export function apiRouter(storage, config) {
         const input = productInput(req.body);
         /* PartitionKey permanece estável para preservar identidade em edições de categoria. */ const next =
           { ...p, ...input, updatedAt: new Date().toISOString() };
-        await storage.save("products", next, p.etag);
+        const apply = async (scoped) => {
+          await scoped.save("products", next, p.etag);
+          // Reposição de item esgotado notifica quem pediu "Avise-me", na mesma transação.
+          if (p.estoque === 0 && next.estoque > 0) await restockAlerts(scoped, next);
+        };
+        await (storage.transaction ? storage.transaction(apply) : apply(storage));
         return publicProduct(next);
       }),
     }),
@@ -374,7 +447,7 @@ export function apiRouter(storage, config) {
   );
   r.patch("/admin/orders/:id", async (req, res) =>
     res.json({
-      data: publicOrder(await updateOrderStatus(storage, req.params.id, req.body.status)),
+      data: publicOrder(await updateOrderStatus(storage, req.params.id, req.body.status, { notify: true })),
     }),
   );
   return r;

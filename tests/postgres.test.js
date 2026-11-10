@@ -7,6 +7,7 @@ import { databaseOptions } from "../src/repositories/postgres.js";
 import { seed } from "../src/services/seed.js";
 import { placeOrder } from "../src/services/checkout.js";
 import { updateOrderStatus } from "../src/services/orders.js";
+import { alertKey, restockAlerts, listNotifications, markRead } from "../src/services/notifications.js";
 import { bootstrapAdmin } from "../src/services/bootstrap.js";
 import { createApp } from "../src/app.js";
 import { seedFixture, fixturePng } from "./helpers/seed-fixture.js";
@@ -233,4 +234,54 @@ test("PostgreSQL: consultas por chave, índices únicos e cancelamento transacio
   await storage.create("customers", { partitionKey: "cliente", rowKey: "pg@example.test", id: "cliente-pg", nome: "PG", ativo: true });
   assert.equal((await storage.findCustomerById("cliente-pg")).rowKey, "pg@example.test");
   assert.equal(await storage.findCustomerById("nenhum"), null);
+});
+
+test("PostgreSQL: avisos de estoque e notificações na mesma transação", async (t) => {
+  const { storage, database } = await postgresFixture(t);
+  const tables = await database.query(
+    "SELECT table_name FROM information_schema.tables WHERE table_schema='violet_voltage' ORDER BY table_name",
+  );
+  assert.deepEqual(tables.rows.map((r) => r.table_name), ["alerts", "customers", "images", "notifications", "orders", "products"]);
+  await storage.create("products", {
+    partitionKey: "pedais", rowKey: "pg-alerta", marca: "PG", modelo: "Reverb", categoria: "Pedais",
+    descricao: "Pedal para teste de avisos", priceCents: 15000, estoque: 0, ativo: true,
+  });
+  const alert = (customerId) => ({
+    partitionKey: customerId, rowKey: alertKey(customerId, "pg-alerta"), productId: "pg-alerta",
+    customerId, createdAt: new Date().toISOString(), notifiedAt: null,
+  });
+  const ana = randomUUID();
+  await storage.create("alerts", alert(ana));
+  await assert.rejects(storage.create("alerts", alert(ana)), (e) => e.statusCode === 409);
+  // Falha depois da notificação desfaz estoque, notificação e marcação do aviso.
+  const before = await storage.getByRowKey("products", "pg-alerta");
+  await assert.rejects(
+    storage.transaction(async (scoped) => {
+      const next = { ...before, estoque: 3 };
+      await scoped.save("products", next, before.etag);
+      assert.equal(await restockAlerts(scoped, next), 1);
+      throw new Error("falha depois de notificar");
+    }),
+    /falha depois de notificar/,
+  );
+  assert.equal((await storage.getByRowKey("products", "pg-alerta")).estoque, 0);
+  assert.equal((await listNotifications(storage, ana)).naoLidas, 0);
+  assert.equal((await storage.listByPartition("alerts", ana))[0].notifiedAt, null);
+  // Reposição confirmada notifica uma vez.
+  const current = await storage.getByRowKey("products", "pg-alerta");
+  const notified = await storage.transaction(async (scoped) => {
+    const next = { ...current, estoque: 2 };
+    await scoped.save("products", next, current.etag);
+    return restockAlerts(scoped, next);
+  });
+  assert.equal(notified, 1);
+  const inbox = await listNotifications(storage, ana);
+  assert.equal(inbox.naoLidas, 1);
+  assert.equal(inbox.itens[0].titulo, "PG Reverb voltou ao estoque");
+  assert.equal(await restockAlerts(storage, await storage.getByRowKey("products", "pg-alerta")), 0);
+  assert.equal(await markRead(storage, ana), 0);
+  const [saved] = await storage.listByPartition("alerts", ana);
+  assert.ok(saved.notifiedAt);
+  await storage.remove("alerts", ana, saved.rowKey);
+  assert.deepEqual(await storage.listByPartition("alerts", ana), []);
 });

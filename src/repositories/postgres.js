@@ -6,6 +6,8 @@ const tables = Object.freeze({
   products: "violet_voltage.products",
   customers: "violet_voltage.customers",
   orders: "violet_voltage.orders",
+  alerts: "violet_voltage.alerts",
+  notifications: "violet_voltage.notifications",
 });
 
 export function databaseOptions(config) {
@@ -152,6 +154,12 @@ export class PostgresStorage {
       ],
     );
     if (!result.rows.length) throw conflict(412);
+  }
+  async remove(table, partitionKey, rowKey) {
+    await this.pool.query(
+      `DELETE FROM ${tableName(table)} WHERE partition_key=$1 AND row_key=$2`,
+      [partitionKey, rowKey],
+    );
   }
   async upload(name, buffer, type) {
     await this.pool.query(

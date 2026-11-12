@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { apiRouter } from "./routes/api.js";
 import { AppError, categories } from "./utils/validation.js";
 import { compressedStatic, compressJson, cacheControl } from "./http/static.js";
+import { seoPages } from "./http/seo.js";
 const publicDir = fileURLToPath(new URL("../public", import.meta.url));
 export function createApp(storage, config) {
   const app = express();
@@ -58,7 +59,7 @@ export function createApp(storage, config) {
     res
       .set("Content-Type", "text/plain; charset=utf-8")
       .send(
-        `User-agent: *\nDisallow: /admin.html\nDisallow: /checkout.html\nDisallow: /minha-conta.html\nDisallow: /api/\nAllow: /api/images/\nSitemap: ${origin(req)}/sitemap.xml\n`,
+        `User-agent: *\nDisallow: /admin.html\nDisallow: /checkout.html\nDisallow: /minha-conta.html\nDisallow: /pedido.html\nDisallow: /carrinho.html\nDisallow: /api/\nAllow: /api/images/\nSitemap: ${origin(req)}/sitemap.xml\n`,
       ),
   );
   app.get("/sitemap.xml", async (req, res) => {
@@ -74,6 +75,7 @@ export function createApp(storage, config) {
         `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((u) => `<url><loc>${xml(u.loc)}</loc>${u.lastmod ? `<lastmod>${xml(u.lastmod)}</lastmod>` : ""}</url>`).join("")}</urlset>\n`,
       );
   });
+  app.use(seoPages(storage, publicDir, origin));
   app.use(compressedStatic(publicDir));
   app.use(
     express.static(publicDir, {

@@ -220,6 +220,13 @@ por categoria, mais vendidos, serviços, kits e cancelamentos a partir dos
 pedidos não cancelados. `src/http/seo.js` entrega produto, categoria e início
 com metadados e dados estruturados no HTML, sem depender do JavaScript.
 
+Etapa 24: o assistente age (`src/assistant/actions.js`): ficha do produto
+aberto, comparação, carrinho, adicionar e cupom com confirmação, glossário,
+histórico, favoritos, kits no orçamento e troca. Trocas e devoluções são
+pedidas no comprovante (`requestExchange` e `answerExchange` em
+`src/services/orders.js`). Frases não entendidas ficam anônimas por 90 dias
+(`src/services/assistant-log.js`, tabela `assistant_log`).
+
 ### Conta e administração
 
 Cadastro, login/logout, perfil e histórico privado. Cadastro público não cria
@@ -334,8 +341,8 @@ da loja, pedidos e setup. Etapas 17 (ficha técnica e base de conhecimento), 18
 (catálogo ampliado) e 19 (assistente com PLN local, ver
 [ASSISTENTE.md](ASSISTENTE.md)) e 20 (conta, privacidade e Central de Ajuda)
 prontas. Etapas 21 (comparador, kits, compatibilidade e comprovante), 22
-(serviços, guias, filtros do segmento, aviso de preço e perguntas) e 23 (painel
-e SEO) prontas; as etapas 24 e 25 (assistente que age, Gemini opcional e voz) estão no
+(serviços, guias, filtros do segmento, aviso de preço e perguntas) 23 (painel
+e SEO) e 24 (assistente que age) prontas; a etapa 25 (Gemini opcional e voz) está no
 [roadmap](ROADMAP.md). Tarefas manuais ou do Codex: `docs/PENDENCIAS-MANUAIS.txt` e
 `docs/FERRAMENTAS-E-BIBLIOTECAS.txt`.
 

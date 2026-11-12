@@ -59,5 +59,13 @@ CREATE TABLE IF NOT EXISTS violet_voltage.questions (
   CHECK (data->>'rowKey' = row_key AND data->>'partitionKey' = partition_key)
 );
 CREATE INDEX IF NOT EXISTS questions_partition ON violet_voltage.questions (partition_key);
+-- Frases que o assistente não entendeu, sem identificar o cliente (revisão no painel).
+CREATE TABLE IF NOT EXISTS violet_voltage.assistant_log (
+  partition_key text NOT NULL,
+  row_key text PRIMARY KEY,
+  data jsonb NOT NULL CHECK (jsonb_typeof(data) = 'object'),
+  version text NOT NULL,
+  CHECK (data->>'rowKey' = row_key AND data->>'partitionKey' = partition_key)
+);
 REVOKE ALL ON ALL TABLES IN SCHEMA violet_voltage FROM PUBLIC;
 COMMIT;

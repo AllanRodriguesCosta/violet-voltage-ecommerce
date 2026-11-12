@@ -1,7 +1,7 @@
 VIOLET VOLTAGE - PENDENCIAS MANUAIS (ALLAN E CODEX)
 ====================================================
 
-Ultima atualizacao: 12/11/2026 (etapa 22 da Fase 3).
+Ultima atualizacao: 12/11/2026 (etapa 23 da Fase 3).
 
 PARA QUE SERVE
 --------------
@@ -29,9 +29,9 @@ REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
    usado. Nao tente "consertar" mudando codigo.
 
 ----------------------------------------------------------------------
-T01 [ ] ALLAN - Publicar as etapas 17 a 22 no Render
+T01 [ ] ALLAN - Publicar as etapas 17 a 23 no Render
 ----------------------------------------------------------------------
-Depois do merge dos pull requests das etapas 17 a 22 em main:
+Depois do merge dos pull requests das etapas 17 a 23 em main:
 - A etapa 22 cria a tabela de perguntas (violet_voltage.questions). O
   servidor cria sozinho ao iniciar; se preferir, rode antes "npm run db:migrate"
   com o .env de producao (nao apaga nada).
@@ -64,6 +64,10 @@ Como conferir no site publicado:
   respostas"; o painel tem a aba "Perguntas"; /guias.html tem 6 guias e o
   glossario; no catalogo de guitarras aparecem os filtros Mao, Cordas e
   Captadores (Canhoto, 7 cordas e Ativos so depois da T06).
+- Etapa 23: o painel mostra Vendas por categoria, Mais vendidos, Servicos e
+  kits e Interesse dos clientes. Para ver a previa de link, cole o endereco
+  de um produto no WhatsApp ou em https://www.opengraph.xyz (gratuito): deve
+  aparecer o nome, o preco e a imagem do produto.
 Os 58 produtos novos so aparecem no site depois da T06 (seed com as fotos).
 Resultado:
 

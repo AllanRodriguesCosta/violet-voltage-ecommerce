@@ -51,6 +51,17 @@ function chart(days) {
     .join("");
   return `<svg class="sales-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Vendas dos últimos 14 dias: ${money(total)} em ${count} pedidos">${bars}</svg><p class="small muted">No período: <strong>${money(total)}</strong> em ${count} ${count === 1 ? "pedido" : "pedidos"}, sem cancelados.</p>`;
 }
+// Indicadores de vendas por categoria, mais vendidos, serviços, kits e interesse dos clientes.
+function insightsHTML(s) {
+  const cats = s.porCategoria || [];
+  const top = Math.max(1, ...cats.map((c) => c.totalCents));
+  const list = (items, render, empty) => (items.length ? `<ol class="rank-list">${items.map(render).join("")}</ol>` : `<p class="muted">${empty}</p>`);
+  return `<div class="dash-grid dash-insights"><section class="panel"><h2>${icon("chart", { size: 18 })}Vendas por categoria</h2>${
+    cats.length
+      ? `<ul class="status-bars category-bars">${cats.map((c) => `<li><span>${esc(c.categoria)}</span><span class="status-track"><span style="width:${Math.round((c.totalCents / top) * 100)}%"></span></span><strong>${money(c.totalCents)}</strong></li>`).join("")}</ul>`
+      : '<p class="muted">Sem vendas registradas ainda.</p>'
+  }<p class="small muted">Cancelamentos: ${s.cancelamentoPct || 0}% dos pedidos.</p></section><section class="panel"><h2>Mais vendidos</h2>${list(s.maisVendidos || [], (v) => `<li><a href="/produto.html?id=${encodeURIComponent(v.id)}">${esc(v.nome)}</a><span>${v.unidades} un. · ${money(v.totalCents)}</span></li>`, "Sem vendas registradas ainda.")}</section><section class="panel"><h2>Serviços e kits</h2>${list([...(s.servicos || []).map((x) => ({ ...x, tipo: "servico" })), ...(s.kits || []).map((x) => ({ ...x, tipo: "kit" }))], (x) => `<li><span>${esc(x.nome)}</span><span>${x.quantidade}x · ${x.tipo === "kit" ? `− ${money(x.descontoCents)} em desconto` : money(x.totalCents)}</span></li>`, "Nenhum serviço ou kit vendido ainda.")}</section><section class="panel"><h2>Interesse dos clientes</h2>${list((s.precoAvisos || []).slice(0, 5), (x) => `<li><a href="/produto.html?id=${encodeURIComponent(x.id)}">${esc(x.nome)}</a><span class="badge badge-demand">${icon("tag", { size: 14 })}${x.avisos} ${x.avisos === 1 ? "aviso" : "avisos"} de preço</span></li>`, "Nenhum aviso de queda de preço ativo.")}${s.perguntasPendentes ? `<button type="button" class="text-button" data-open-questions>${icon("question", { size: 16 })}${s.perguntasPendentes} ${s.perguntasPendentes === 1 ? "pergunta aguardando" : "perguntas aguardando"} resposta</button>` : ""}</section></div>`;
+}
 export async function adminPage(user) {
   if (!requireUser(user)) return;
   if (user.role !== "admin") {
@@ -77,7 +88,8 @@ export async function adminPage(user) {
       .map(([symbol, label, value]) => `<div class="stat">${icon(symbol, { size: 20 })}<span>${label}</span><strong>${value}</strong></div>`)
       .join("")}</div><div class="dash-grid"><section class="panel chart-panel"><h2>Vendas nos últimos 14 dias</h2>${chart(s.vendasPorDia)}</section><section class="panel"><h2>Pedidos por status</h2><ul class="status-bars">${statuses
       .map((st) => `<li><span class="status status-${statusClass(st)}">${st}</span><span class="status-track"><span style="width:${Math.round((s.porStatus[st] / totalStatus) * 100)}%"></span></span><strong>${s.porStatus[st]}</strong></li>`)
-      .join("")}</ul></section><section class="panel"><h2>Estoque baixo</h2>${s.estoqueBaixo.length ? `<ul class="low-stock">${s.estoqueBaixo.map((p) => { const wanted = (s.procura || []).find((x) => x.id === p.id)?.avisos || 0; return `<li><a href="/produto.html?id=${encodeURIComponent(p.id)}">${esc(p.nome)}</a>${wanted ? `<span class="badge badge-demand">${icon("bell", { size: 14 })}${wanted} ${wanted === 1 ? "aviso" : "avisos"}</span>` : ""}<span class="badge ${p.estoque ? "badge-low" : "badge-out"}">${p.estoque ? `${p.estoque} un.` : "Esgotado"}</span></li>`; }).join("")}</ul>${s.procura?.length ? `<p class="small muted">Avisos: clientes esperando a reposição. Repor o estoque notifica todos de uma vez.</p>` : ""}` : '<p class="muted">Nenhum produto com 5 unidades ou menos.</p>'}</section></div>`;
+      .join("")}</ul></section><section class="panel"><h2>Estoque baixo</h2>${s.estoqueBaixo.length ? `<ul class="low-stock">${s.estoqueBaixo.map((p) => { const wanted = (s.procura || []).find((x) => x.id === p.id)?.avisos || 0; return `<li><a href="/produto.html?id=${encodeURIComponent(p.id)}">${esc(p.nome)}</a>${wanted ? `<span class="badge badge-demand">${icon("bell", { size: 14 })}${wanted} ${wanted === 1 ? "aviso" : "avisos"}</span>` : ""}<span class="badge ${p.estoque ? "badge-low" : "badge-out"}">${p.estoque ? `${p.estoque} un.` : "Esgotado"}</span></li>`; }).join("")}</ul>${s.procura?.length ? `<p class="small muted">Avisos: clientes esperando a reposição. Repor o estoque notifica todos de uma vez.</p>` : ""}` : '<p class="muted">Nenhum produto com 5 unidades ou menos.</p>'}</section></div>${insightsHTML(s)}`;
+    document.querySelector("[data-open-questions]")?.addEventListener("click", () => document.querySelector("#tab-questions").click());
   }
   function toolbar(title, button) {
     return `<div class="admin-toolbar"><h2>${title}</h2><div class="row"><div class="admin-search">${icon("search", { size: 18 })}<label class="sr-only" for="admin-search">Buscar</label><input id="admin-search" type="search" placeholder="Buscar" value="${esc(query)}" autocomplete="off"></div>${button}</div></div>`;

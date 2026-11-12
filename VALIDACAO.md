@@ -1,3 +1,21 @@
+# Fase 3, etapa 23 — 12/11/2026
+
+- Testes novos em `tests/stage23.test.js` (3): indicadores do painel (vendas
+  por categoria, mais vendidos sem cancelados, serviços, kits e cancelamento);
+  metadados escapados e JSON-LD que não fecha a tag; HTML do servidor para
+  produto (título, Open Graph, canônico, Product com ficha e preço, trilha,
+  Brotli, sem cache), produto inexistente ou desativado volta ao modelo,
+  categoria, busca sem canônico de categoria, início com URLs absolutas,
+  robots e sitemap.
+- No navegador (11 verificações): HTML do servidor com título e imagem, página
+  monta o produto com um único bloco de dados estruturados, categoria com
+  título, painel com vendas por categoria, mais vendidos, serviços e kits e
+  interesse em preço, e painel sem rolagem lateral no celular.
+- Acessibilidade em claro, escuro, 375 e 1440 px sem problemas; regressão dos
+  roteiros afetados sem falhas.
+
+---
+
 # Fase 3, etapa 22 — 12/11/2026
 
 - Testes novos em `tests/stage22.test.js` (5): IDs estáveis do catálogo e fichas

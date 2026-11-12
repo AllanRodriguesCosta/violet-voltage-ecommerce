@@ -25,7 +25,8 @@ import { servicesFor } from "../services.js";
 import { mountQuestions } from "../questions.js";
 
 function structuredData(p, name) {
-  document.querySelector('script[type="application/ld+json"]')?.remove();
+  // O servidor já entrega os dados estruturados no HTML; aqui só quando eles faltarem.
+  if (document.querySelector('script[type="application/ld+json"]')) return;
   const script = document.createElement("script");
   script.type = "application/ld+json";
   script.textContent = JSON.stringify({

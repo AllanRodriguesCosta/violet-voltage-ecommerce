@@ -757,3 +757,14 @@ body.assistant-open .assistant-launcher { visibility: hidden; }
 .glossary-list dd { margin: 4px 0 0; color: var(--ink-2); line-height: 1.6; }
 .glossary-list .term.is-target { background: var(--violet-soft); border-radius: var(--radius); padding-inline: 12px; }
 @media (min-width: 900px) { .guide-list { grid-template-columns: 1fr 1fr; } .glossary-list { grid-template-columns: 1fr 1fr; column-gap: 32px; } }
+/* Etapa 23: indicadores do painel. */
+.dash-insights { margin-top: 16px; }
+.dash-insights h2 { display: flex; align-items: center; gap: 8px; }
+.category-bars li { grid-template-columns: 110px minmax(0, 1fr) auto; }
+.rank-list { margin: 0; padding-left: 22px; display: grid; gap: 8px; font-size: 14px; }
+.rank-list li { padding-left: 4px; }
+.rank-list li > :first-child { display: inline-block; font-weight: 600; padding-block: 3px; }
+.rank-list li > span:last-child, .rank-list li > .badge { display: block; color: var(--muted); font-size: 13px; }
+.rank-list li > .badge { display: inline-flex; width: fit-content; color: inherit; margin-top: 2px; }
+@media (min-width: 900px) { .dash-insights { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1200px) { .dash-insights { grid-template-columns: repeat(4, minmax(0, 1fr)); } }

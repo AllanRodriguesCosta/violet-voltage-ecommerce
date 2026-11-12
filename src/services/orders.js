@@ -69,7 +69,45 @@ export function summary(products, customers, orders, now = new Date()) {
       bucket.pedidos++;
     }
   }
+  // Itens vendidos (pedidos não cancelados): categoria, mais vendidos, serviços e kits.
+  const byId = new Map(products.map((p) => [p.rowKey, p]));
+  const categoria = new Map();
+  const vendidos = new Map();
+  const servicos = new Map();
+  const kits = new Map();
+  for (const o of valid) {
+    const itens = typeof o.itens === "string" ? JSON.parse(o.itens) : o.itens || [];
+    for (const i of itens) {
+      const cat = byId.get(i.id)?.categoria || "Outros";
+      const c = categoria.get(cat) || { categoria: cat, totalCents: 0, unidades: 0 };
+      c.totalCents += i.priceCents * i.quantidade;
+      c.unidades += i.quantidade;
+      categoria.set(cat, c);
+      const v = vendidos.get(i.id) || { id: i.id, nome: i.nome, unidades: 0, totalCents: 0 };
+      v.unidades += i.quantidade;
+      v.totalCents += i.priceCents * i.quantidade;
+      vendidos.set(i.id, v);
+      for (const sv of i.servicos || []) {
+        const x = servicos.get(sv.id) || { id: sv.id, nome: sv.nome, quantidade: 0, totalCents: 0 };
+        x.quantidade += i.quantidade;
+        x.totalCents += sv.priceCents * i.quantidade;
+        servicos.set(sv.id, x);
+      }
+    }
+    for (const k of o.kits || []) {
+      const x = kits.get(k.id) || { id: k.id, nome: k.nome, quantidade: 0, descontoCents: 0 };
+      x.quantidade += k.quantidade;
+      x.descontoCents += k.descontoCents;
+      kits.set(k.id, x);
+    }
+  }
+  const canceled = orders.filter((o) => o.status === "Cancelado").length;
   return {
+    porCategoria: [...categoria.values()].sort((a, b) => b.totalCents - a.totalCents),
+    maisVendidos: [...vendidos.values()].sort((a, b) => b.unidades - a.unidades || b.totalCents - a.totalCents).slice(0, 5),
+    servicos: [...servicos.values()].sort((a, b) => b.totalCents - a.totalCents),
+    kits: [...kits.values()].sort((a, b) => b.quantidade - a.quantidade),
+    cancelamentoPct: orders.length ? Math.round((canceled / orders.length) * 100) : 0,
     produtos: products.filter((p) => p.ativo).length,
     clientes: customers.filter((c) => c.ativo && c.role === "customer").length,
     pedidos: orders.length,

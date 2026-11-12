@@ -85,7 +85,7 @@ test("HTTP: arquivos e API comprimidos, revalidação por ETag e cache longo par
   const api = await raw(port, "/api/products", { "Accept-Encoding": "gzip" });
   assert.equal(api.headers["content-encoding"], "gzip");
   assert.match(api.headers["content-type"], /^application\/json/);
-  assert.equal(JSON.parse(gunzipSync(api.body)).data.length, 22);
+  assert.equal(JSON.parse(gunzipSync(api.body)).data.length, seedProducts.length);
   const small = await raw(port, "/api/auth/session", { "Accept-Encoding": "gzip" });
   assert.equal(small.headers["content-encoding"], undefined, "respostas pequenas seguem sem compressão");
   assert.deepEqual(JSON.parse(small.body), { data: null });

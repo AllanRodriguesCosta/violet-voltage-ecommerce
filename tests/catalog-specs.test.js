@@ -2,8 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { once } from "node:events";
-import { SPEC_FIELDS, GENEROS, ESTILOS, checkSpecs, specRows, specText, specList, specField } from "../public/js/specs.js";
-import { seedProducts } from "../src/services/seed-products.js";
+import { SPEC_FIELDS, GENEROS, ESTILOS, checkSpecs, specRows, specText, specList, specField, fitsGenre, affinity } from "../public/js/specs.js";
+import { bundlePicks } from "../public/js/pages/product.js";
+import { seedProducts, expansionProducts } from "../src/services/seed-products.js";
+import { readFile } from "node:fs/promises";
 import { seedSpecs } from "../src/services/seed-specs.js";
 import { genres } from "../src/knowledge/genres.js";
 import { categories } from "../src/utils/validation.js";
@@ -24,7 +26,7 @@ test("ficha: todas as categorias têm esquema e nenhum campo repete chave", () =
   }
 });
 
-test("ficha: os 22 produtos iniciais têm ficha válida e coerente com a categoria", () => {
+test("ficha: todos os produtos do manifesto têm ficha válida e coerente com a categoria", () => {
   assert.equal(Object.keys(seedSpecs).length, seedProducts.length, "uma ficha por modelo, sem sobras");
   for (const p of seedProducts) {
     assert.ok(p.ficha, `${p.modelo} sem ficha`);
@@ -99,6 +101,84 @@ test("todo gênero vintage tem ao menos uma guitarra do catálogo que combina co
       guitars.some((p) => g.guitarras.formato.includes(p.ficha.formato) && g.guitarras.captacao.includes(p.ficha.captacao)),
       g.nome,
     );
+});
+
+// Etapa 18: o catálogo precisa sustentar a recomendação por gênero do assistente.
+const byCategory = (categoria) => products.filter((p) => p.categoria === categoria);
+const UTILITY = ["Afinador", "Looper", "Multiefeitos", "Gabinete virtual (IR)", "Pedalboard"];
+
+test("cada gênero tem guitarra, amplificador e pedal etiquetados no catálogo", () => {
+  for (const g of genres)
+    for (const categoria of ["Guitarras", "Amplificadores", "Pedais"])
+      assert.ok(byCategory(categoria).some((p) => p.ficha.generos.includes(g.nome)), `${g.nome} sem ${categoria}`);
+});
+
+test("etiquetas de gênero coerentes com a base de conhecimento", () => {
+  const profile = Object.fromEntries(genres.map((g) => [g.nome, g]));
+  for (const p of byCategory("Guitarras"))
+    for (const nome of p.ficha.generos) {
+      const want = profile[nome].guitarras;
+      assert.ok(want.formato.includes(p.ficha.formato) || want.captacao.includes(p.ficha.captacao), `${p.modelo} × ${nome}`);
+    }
+  for (const p of byCategory("Amplificadores"))
+    for (const nome of p.ficha.generos) {
+      const want = profile[nome].amplificadores;
+      assert.ok(want.tecnologia.includes(p.ficha.tecnologia) || want.voicing.includes(p.ficha.voicing), `${p.modelo} × ${nome}`);
+    }
+  for (const p of byCategory("Pedais")) {
+    if (UTILITY.includes(p.ficha.efeito)) assert.deepEqual(p.ficha.generos, [], `${p.modelo}: utilitário é versátil`);
+    for (const nome of p.ficha.generos) assert.ok(profile[nome].pedais.efeito.includes(p.ficha.efeito), `${p.modelo} × ${nome}`);
+  }
+});
+
+test("conversa-alvo: guitarra vintage para blues rock tem várias Strats em estoque", () => {
+  const picks = byCategory("Guitarras").filter((p) => p.ficha.estilo === "Vintage" && p.ficha.generos.includes("Blues rock") && p.estoque > 0);
+  assert.ok(picks.filter((p) => p.ficha.formato === "Strat").length >= 3, picks.map((p) => p.modelo).join(", "));
+  assert.ok(picks.some((p) => p.ficha.formato !== "Strat"), "alternativa a Strat para comparar");
+  assert.ok(new Set(picks.map((p) => p.marca)).size >= 3);
+});
+
+test("lista de fotos pendentes cobre todos os produtos da expansão", async () => {
+  const doc = await readFile(new URL("../docs/FOTOS-PENDENTES.txt", import.meta.url), "utf8");
+  for (const p of expansionProducts) {
+    assert.ok(doc.includes(p.file), `${p.file} fora da lista`);
+    assert.ok(doc.includes(`${p.marca} ${p.modelo}`), `${p.modelo} sem nome na lista`);
+  }
+  const listed = doc.match(/^\s*\[[ xX]\] \S+\.png/gm) || [];
+  assert.equal(listed.length, expansionProducts.length, "uma linha por foto nova");
+});
+
+test("afinidade e gênero: versátil serve para tudo; gêneros e estilo em comum somam", () => {
+  const strat = products.find((p) => p.modelo === "ST Electric Pink");
+  const couro = products.find((p) => p.modelo === "Correia Couro Vintage Marrom");
+  const algodao = products.find((p) => p.modelo === "Correia Algodão Cru");
+  assert.ok(fitsGenre(algodao, "Heavy metal") && fitsGenre({}, "Jazz") && fitsGenre(strat, ""));
+  assert.ok(fitsGenre(strat, "Surf") && !fitsGenre(strat, "Heavy metal"));
+  assert.equal(affinity(strat, couro), 3, "Blues + Rock clássico + Vintage");
+  assert.equal(affinity(strat, algodao), 0.5);
+});
+
+test("Compre junto usa a ficha: cabo certo, estilo parecido e orçamento", () => {
+  const find = (modelo) => products.find((p) => p.modelo === modelo);
+  const picks = (modelo) => {
+    const p = find(modelo);
+    return bundlePicks(p, products.filter((x) => x.id !== p.id && x.estoque > 0));
+  };
+  const strat = picks("ST Electric Pink");
+  assert.deepEqual(strat.map((x) => x.categoria), ["Cabos", "Correias"]);
+  assert.notEqual(strat[0].ficha.tipo, "Patch", "guitarra leva cabo de instrumento");
+  assert.equal(strat[1].ficha.estilo, "Vintage", "guitarra vintage leva correia vintage");
+  const drive = picks("Tube Screamer TS9");
+  assert.equal(drive[0].ficha.tipo, "Patch", "pedal leva cabo patch");
+  assert.ok(["Pedalboard", "Afinador"].includes(drive[1].ficha.efeito), "pedal de efeito leva base ou afinador");
+  const board = picks("Kit Pedalboard com Bag");
+  assert.ok(!["Pedalboard", "Afinador", "Looper", "Multiefeitos", "Gabinete virtual (IR)"].includes(board[1].ficha.efeito), "pedalboard leva efeito");
+  const amp = picks("AC15 Valvulado");
+  assert.ok(amp[1].ficha.generos.some((g) => find("AC15 Valvulado").ficha.generos.includes(g)), "efeito com gênero em comum");
+  for (const p of products.filter((x) => x.estoque > 0)) {
+    const chosen = bundlePicks(p, products.filter((x) => x.id !== p.id && x.estoque > 0));
+    assert.ok(chosen.length <= 2 && new Set(chosen.map((x) => x.id)).size === chosen.length, p.modelo);
+  }
 });
 
 test("produto gravado antes da ficha recebe a ficha inicial na leitura; null explícito é respeitado", () => {

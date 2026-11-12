@@ -11,7 +11,10 @@ import { alertKey, restockAlerts, listNotifications, markRead } from "../src/ser
 import { bootstrapAdmin } from "../src/services/bootstrap.js";
 import { createApp } from "../src/app.js";
 import { seedFixture, fixturePng } from "./helpers/seed-fixture.js";
+import { seedProducts } from "../src/services/seed-products.js";
 import { postgresFixture } from "./helpers/postgres-fixture.js";
+
+const N = seedProducts.length;
 
 test("PostgreSQL: configuração de TLS e ausência de dependência de credenciais Azure", () => {
   const env = {
@@ -38,30 +41,32 @@ test("PostgreSQL: configuração de TLS e ausência de dependência de credencia
   );
 });
 
-test("PostgreSQL: migração repetível, seed com 22 imagens e controle de concorrência", async (t) => {
+test("PostgreSQL: migração repetível, seed com todas as imagens e controle de concorrência", async (t) => {
   const { storage, database } = await postgresFixture(t);
   const assets = await seedFixture(t);
   await storage.init();
   assert.deepEqual(await seed(storage, assets), {
-    created: 22,
+    created: N,
     updated: 0,
-    uploaded: 22,
-    total: 22,
+    uploaded: N,
+    total: N,
+    ignored: [],
   });
   assert.deepEqual(await seed(storage, assets), {
     created: 0,
-    updated: 22,
-    uploaded: 22,
-    total: 22,
+    updated: N,
+    uploaded: N,
+    total: N,
+    ignored: [],
   });
-  assert.equal((await storage.list("products")).length, 22);
+  assert.equal((await storage.list("products")).length, N);
   assert.equal(
     (
       await database.query(
         "SELECT count(*)::integer AS total FROM violet_voltage.images",
       )
     ).rows[0].total,
-    22,
+    N,
   );
   const p = await storage.get("products", "correias", "demo-001");
   assert.deepEqual((await storage.blob(p.blobName)).buffer, fixturePng);

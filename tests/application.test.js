@@ -11,6 +11,9 @@ import { bootstrapAdmin } from "../src/services/bootstrap.js";
 import { startupError } from "../src/utils/startup-error.js";
 import { seed } from "../src/services/seed.js";
 import { seedFixture } from "./helpers/seed-fixture.js";
+import { seedProducts } from "../src/services/seed-products.js";
+
+const N = seedProducts.length;
 const sample = {
   marca: "Teste",
   modelo: "Modelo",
@@ -85,18 +88,20 @@ test("seed é idempotente e preserva registros", async (t) => {
   });
   const manual = await storage.get("products", "guitarras", "manual");
   assert.deepEqual(await seed(storage, options), {
-    created: 22,
+    created: N,
     updated: 0,
-    uploaded: 22,
-    total: 22,
+    uploaded: N,
+    total: N,
+    ignored: [],
   });
   assert.deepEqual(await seed(storage, options), {
     created: 0,
-    updated: 22,
-    uploaded: 22,
-    total: 22,
+    updated: N,
+    uploaded: N,
+    total: N,
+    ignored: [],
   });
-  assert.equal((await storage.list("products")).length, 23);
+  assert.equal((await storage.list("products")).length, N + 1);
   assert.deepEqual(
     await storage.get("products", "guitarras", "manual"),
     manual,

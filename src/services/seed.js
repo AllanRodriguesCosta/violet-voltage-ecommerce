@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
@@ -9,40 +9,60 @@ export const defaultAssetsDirectory = fileURLToPath(
 );
 export class SeedInputError extends Error {}
 
+const isPng = (buffer) =>
+  buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+const folder = "seed-assets/produtos-violet-voltage";
+const listed = (files) =>
+  files.slice(0, 10).join(", ") +
+  (files.length > 10 ? ` e mais ${files.length - 10}` : "");
+
 // Pré-validação completa: nenhum registro ou blob é alterado se faltar uma imagem.
-async function readImages(assetsDirectory) {
-  const images = [];
+// No modo parcial, produtos sem foto ficam de fora (e são listados); PNG inválido sempre interrompe.
+async function readImages(assetsDirectory, partial) {
+  try {
+    if (!(await stat(assetsDirectory)).isDirectory()) throw new Error();
+  } catch {
+    throw new SeedInputError(
+      `Seed interrompido: a pasta ${folder} não foi encontrada. Coloque nela as ${seedProducts.length} imagens do manifesto, mantendo as subpastas e nomes. Nenhum produto ou imagem foi alterado.`,
+    );
+  }
+  const images = new Map();
+  const missing = [];
   for (const product of seedProducts) {
     let buffer;
     try {
       buffer = await readFile(join(assetsDirectory, product.file));
     } catch {
-      throw new SeedInputError(
-        `Seed interrompido: não foi possível ler ${product.file}. Coloque as 22 imagens em seed-assets/produtos-violet-voltage, mantendo as subpastas e nomes originais. Nenhum produto ou imagem foi alterado.`,
-      );
+      missing.push(product.file);
+      continue;
     }
-    if (
-      !buffer
-        .subarray(0, 8)
-        .equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
-    ) {
+    if (!isPng(buffer)) {
       throw new SeedInputError(
         `Seed interrompido: ${product.file} não é um PNG válido. Nenhum produto ou imagem foi alterado.`,
       );
     }
-    images.push({
+    images.set(product.rowKey, {
       buffer,
       version: createHash("sha256").update(buffer).digest("hex").slice(0, 16),
     });
   }
-  return images;
+  if (missing.length && (!partial || !images.size)) {
+    throw new SeedInputError(
+      `Seed interrompido: faltam ${missing.length} de ${seedProducts.length} imagens em ${folder} (mantenha subpastas e nomes): ${listed(missing)}. Lista das fotos novas: docs/FOTOS-PENDENTES.txt. Para carregar só os produtos que já têm foto, use "npm run seed -- --parcial". Nenhum produto ou imagem foi alterado.`,
+    );
+  }
+  return { images, missing };
 }
 
 export async function seed(
   storage,
-  { assetsDirectory = defaultAssetsDirectory, now = () => new Date() } = {},
+  {
+    assetsDirectory = defaultAssetsDirectory,
+    now = () => new Date(),
+    partial = false,
+  } = {},
 ) {
-  const images = await readImages(assetsDirectory);
+  const { images, missing } = await readImages(assetsDirectory, partial);
   const existing = await storage.list("products");
   const byId = new Map();
   const seedIds = new Set(seedProducts.map((product) => product.rowKey));
@@ -60,12 +80,14 @@ export async function seed(
     updated: 0,
     uploaded: 0,
     total: seedProducts.length,
+    ignored: missing,
   };
-  for (const [index, source] of seedProducts.entries()) {
+  for (const source of seedProducts) {
+    if (!images.has(source.rowKey)) continue;
     const data = { ...source };
     delete data.file;
     const previous = byId.get(data.rowKey);
-    const { buffer, version } = images[index];
+    const { buffer, version } = images.get(source.rowKey);
     const blobName = `seed/violet-voltage/${data.rowKey}.png`;
     await storage.upload(blobName, buffer, "image/png");
     result.uploaded++;

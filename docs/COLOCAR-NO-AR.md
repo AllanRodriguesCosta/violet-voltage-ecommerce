@@ -33,7 +33,7 @@ Copie `.env.example` para `.env` pelo editor. Se o arquivo já existir, atualize
 
 `DATABASE_CA_CERT` pode ficar vazio se a cadeia do certificado já for confiável. Se a conexão apresentar erro de certificado, obtenha a CA oficial no painel de configurações do banco e configure o PEM completo nessa variável, entre aspas no `.env`. Ela aceita `\n` entre linhas. Não desative a validação TLS. [Documentação de SSL](https://supabase.com/docs/guides/platform/ssl-enforcement).
 
-Não envie `.env`, URL ou senha pelo chat. Confira as 22 imagens em `seed-assets/produtos-violet-voltage/` e execute na raiz do projeto:
+Não envie `.env`, URL ou senha pelo chat. Confira as imagens em `seed-assets/produtos-violet-voltage/` com `npm run fotos:conferir` (lista em `docs/FOTOS-PENDENTES.txt`) e execute na raiz do projeto:
 
 ```powershell
 npm ci
@@ -44,7 +44,7 @@ npm run seed
 npm start
 ```
 
-Pare se algum comando falhar. Variáveis já definidas no terminal têm prioridade sobre `.env`. A migração confirma a estrutura; o seed deve informar 22 produtos e 22 imagens. Repetir o seed restaura os estoques e preços do manifesto.
+Pare se algum comando falhar. Variáveis já definidas no terminal têm prioridade sobre `.env`. A migração confirma a estrutura; o seed deve informar 75 produtos e 75 imagens (com `npm run seed -- --parcial`, só os que já têm foto, e a lista dos que faltam). Repetir o seed restaura os estoques e preços do manifesto.
 
 Abra `http://localhost:3000/api/health`: deve conter `data.storage: "postgresql"`. Confira home, imagens e login. Ctrl+C para parar; os dados permanecem no banco.
 

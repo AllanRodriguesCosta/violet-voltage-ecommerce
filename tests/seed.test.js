@@ -1,35 +1,35 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { unlink, writeFile, readFile, readdir } from "node:fs/promises";
+import { unlink, writeFile, readFile, readdir, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { once } from "node:events";
 import { fileURLToPath } from "node:url";
 import { randomBytes } from "node:crypto";
 import { MemoryStorage } from "../src/repositories/memory.js";
 import { seed, SeedInputError } from "../src/services/seed.js";
-import { seedProducts } from "../src/services/seed-products.js";
+import { seedProducts, ORIGINAL_SEED_COUNT, expansionProducts } from "../src/services/seed-products.js";
+const N = seedProducts.length;
 import { createApp } from "../src/app.js";
 import { productImage } from "../public/js/common.js";
 import { seedFixture, fixturePng } from "./helpers/seed-fixture.js";
 
-test("catálogo seed: 22 IDs únicos, marcas, categorias, preços e estoques", () => {
-  assert.equal(seedProducts.length, 22);
-  assert.equal(new Set(seedProducts.map((p) => p.file)).size, 22);
+test("catálogo seed: IDs sequenciais únicos, arquivos e modelos únicos, preços e estoques", () => {
+  assert.equal(ORIGINAL_SEED_COUNT, 22);
+  assert.ok(N >= 60 && N <= 80, `catálogo com ${N} produtos`);
+  assert.equal(new Set(seedProducts.map((p) => p.file)).size, N);
+  assert.equal(new Set(seedProducts.map((p) => p.modelo)).size, N, "modelo identifica a ficha");
   assert.deepEqual(
     seedProducts.map((p) => p.rowKey),
-    Array.from(
-      { length: 22 },
-      (_, i) => `demo-${String(i + 1).padStart(3, "0")}`,
-    ),
+    Array.from({ length: N }, (_, i) => `demo-${String(i + 1).padStart(3, "0")}`),
   );
-  const counts = {};
-  for (const p of seedProducts) {
-    counts[p.categoria] = (counts[p.categoria] || 0) + 1;
+  for (const [i, p] of seedProducts.entries()) {
     assert.ok(Number.isSafeInteger(p.priceCents) && p.priceCents > 0);
-    assert.ok(p.estoque >= 5 && p.estoque <= 30);
-    assert.ok(p.descricao.length >= 10);
+    assert.ok(p.descricao.length >= 10 && p.descricao.length <= 4000);
+    if (i < ORIGINAL_SEED_COUNT) assert.ok(p.estoque >= 5 && p.estoque <= 30);
+    else assert.ok(p.estoque >= 1 && p.estoque <= 50, p.modelo);
   }
-  assert.deepEqual(counts, {
+  const count = (list) => list.reduce((c, p) => ({ ...c, [p.categoria]: (c[p.categoria] || 0) + 1 }), {});
+  assert.deepEqual(count(seedProducts.slice(0, ORIGINAL_SEED_COUNT)), {
     Correias: 3,
     Amplificadores: 3,
     Pedais: 6,
@@ -37,11 +37,25 @@ test("catálogo seed: 22 IDs únicos, marcas, categorias, preços e estoques", (
     Acessórios: 3,
     Cabos: 4,
   });
+  assert.deepEqual(count(expansionProducts), {
+    Guitarras: 14,
+    Amplificadores: 10,
+    Pedais: 15,
+    Cabos: 3,
+    Correias: 3,
+    Acessórios: 8,
+  });
   assert.ok(
     seedProducts
+      .slice(0, ORIGINAL_SEED_COUNT)
       .filter((p) => p.categoria === "Guitarras")
       .every((p) => p.marca === "Violet Voltage"),
   );
+  const brands = new Set(expansionProducts.map((p) => p.marca));
+  assert.ok(brands.has("Violet Voltage") && brands.size >= 15, "mistura de marcas reais e própria");
+  // Fotos novas: subpastas existentes e nomes simples, sem espaço nem acento.
+  for (const p of expansionProducts)
+    assert.match(p.file, /^(guitarras|amplificadores|pedais|cabos|correias|acessorios)\/[a-z0-9-]+\.png$/, p.file);
   assert.equal(seedProducts[3].marca, "VOX");
   assert.equal(seedProducts[10].modelo, "TONEX MultiFX");
   assert.equal(seedProducts[21].marca, "Ernie Ball");
@@ -89,12 +103,12 @@ test("migra demo-001 a demo-008 pela RowKey e preserva produtos, datas e blobs m
   const firstDate = "2026-01-01T00:00:00.000Z";
   assert.deepEqual(
     await seed(storage, { ...options, now: () => new Date(firstDate) }),
-    { created: 14, updated: 8, uploaded: 22, total: 22 },
+    { created: N - 8, updated: 8, uploaded: N, total: N, ignored: [] },
   );
-  assert.equal(uploads, 22);
+  assert.equal(uploads, N);
   const first = await storage.list("products");
-  assert.equal(first.length, 23);
-  for (let i = 0; i < 22; i++) {
+  assert.equal(first.length, N + 1);
+  for (let i = 0; i < N; i++) {
     const expected = seedProducts[i];
     const product = first.find((p) => p.rowKey === expected.rowKey);
     assert.equal(product.modelo, expected.modelo);
@@ -111,12 +125,12 @@ test("migra demo-001 a demo-008 pela RowKey e preserva produtos, datas e blobs m
   const secondDate = "2026-01-02T00:00:00.000Z";
   assert.deepEqual(
     await seed(storage, { ...options, now: () => new Date(secondDate) }),
-    { created: 0, updated: 22, uploaded: 22, total: 22 },
+    { created: 0, updated: N, uploaded: N, total: N, ignored: [] },
   );
   const second = await storage.list("products");
-  assert.equal(second.length, 23);
-  assert.equal(new Set(second.map((p) => p.rowKey)).size, 23);
-  assert.equal(storage.blobs.size, 24);
+  assert.equal(second.length, N + 1);
+  assert.equal(new Set(second.map((p) => p.rowKey)).size, N + 1);
+  assert.equal(storage.blobs.size, N + 2);
   for (const p of second.filter((p) => p.rowKey.startsWith("demo-"))) {
     const original = first.find((x) => x.rowKey === p.rowKey);
     assert.equal(p.createdAt, original.createdAt);
@@ -149,17 +163,42 @@ test("pasta ausente, última imagem ausente e PNG inválido impedem qualquer gra
     seed(storage, {
       assetsDirectory: join(options.assetsDirectory, "ausente"),
     }),
-    (e) => e instanceof SeedInputError && e.message.includes("22 imagens"),
+    (e) => e instanceof SeedInputError && e.message.includes(`${N} imagens`),
   );
   const last = join(options.assetsDirectory, seedProducts.at(-1).file);
   await unlink(last);
-  await assert.rejects(
-    seed(storage, options),
-    /Nenhum produto ou imagem foi alterado/,
-  );
+  await assert.rejects(seed(storage, options), (e) => {
+    assert.match(e.message, new RegExp(`faltam 1 de ${N} imagens`));
+    assert.ok(e.message.includes(seedProducts.at(-1).file));
+    assert.match(e.message, /--parcial/);
+    assert.match(e.message, /Nenhum produto ou imagem foi alterado/);
+    return true;
+  });
   await writeFile(last, "PNG inválido");
   await assert.rejects(seed(storage, options), /não é um PNG válido/);
   assert.equal(mutations, 0);
+});
+
+test("modo parcial carrega só produtos com foto e lista os que faltam; sem nenhuma foto, interrompe", async (t) => {
+  const options = await seedFixture(t);
+  const storage = new MemoryStorage();
+  const withoutPhoto = expansionProducts.slice(0, 3);
+  for (const p of withoutPhoto) await unlink(join(options.assetsDirectory, p.file));
+  // Sem o modo parcial, a falta lista todos os arquivos ausentes e nada é gravado.
+  await assert.rejects(seed(storage, options), (e) => withoutPhoto.every((p) => e.message.includes(p.file)) && /faltam 3 de/.test(e.message));
+  assert.equal((await storage.list("products")).length, 0);
+  const result = await seed(storage, { ...options, partial: true });
+  assert.deepEqual(result, { created: N - 3, updated: 0, uploaded: N - 3, total: N, ignored: withoutPhoto.map((p) => p.file) });
+  const ids = new Set((await storage.list("products")).map((p) => p.rowKey));
+  assert.ok(withoutPhoto.every((p) => !ids.has(p.rowKey)));
+  // Quando as fotos chegam, o mesmo comando completa o catálogo sem duplicar.
+  for (const p of withoutPhoto) await writeFile(join(options.assetsDirectory, p.file), fixturePng);
+  assert.deepEqual(await seed(storage, { ...options, partial: true }), { created: 3, updated: N - 3, uploaded: N, total: N, ignored: [] });
+  assert.equal((await storage.list("products")).length, N);
+  // Pasta vazia: modo parcial não "conclui" sem nenhum produto.
+  const empty = join(options.assetsDirectory, "vazia");
+  await mkdir(empty);
+  await assert.rejects(seed(new MemoryStorage(), { assetsDirectory: empty, partial: true }), new RegExp(`faltam ${N} de ${N}`));
 });
 
 test("duplicação antiga de RowKey é detectada antes de alterar dados", async (t) => {
@@ -178,7 +217,7 @@ test("duplicação antiga de RowKey é detectada antes de alterar dados", async 
   assert.equal((await storage.list("products")).length, 2);
 });
 
-test("todos os 22 produtos e suas imagens continuam acessíveis por HTTP após repetir o seed", async (t) => {
+test("todos os produtos do manifesto e suas imagens continuam acessíveis por HTTP após repetir o seed", async (t) => {
   const storage = new MemoryStorage();
   const options = await seedFixture(t);
   await seed(storage, options);
@@ -195,7 +234,7 @@ test("todos os 22 produtos e suas imagens continuam acessíveis por HTTP após r
   assert.equal(health.data.status, "ok");
   assert.equal(Object.hasOwn(health.data, "payment"), false);
   const products = (await (await fetch(base + "/api/products")).json()).data;
-  assert.equal(products.length, 22);
+  assert.equal(products.length, N);
   for (const product of products) {
     const detail = await fetch(`${base}/api/products/${product.id}`);
     assert.equal(detail.status, 200);

@@ -9,7 +9,7 @@ Portfólio full stack de uma loja de instrumentos musicais. O fluxo registra
 pedidos demonstrativos, sem cobrar, entregar produtos ou integrar serviços fiscais.
 Não há avaliações, estrelas, gateway, recuperação de senha ou agentes ativos.
 Dados do banco antigo do professor não foram recuperados: o catálogo foi
-reconstruído com 22 produtos e imagens locais.
+reconstruído com 22 produtos e imagens locais e ampliado para 75 na etapa 18.
 
 ## Arquitetura e arquivos
 
@@ -31,7 +31,8 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/services/addresses.js` | Validação e regras dos endereços de entrega (até 5, um principal) |
 | `src/services/notifications.js` | Notificações da conta e avisos "Avise-me" disparados na reposição |
 | `src/services/bootstrap.js` | Criação/atualização privada do administrador |
-| `src/services/seed*.js` | Manifesto, fichas técnicas e carga dos 22 produtos/imagens |
+| `src/services/seed*.js` | Manifesto, fichas técnicas e carga dos 75 produtos/imagens (modo parcial para fotos em andamento) |
+| `scripts/check-photos.js` | `npm run fotos:conferir`: confere as fotos locais sem alterar nada |
 | `src/knowledge/genres.js` | Base de conhecimento musical por gênero (para o assistente da Fase 3) |
 | `src/repositories/factory.js`, `postgres.js` | Seleção de backend e persistência PostgreSQL |
 | `src/repositories/memory.js` | Armazenamento volátil de desenvolvimento e testes |
@@ -152,6 +153,27 @@ A base de conhecimento musical (`src/knowledge/genres.js`) descreve 16 gêneros:
 sinônimos, época, resumo do timbre e formatos, captação, amplificadores e
 efeitos que combinam. Ela não aparece na loja ainda; será usada pelo assistente
 da Fase 3.
+
+Catálogo ampliado (etapa 18): 75 produtos, os 22 originais e 53 novos (14
+guitarras, 10 amplificadores, 15 pedais, 3 cabos, 3 correias e 8 acessórios),
+misturando marcas reais e a marca própria. Preços e estoques são acadêmicos. Os
+produtos novos entram no fim do manifesto (`demo-023` a `demo-075`) e só aparecem
+no site depois do seed com as fotos (`docs/FOTOS-PENDENTES.txt`); o modo
+`npm run seed -- --parcial` carrega os que já têm foto. Testes garantem que cada
+um dos 16 gêneros tem guitarra, amplificador e pedal etiquetados, que as
+etiquetas batem com a base de conhecimento e que a conversa-alvo ("guitarra
+vintage para blues rock") tem várias Strats em estoque para sugerir.
+
+Para o catálogo maior: resultados em páginas de 24 com "Mostrar mais" (o foco
+vai para o primeiro item novo); atalhos por estilo musical na home, com a
+contagem de itens indicados; filtro "Estilo musical" no montador de setup
+(`?genero=`), que mostra os itens indicados primeiro e depois os versáteis, sem
+esconder o que já foi escolhido; e "Compre junto" escolhido pela ficha
+(`bundlePicks` em `public/js/pages/product.js`): cabo de instrumento para
+guitarra e amplificador, cabo patch e pedalboard ou afinador para pedal de efeito,
+afinidade de gênero e estilo (`affinity` em `public/js/specs.js`) e orçamento de
+até 1,5 vez o preço do produto. Os relacionados da mesma categoria também
+priorizam a afinidade.
 
 ### Carrinho e checkout
 

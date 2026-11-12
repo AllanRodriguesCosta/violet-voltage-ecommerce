@@ -1,0 +1,110 @@
+VIOLET VOLTAGE - FOTOS PENDENTES (ETAPA 18)
+===========================================
+
+Ultima atualizacao: 12/11/2026. 53 fotos novas, uma por produto adicionado na
+etapa 18 (catalogo passa de 22 para 75 produtos). Os 22 produtos originais
+continuam com as fotos que ja estao na pasta.
+
+O QUE FAZER
+-----------
+1. Salve cada foto com EXATAMENTE o nome indicado na linha, dentro de
+   seed-assets/produtos-violet-voltage/<subpasta>/ (ex.: .../guitarras/).
+   Essa pasta NAO vai para o GitHub (esta no .gitignore).
+2. Formato: PNG de verdade (JPG ou WebP renomeado para .png e recusado).
+   Quadrada (1:1), de 800x800 a 1200x1200 px, produto inteiro e centralizado,
+   fundo branco ou transparente, sem textos, precos ou marcas d'agua.
+   Ate 1 MB por foto (ideal: ate 500 KB). Para reduzir o peso sem custo:
+   https://squoosh.app (opcao OxiPNG) ou https://tinypng.com.
+3. Use apenas imagens que voce tenha direito de usar: fotos proprias, material
+   de divulgacao com permissao ou imagens com licenca livre.
+4. Marque [x] na linha de cada foto pronta (pode enviar este arquivo
+   atualizado em um pull request).
+5. Confira a pasta: npm run fotos:conferir
+   (mostra quantas fotos estao prontas, quais faltam, PNGs invalidos e
+   arquivos acima de 1 MB; nao altera nada).
+6. Carregue no banco, como na tarefa T06 de docs/PENDENCIAS-MANUAIS.txt:
+   - todas as fotos prontas:  npm run seed
+   - so parte delas:          npm run seed -- --parcial
+     (carrega os produtos que ja tem foto e lista os que ficaram de fora;
+     rode de novo quando chegarem mais fotos, sem duplicar nada)
+   Enquanto o seed nao rodar, os produtos novos nao aparecem no site publicado.
+
+LEGENDA: [ ] pendente   [x] pronta
+Cada linha: caixa, arquivo, produto (marca e modelo) e codigo do produto.
+
+GUITARRAS (14) - pasta guitarras/
+---------------------------------
+O que fotografar: guitarra inteira, de frente, na vertical.
+[ ] guitarras/fender-vintera-ii-60s-stratocaster.png  |  Fender Vintera II '60s Stratocaster  |  demo-023
+[ ] guitarras/squier-classic-vibe-50s-stratocaster.png  |  Squier Classic Vibe '50s Stratocaster  |  demo-024
+[ ] guitarras/fender-player-ii-telecaster.png  |  Fender Player II Telecaster  |  demo-025
+[ ] guitarras/squier-affinity-telecaster.png  |  Squier Affinity Telecaster  |  demo-026
+[ ] guitarras/epiphone-les-paul-standard-50s.png  |  Epiphone Les Paul Standard 50s  |  demo-027
+[ ] guitarras/gibson-les-paul-standard-60s.png  |  Gibson Les Paul Standard 60s  |  demo-028
+[ ] guitarras/epiphone-sg-standard.png  |  Epiphone SG Standard  |  demo-029
+[ ] guitarras/epiphone-es-335.png  |  Epiphone ES-335  |  demo-030
+[ ] guitarras/gretsch-g2420t-streamliner.png  |  Gretsch G2420T Streamliner  |  demo-031
+[ ] guitarras/squier-classic-vibe-60s-jazzmaster.png  |  Squier Classic Vibe '60s Jazzmaster  |  demo-032
+[ ] guitarras/jackson-js32-dinky.png  |  Jackson JS32 Dinky  |  demo-033
+[ ] guitarras/ibanez-grg121sp.png  |  Ibanez GRG121SP  |  demo-034
+[ ] guitarras/tagima-tg-530.png  |  Tagima TG-530  |  demo-035
+[ ] guitarras/prs-se-custom-24.png  |  PRS SE Custom 24  |  demo-036
+
+AMPLIFICADORES (10) - pasta amplificadores/
+-------------------------------------------
+O que fotografar: frente do amplificador, com o painel de controles visivel.
+[ ] amplificadores/fender-blues-junior-iv.png  |  Fender Blues Junior IV  |  demo-037
+[ ] amplificadores/fender-hot-rod-deluxe-iv.png  |  Fender Hot Rod Deluxe IV  |  demo-038
+[ ] amplificadores/fender-65-twin-reverb.png  |  Fender '65 Twin Reverb  |  demo-039
+[ ] amplificadores/marshall-dsl20cr.png  |  Marshall DSL20CR  |  demo-040
+[ ] amplificadores/marshall-origin-20c.png  |  Marshall Origin 20C  |  demo-041
+[ ] amplificadores/vox-ac30c2.png  |  VOX AC30C2  |  demo-042
+[ ] amplificadores/orange-crush-20rt.png  |  Orange Crush 20RT  |  demo-043
+[ ] amplificadores/boss-katana-50-mkii.png  |  Boss Katana-50 MkII  |  demo-044
+[ ] amplificadores/fender-champion-20.png  |  Fender Champion 20  |  demo-045
+[ ] amplificadores/evh-5150-iconic-15w.png  |  EVH 5150 Iconic 15W 1x10  |  demo-046
+
+PEDAIS (15) - pasta pedais/
+---------------------------
+O que fotografar: pedal visto de cima, com os controles legiveis.
+[ ] pedais/ibanez-ts9-tube-screamer.png  |  Ibanez Tube Screamer TS9  |  demo-047
+[ ] pedais/boss-bd-2-blues-driver.png  |  Boss BD-2 Blues Driver  |  demo-048
+[ ] pedais/boss-ds-1-distortion.png  |  Boss DS-1 Distortion  |  demo-049
+[ ] pedais/ehx-big-muff-pi.png  |  Electro-Harmonix Big Muff Pi  |  demo-050
+[ ] pedais/dunlop-cry-baby-gcb95.png  |  Dunlop Cry Baby GCB95  |  demo-051
+[ ] pedais/mxr-carbon-copy.png  |  MXR Carbon Copy  |  demo-052
+[ ] pedais/boss-dd-8-digital-delay.png  |  Boss DD-8 Digital Delay  |  demo-053
+[ ] pedais/ehx-holy-grail-neo.png  |  Electro-Harmonix Holy Grail Neo  |  demo-054
+[ ] pedais/boss-tu-3-chromatic-tuner.png  |  Boss TU-3 Chromatic Tuner  |  demo-055
+[ ] pedais/mxr-dyna-comp.png  |  MXR Dyna Comp  |  demo-056
+[ ] pedais/boss-tr-2-tremolo.png  |  Boss TR-2 Tremolo  |  demo-057
+[ ] pedais/proco-rat-2.png  |  Pro Co RAT 2  |  demo-058
+[ ] pedais/boss-mt-2-metal-zone.png  |  Boss MT-2 Metal Zone  |  demo-059
+[ ] pedais/line6-hx-stomp.png  |  Line 6 HX Stomp  |  demo-060
+[ ] pedais/tc-electronic-ditto-looper.png  |  TC Electronic Ditto Looper  |  demo-061
+
+CABOS (3) - pasta cabos/
+------------------------
+O que fotografar: cabo enrolado mostrando os plugues.
+[ ] cabos/daddario-american-stage-3m.png  |  D'Addario American Stage 3 m  |  demo-062
+[ ] cabos/violet-voltage-cabo-tweed-6m.png  |  Violet Voltage Cabo Tweed Vintage 6 m  |  demo-063
+[ ] cabos/violet-voltage-patch-flat-kit-6.png  |  Violet Voltage Kit 6 Patch Cables Flat  |  demo-064
+
+CORREIAS (3) - pasta correias/
+------------------------------
+O que fotografar: correia inteira mostrando a cor ou a estampa.
+[ ] correias/violet-voltage-correia-couro-marrom.png  |  Violet Voltage Correia Couro Vintage Marrom  |  demo-065
+[ ] correias/violet-voltage-correia-flower-power.png  |  Violet Voltage Correia Flower Power 70s  |  demo-066
+[ ] correias/violet-voltage-correia-algodao-cru.png  |  Violet Voltage Correia Algodão Cru  |  demo-067
+
+ACESSORIOS (8) - pasta acessorios/
+----------------------------------
+O que fotografar: produto em destaque (a embalagem tambem serve).
+[ ] acessorios/daddario-exl110.png  |  D'Addario Encordoamento EXL110 0.10  |  demo-068
+[ ] acessorios/ernie-ball-regular-slinky.png  |  Ernie Ball Encordoamento Regular Slinky 0.10  |  demo-069
+[ ] acessorios/elixir-nanoweb-light.png  |  Elixir Encordoamento Nanoweb Light 0.10  |  demo-070
+[ ] acessorios/kyser-quick-change.png  |  Kyser Capotraste Quick-Change  |  demo-071
+[ ] acessorios/boss-tu-10.png  |  Boss TU-10 Afinador Clip-on  |  demo-072
+[ ] acessorios/dunlop-system-65.png  |  Dunlop Kit de Limpeza System 65  |  demo-073
+[ ] acessorios/dunlop-tortex-073.png  |  Dunlop Palhetas Tortex 0,73 mm (12 un.)  |  demo-074
+[ ] acessorios/violet-voltage-suporte-triplo.png  |  Violet Voltage Suporte Triplo de Chão  |  demo-075

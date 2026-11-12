@@ -1,7 +1,7 @@
 VIOLET VOLTAGE - PENDENCIAS MANUAIS (ALLAN E CODEX)
 ====================================================
 
-Ultima atualizacao: 12/11/2026 (etapa 17 da Fase 3).
+Ultima atualizacao: 12/11/2026 (etapa 18 da Fase 3).
 
 PARA QUE SERVE
 --------------
@@ -10,7 +10,7 @@ do GitHub (uma branch e um pull request por etapa, merge so com o CI verde).
 Este arquivo lista o que o Copilot NAO consegue fazer a partir do GitHub e que
 precisa ser feito no computador do Allan, por ele ou pelo Codex.
 Ferramentas, contas e bibliotecas: docs/FERRAMENTAS-E-BIBLIOTECAS.txt.
-Fotos de produtos novos: docs/FOTOS-PENDENTES.txt (criado na etapa 18).
+Fotos de produtos novos: docs/FOTOS-PENDENTES.txt (53 fotos da etapa 18).
 
 REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
 --------------------------------------------
@@ -29,9 +29,9 @@ REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
    usado. Nao tente "consertar" mudando codigo.
 
 ----------------------------------------------------------------------
-T01 [ ] ALLAN - Publicar a etapa 17 no Render
+T01 [ ] ALLAN - Publicar as etapas 17 e 18 no Render
 ----------------------------------------------------------------------
-Depois do merge do pull request da etapa 17 em main:
+Depois do merge dos pull requests das etapas 17 e 18 em main:
 - Se o servico do Render tem deploy automatico, so confirme que o ultimo
   deploy terminou com sucesso. Caso contrario, use "Manual Deploy" > "Deploy
   latest commit".
@@ -41,7 +41,11 @@ Como conferir no site publicado:
 - /produto.html?id=demo-013 mostra "Sobre este equipamento" com Estilo,
   Indicado para (generos clicaveis), Formato, Captacao, Ponte, Timbre e Nivel.
 - /catalogo.html?categoria=Guitarras&generos=Blues+rock mostra 2 guitarras e
-  os filtros Formato, Captacao, Timbre e Nivel.
+  os filtros Formato, Captacao, Timbre e Nivel (enquanto so os 22 produtos
+  originais estiverem no banco; depois da T06 aparecem mais).
+- Home mostra "Escolha por estilo musical"; setup.html tem o campo "Estilo
+  musical".
+Os 53 produtos novos so aparecem no site depois da T06 (seed com as fotos).
 Resultado:
 
 ----------------------------------------------------------------------
@@ -91,23 +95,29 @@ Resultado:
 ----------------------------------------------------------------------
 T05 [ ] ALLAN - Fotos dos produtos novos (etapa 18)
 ----------------------------------------------------------------------
-Bloqueada ate o Copilot publicar docs/FOTOS-PENDENTES.txt na etapa 18. Cada
-produto novo precisara de um PNG na pasta e com o nome indicados la.
+Siga docs/FOTOS-PENDENTES.txt: 53 fotos PNG, cada uma com o nome exato da
+lista, em seed-assets/produtos-violet-voltage/<subpasta>/. Formato, tamanho e
+ferramentas gratuitas para reduzir o peso estao no inicio daquele arquivo.
+Nao precisa entregar todas de uma vez (ver T06, modo parcial).
 Resultado:
 
 ----------------------------------------------------------------------
 T06 [ ] CODEX - Rodar o seed com as fotos novas (depois da T05)
 ----------------------------------------------------------------------
-Bloqueada ate a T05. Passo a passo completo em seed-assets/README.md e
-docs/COLOCAR-NO-AR.md. Resumo:
-- Fotos em seed-assets/produtos-violet-voltage/<subpasta>/<arquivo>.png.
+Depende da T05 (pode rodar com parte das fotos). Passo a passo completo em
+seed-assets/README.md e docs/COLOCAR-NO-AR.md. Resumo, na raiz do projeto:
+- npm ci                  (so na primeira vez ou se o package-lock.json mudar)
+- npm run fotos:conferir  (nao altera nada; mostra prontas, faltando, PNGs
+                           invalidos e arquivos acima de 1 MB)
 - .env local com DATABASE_URL, DATABASE_SSL=true e JWT_SECRET (sem mostrar
   os valores) e DEV_MEMORY_STORAGE=false.
-- npm ci   (so na primeira vez ou se o package-lock.json mudar)
-- npm run seed
-O resumo final deve informar o total de produtos e de imagens igual ao numero
-de itens do manifesto. Se faltar alguma foto, o seed para antes de alterar
-qualquer dado e diz qual arquivo falta.
+- Todas as 75 fotos prontas:  npm run seed
+  Parte das fotos:            npm run seed -- --parcial
+O resumo deve informar produtos criados/atualizados e imagens enviadas; no
+modo parcial, tambem a lista dos que ficaram sem foto. Rodar de novo quando
+chegarem mais fotos completa o catalogo sem duplicar. Atencao: o seed
+restaura precos e estoques do manifesto nos produtos demo-001 a demo-075.
+Depois, confira no site publicado: /catalogo.html mostra "Mostrando 24 de N".
 Resultado:
 
 ----------------------------------------------------------------------
@@ -115,4 +125,14 @@ T07 [ ] ALLAN - Chave gratuita do Gemini (etapa 20, ainda nao necessaria)
 ----------------------------------------------------------------------
 So quando o Copilot entregar a etapa 20. Passos em
 docs/FERRAMENTAS-E-BIBLIOTECAS.txt, secao "Google AI Studio".
+Resultado:
+
+----------------------------------------------------------------------
+T08 [ ] ALLAN - Revisar os produtos novos (opcional)
+----------------------------------------------------------------------
+Os 53 produtos novos usam modelos reais. Fichas, descricoes e precos foram
+escritos a partir de especificacoes conhecidas dos fabricantes e de precos
+aproximados, sem consulta a lojas (precos academicos). Se algo nao bater com
+o produto da foto escolhida (ex.: outra versao do modelo, cor, potencia,
+comprimento do cabo), anote produto, campo e valor certo e passe ao Copilot.
 Resultado:

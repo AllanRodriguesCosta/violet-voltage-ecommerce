@@ -1,4 +1,5 @@
 import { icon } from "../icons.js";
+import { GENEROS } from "../specs.js";
 import {
   catalogProducts,
   categories,
@@ -20,6 +21,15 @@ const setups = [
   { id: "palco", title: "Pronto para o palco", text: "Timbre de show do primeiro ao último acorde.", items: ["demo-014", "demo-004", "demo-011", "demo-020"] },
 ];
 
+// Atalhos por estilo musical: gêneros da ficha com quantos itens indicados cada um tem.
+function renderGenres(products) {
+  const section = document.querySelector("#estilos");
+  const items = GENEROS.map((g) => [g, products.filter((p) => p.ficha?.generos?.includes(g)).length]).filter(([, n]) => n);
+  section.hidden = !items.length;
+  document.querySelector("#genre-cloud").innerHTML = items
+    .map(([g, n]) => `<li><a class="chip genre-chip" href="/catalogo.html?generos=${encodeURIComponent(g)}">${esc(g)}<span class="facet-count">${n}</span></a></li>`)
+    .join("");
+}
 function highlights(products) {
   const available = products.filter((p) => p.estoque > 0);
   const flagship = categories
@@ -106,6 +116,7 @@ export default async function home() {
     return;
   }
   renderCategories(products);
+  renderGenres(products);
   renderRow("#destaques", highlights(products), products);
   const recent = getRecent()
     .map((id) => products.find((p) => p.id === id))

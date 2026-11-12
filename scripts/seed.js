@@ -9,10 +9,16 @@ try {
   const config = configuration();
   storage = createStorage(config);
   await storage.init();
-  const result = await seed(storage);
+  // "npm run seed -- --parcial" carrega só os produtos que já têm foto.
+  const partial = process.argv.includes("--parcial");
+  const result = await seed(storage, { partial });
   console.log(
     `Seed concluído: ${result.created} produtos criados, ${result.updated} atualizados e ${result.uploaded} imagens enviadas. Total do catálogo seed: ${result.total}. Produtos manuais preservados.`,
   );
+  if (result.ignored.length)
+    console.log(
+      `Modo parcial: ${result.ignored.length} produtos ficaram de fora por falta de foto (lista em docs/FOTOS-PENDENTES.txt):\n${result.ignored.map((file) => `  - ${file}`).join("\n")}`,
+    );
   if (config.memory) {
     serving = true;
     await bootstrapAdmin(storage);

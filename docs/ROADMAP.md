@@ -273,10 +273,18 @@ pagamento. Decisões:
 
 ### 18. Catálogo ampliado
 
-- [ ] Cerca de 60 a 80 produtos, misturando marcas reais e a marca própria,
-      todos com ficha técnica, cobrindo os gêneros da base de conhecimento.
-- [ ] Lista de fotos necessárias em `docs/FOTOS-PENDENTES.txt` (arquivo, pasta
-      e produto); o seed só roda com todas as fotos presentes.
+- [x] 75 produtos (22 originais + 53 novos: 14 guitarras, 10 amplificadores,
+      15 pedais, 3 cabos, 3 correias e 8 acessórios), misturando marcas reais
+      e a marca própria, todos com ficha técnica; novos tipos de efeito
+      (compressor, tremolo, afinador e looper). Cada gênero da base de
+      conhecimento tem guitarra, amplificador e pedal etiquetados, com
+      etiquetas coerentes com a base (verificado por teste).
+- [x] Lista de fotos em `docs/FOTOS-PENDENTES.txt` (arquivo, produto e código);
+      `npm run fotos:conferir` confere a pasta; `npm run seed -- --parcial`
+      carrega só os produtos que já têm foto e lista os que faltam.
+- [x] Catálogo em páginas de 24 com "Mostrar mais"; atalhos por estilo musical
+      na home; filtro de estilo no montador de setup (`?genero=`); "Compre
+      junto" e relacionados escolhidos pela ficha.
 
 ### 19. Assistente com PLN local
 

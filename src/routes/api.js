@@ -23,11 +23,14 @@ import {
   alertKey,
   restockAlerts,
   demandByProduct,
+  priceDropAlerts,
+  priceWatchers,
 } from "../services/notifications.js";
 import { publicProduct, publicOrder } from "../controllers/serialization.js";
 import { specText } from "../../public/js/specs.js";
 import { reply } from "../assistant/index.js";
 import { changePassword, exportData, deleteAccount } from "../services/account.js";
+import { answeredQuestions, askQuestion, moderateQuestion, publicQuestion, adminQuestion } from "../services/questions.js";
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024, files: 1 },
@@ -221,6 +224,8 @@ export function apiRouter(storage, config) {
   // "Avise-me": aviso de volta ao estoque para itens esgotados.
   const publicAlert = (a, p) => ({
     productId: a.productId,
+    tipo: a.tipo === "preco" ? "preco" : "estoque",
+    ...(a.tipo === "preco" ? { priceCents: a.priceCents } : {}),
     createdAt: a.createdAt,
     notifiedAt: a.notifiedAt,
     produto: p?.ativo ? publicProduct(p) : null,
@@ -230,19 +235,30 @@ export function apiRouter(storage, config) {
     const products = await storage.getManyByRowKeys("products", alerts.map((a) => a.productId));
     res.json({ data: alerts.map((a) => publicAlert(a, products.find((p) => p.rowKey === a.productId))) });
   });
+  // tipo "estoque" (padrão): só itens esgotados. tipo "preco": avisa quando ficar abaixo do preço de hoje.
   r.post("/alerts", authenticated, async (req, res) => {
     const p = await product(req.body.productId ?? "");
-    if (p.estoque > 0) throw new AppError(409, "Este produto já está disponível. Aproveite para adicioná-lo ao carrinho.");
-    const key = alertKey(req.user.id, p.rowKey);
+    const tipo = req.body.tipo === undefined ? "estoque" : req.body.tipo;
+    if (!["estoque", "preco"].includes(tipo)) throw new AppError(400, "Tipo de aviso inválido.", "tipo");
+    if (tipo === "estoque" && p.estoque > 0) throw new AppError(409, "Este produto já está disponível. Aproveite para adicioná-lo ao carrinho.");
+    const key = alertKey(req.user.id, p.rowKey, tipo);
     const existing = await storage.get("alerts", req.user.id, key);
     if (existing && !existing.notifiedAt) return res.json({ data: publicAlert(existing, p) });
-    const alert = { partitionKey: req.user.id, rowKey: key, productId: p.rowKey, customerId: req.user.id, createdAt: new Date().toISOString(), notifiedAt: null };
+    const alert = {
+      partitionKey: req.user.id,
+      rowKey: key,
+      productId: p.rowKey,
+      customerId: req.user.id,
+      ...(tipo === "preco" ? { tipo, priceCents: p.priceCents } : {}),
+      createdAt: new Date().toISOString(),
+      notifiedAt: null,
+    };
     if (existing) await storage.save("alerts", alert, existing.etag);
     else await storage.create("alerts", alert);
     res.status(201).json({ data: publicAlert(alert, p) });
   });
   r.delete("/alerts/:productId", authenticated, async (req, res) => {
-    await storage.remove("alerts", req.user.id, alertKey(req.user.id, String(req.params.productId)));
+    await storage.remove("alerts", req.user.id, alertKey(req.user.id, String(req.params.productId), req.query.tipo === "preco" ? "preco" : "estoque"));
     res.json({ data: { ok: true } });
   });
   // Assistente de compras (PLN local): só para quem está logado, com limite por usuário.
@@ -302,6 +318,23 @@ export function apiRouter(storage, config) {
   r.get("/products/:id", async (req, res) =>
     res.json({ data: publicProduct(await product(req.params.id)) }),
   );
+  // Perguntas e respostas do produto: públicas só as respondidas; perguntar exige conta.
+  const questionLimit = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    limit: 10,
+    keyGenerator: (req) => req.user.id,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    handler: (_req, res) => res.status(429).json({ error: { message: "Muitas perguntas seguidas. Tente de novo mais tarde." } }),
+  });
+  r.get("/products/:id/questions", async (req, res) => {
+    const p = await product(req.params.id);
+    res.set("Cache-Control", "no-store").json({ data: await answeredQuestions(storage, p.rowKey) });
+  });
+  r.post("/products/:id/questions", authenticated, questionLimit, async (req, res) => {
+    const p = await product(req.params.id);
+    res.status(201).json({ data: publicQuestion(await askQuestion(storage, req.user, p, req.body)) });
+  });
   r.get("/images/:id", async (req, res) => {
     const p = await product(req.params.id);
     if (!p.blobName) throw new AppError(404, "Imagem não encontrada.");
@@ -370,7 +403,16 @@ export function apiRouter(storage, config) {
       })
       .filter(Boolean)
       .sort((a, b) => b.avisos - a.avisos);
-    res.json({ data: { ...summary(p, c, o), procura } });
+    // Interesse em preço: avisos de queda de preço ativos, por produto.
+    const precoAvisos = [...(await priceWatchers(storage))]
+      .map(([id, avisos]) => {
+        const item = p.find((x) => x.rowKey === id && x.ativo);
+        return item && { id, nome: `${item.marca} ${item.modelo}`, priceCents: item.priceCents, avisos };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.avisos - a.avisos);
+    const perguntasPendentes = (await storage.list("questions")).filter((q) => q.status === "pendente").length;
+    res.json({ data: { ...summary(p, c, o), procura, precoAvisos, perguntasPendentes } });
   });
   r.post("/admin/products", async (req, res) => {
     const input = productInput(req.body);
@@ -401,6 +443,8 @@ export function apiRouter(storage, config) {
           await scoped.save("products", next, p.etag);
           // Reposição de item esgotado notifica quem pediu "Avise-me", na mesma transação.
           if (p.estoque === 0 && next.estoque > 0) await restockAlerts(scoped, next);
+          // Preço menor que o registrado no aviso de queda de preço também notifica.
+          if (next.priceCents < p.priceCents) await priceDropAlerts(scoped, next);
         };
         await (storage.transaction ? storage.transaction(apply) : apply(storage));
         return publicProduct(next);
@@ -491,6 +535,20 @@ export function apiRouter(storage, config) {
       u.etag,
     );
     res.json({ data: { ok: true } });
+  });
+  r.get("/admin/questions", async (_req, res) => {
+    const [questions, products] = await Promise.all([storage.list("questions"), storage.list("products")]);
+    const order = { pendente: 0, respondida: 1, oculta: 2 };
+    res.json({
+      data: questions
+        .sort((a, b) => order[a.status] - order[b.status] || b.createdAt.localeCompare(a.createdAt))
+        .map((q) => adminQuestion(q, products.find((p) => p.rowKey === q.productId))),
+    });
+  });
+  r.patch("/admin/questions/:id", async (req, res) => {
+    const found = await storage.getByRowKey("questions", String(req.params.id));
+    const p = found && (await storage.getByRowKey("products", found.productId));
+    res.json({ data: adminQuestion(await moderateQuestion(storage, req.params.id, req.body, p), p) });
   });
   r.get("/admin/orders", async (_req, res) =>
     res.json({ data: (await storage.list("orders")).map(publicOrder) }),

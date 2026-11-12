@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { AppError, integer, text } from "../utils/validation.js";
 import { quote, installments, shipping } from "./pricing.js";
+import { SERVICES, servicePrice } from "../../public/js/services.js";
 export { shipping };
 // IDs pedidos pelo cliente, para buscar só os produtos necessários.
 export const itemIds = (items) =>
@@ -20,6 +21,15 @@ export function calculate(items, products) {
     const quantidade = integer(item.quantidade, "quantidade", 1, 99);
     if (!p || p.estoque < quantidade)
       throw new AppError(409, "Produto indisponível ou estoque insuficiente.");
+    // Serviços por unidade (regulagem, troca de cordas, garantia), com preço do servidor.
+    const requested = item.servicos === undefined ? [] : item.servicos;
+    if (!Array.isArray(requested) || requested.length > 3 || new Set(requested).size !== requested.length)
+      throw new AppError(400, "Serviços inválidos.");
+    const servicos = requested.map((id) => {
+      if (typeof id !== "string" || !Object.hasOwn(SERVICES, id) || !SERVICES[id].categorias.includes(p.categoria))
+        throw new AppError(400, "Serviço indisponível para este item.");
+      return { id, nome: SERVICES[id].nome, priceCents: servicePrice(id, p) };
+    });
     return {
       id: p.rowKey,
       nome: `${p.marca} ${p.modelo}`,
@@ -27,6 +37,7 @@ export function calculate(items, products) {
       modelo: p.modelo,
       quantidade,
       priceCents: p.priceCents,
+      ...(servicos.length ? { servicos } : {}),
     };
   });
 }
@@ -67,6 +78,7 @@ export async function placeOrder(storage, user, body) {
       freteCents: totals.freteCents,
       descontoCents: totals.descontoCents,
       descontoKitsCents: totals.descontoKitsCents,
+      servicosCents: totals.servicosCents,
       kits: totals.kits,
       cupom: totals.cupom?.codigo || null,
       totalCents: totals.totalCents,

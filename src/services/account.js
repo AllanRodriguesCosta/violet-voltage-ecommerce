@@ -31,10 +31,11 @@ export async function changePassword(storage, user, body = {}) {
 }
 
 export async function exportData(storage, user) {
-  const [orders, alerts, notifications] = await Promise.all([
+  const [orders, alerts, notifications, questions] = await Promise.all([
     storage.listByPartition("orders", user.id),
     storage.listByPartition("alerts", user.id),
     storage.listByPartition("notifications", user.id),
+    storage.list("questions"),
   ]);
   const conta = safeCustomer(user);
   delete conta.role;
@@ -44,7 +45,10 @@ export async function exportData(storage, user) {
     loja: "Violet Voltage",
     conta: { ...conta, criadaEm: user.createdAt || null },
     pedidos: orders.map(publicOrder).map((o) => ({ ...o, partitionKey: undefined, requestId: undefined })),
-    avisosDeEstoque: alerts.map((a) => ({ produto: a.productId, criadoEm: a.createdAt, avisadoEm: a.notifiedAt || null })),
+    avisos: alerts.map((a) => ({ tipo: a.tipo === "preco" ? "preço" : "estoque", produto: a.productId, ...(a.tipo === "preco" ? { precoNoPedidoCents: a.priceCents } : {}), criadoEm: a.createdAt, avisadoEm: a.notifiedAt || null })),
+    perguntas: questions
+      .filter((q) => q.customerId === user.id)
+      .map((q) => ({ produto: q.productId, pergunta: q.pergunta, resposta: q.resposta || null, situacao: q.status, criadaEm: q.createdAt })),
     notificacoes: notifications.map(publicNotification),
     armazenadoNoNavegador: "Carrinho, favoritos, vistos recentemente, buscas recentes, tema e conversa do assistente ficam só no seu navegador e não fazem parte desta cópia.",
   };
@@ -61,6 +65,11 @@ export async function deleteAccount(storage, user, body = {}) {
     throw new AppError(409, `Você tem ${open} ${open === 1 ? "pedido em andamento" : "pedidos em andamento"}. Aguarde a conclusão ou cancele antes de excluir a conta.`);
   for (const table of ["alerts", "notifications"])
     for (const item of await storage.listByPartition(table, user.id)) await storage.remove(table, item.partitionKey, item.rowKey);
+  // Perguntas: as pendentes somem; as respondidas ficam na página do produto sem o nome.
+  for (const q of (await storage.list("questions")).filter((x) => x.customerId === user.id)) {
+    if (q.status === "respondida") await storage.save("questions", { ...q, customerId: null, autor: "Cliente" }, q.etag);
+    else await storage.remove("questions", q.partitionKey, q.rowKey);
+  }
   const now = new Date().toISOString();
   await storage.save(
     "customers",

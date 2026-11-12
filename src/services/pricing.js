@@ -35,6 +35,7 @@ export function quote(items, { entrega, cupom } = {}) {
   // Kits completos no carrinho ganham desconto automático; o cupom vale sobre o restante.
   const { kits, descontoKitsCents } = kitDiscounts(items);
   const baseCents = subtotalCents - descontoKitsCents;
+  const servicosCents = items.reduce((sum, i) => sum + (i.servicos || []).reduce((t, s) => t + s.priceCents, 0) * i.quantidade, 0);
   const freteGratis = entrega === "padrao" && subtotalCents >= FREE_SHIPPING_CENTS;
   let freteCents = freteGratis ? 0 : shipping[entrega];
   let descontoCents = 0;
@@ -53,13 +54,14 @@ export function quote(items, { entrega, cupom } = {}) {
     else freteCents = 0;
     applied = { codigo: code, descricao: rule.description };
   }
-  const totalCents = baseCents + freteCents - descontoCents;
+  const totalCents = baseCents + servicosCents + freteCents - descontoCents;
   return {
     subtotalCents,
     freteCents,
     descontoCents,
     descontoKitsCents,
     kits,
+    servicosCents,
     totalCents,
     freteGratis,
     faltaFreteGratisCents: Math.max(0, FREE_SHIPPING_CENTS - subtotalCents),

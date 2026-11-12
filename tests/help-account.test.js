@@ -94,7 +94,7 @@ test("conta: trocar senha encerra outras sessões, baixar dados e excluir a cont
   assert.equal(exported.headers.get("cache-control"), "no-store");
   assert.equal(exported.body.conta.email, "ana@seg.test");
   assert.equal(exported.body.pedidos.length, 1);
-  assert.equal(exported.body.avisosDeEstoque.length, 1);
+  assert.equal(exported.body.avisos.length, 1);
   const raw = JSON.stringify(exported.body);
   assert.ok(!raw.includes("passwordHash") && !raw.includes("bia@seg.test"), "sem senha e sem dados de outra pessoa");
   assert.equal((await call("/account/export", { method: "GET" })).status, 401);

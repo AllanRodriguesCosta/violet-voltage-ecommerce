@@ -85,7 +85,7 @@ export default async function checkout(session) {
     const q = state.quote;
     const byId = new Map(items.map((i) => [i.id, i.product]));
     $("#summary-items").innerHTML = q.items
-      .map((i) => `<li><img src="${esc(productImage(byId.get(i.id)))}" alt="" width="56" height="56"><span class="summary-item-name">${esc(i.nome)}<small>${i.quantidade} × ${money(i.priceCents)}</small></span><strong>${money(i.totalCents)}</strong></li>`)
+      .map((i) => `<li><img src="${esc(productImage(byId.get(i.id)))}" alt="" width="56" height="56"><span class="summary-item-name">${esc(i.nome)}<small>${i.quantidade} × ${money(i.priceCents)}</small>${(i.servicos || []).map((sv) => `<small class="summary-service">+ ${esc(sv.nome)}: ${money(sv.priceCents * i.quantidade)}</small>`).join("")}</span><strong>${money(i.totalCents)}</strong></li>`)
       .join("");
     $("#summary-totals").innerHTML = totalsHTML(q);
     const parcel = state.pagamento === "cartao" && state.parcelas > 1 ? ` · ${state.parcelas}x de ${money(installmentValue(q.totalCents, state.parcelas))}` : "";

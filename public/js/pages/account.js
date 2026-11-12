@@ -143,11 +143,14 @@ async function alerts() {
       ? `<ul class="alert-items">${shown
           .map((a) => {
             const p = a.produto;
-            const back = p.estoque > 0;
-            return `<li class="alert-item"><img src="${esc(productImage(p))}" alt="" width="52" height="52"><div class="alert-info"><a href="/produto.html?id=${encodeURIComponent(p.id)}">${esc(p.marca)} ${esc(p.modelo)}</a><span class="alert-state ${back ? "is-back" : "is-waiting"}">${back ? "Disponível novamente" : "Aguardando reposição"}</span></div><div class="alert-actions">${back ? `<button type="button" class="button" data-alert-cart="${esc(p.id)}">${icon("bag", { size: 16 })}Adicionar</button>` : ""}<button type="button" class="text-button" data-alert-remove="${esc(p.id)}" aria-label="Remover aviso de ${esc(p.marca)} ${esc(p.modelo)}">Remover</button></div></li>`;
+            const price = a.tipo === "preco";
+            const back = price ? Boolean(a.notifiedAt) || p.priceCents < a.priceCents : p.estoque > 0;
+            const state = price ? (back ? `Baixou: agora ${money(p.priceCents)}` : `Aguardando queda de preço (hoje ${money(p.priceCents)})`) : back ? "Disponível novamente" : "Aguardando reposição";
+            const key = `${p.id}|${price ? "preco" : "estoque"}`;
+            return `<li class="alert-item"><img src="${esc(productImage(p))}" alt="" width="52" height="52"><div class="alert-info"><a href="/produto.html?id=${encodeURIComponent(p.id)}">${esc(p.marca)} ${esc(p.modelo)}</a><span class="alert-state ${back ? "is-back" : "is-waiting"}">${icon(price ? "tag" : "bell", { size: 14 })}${state}</span></div><div class="alert-actions">${back && p.estoque > 0 ? `<button type="button" class="button" data-alert-cart="${esc(p.id)}">${icon("bag", { size: 16 })}Adicionar</button>` : ""}<button type="button" class="text-button" data-alert-remove="${esc(key)}" aria-label="Remover aviso ${price ? "de preço" : "de estoque"} de ${esc(p.marca)} ${esc(p.modelo)}">Remover</button></div></li>`;
           })
           .join("")}</ul>`
-      : emptyState({ symbol: "bell", level: 3, title: "Nenhum aviso ativo.", text: "Nos itens esgotados, toque em “Avise-me quando chegar”." });
+      : emptyState({ symbol: "bell", level: 3, title: "Nenhum aviso ativo.", text: "Nos itens esgotados, toque em “Avise-me quando chegar”. Em qualquer produto, “Avisar se baixar o preço”." });
   };
   const load = async () => {
     try {
@@ -164,9 +167,10 @@ async function alerts() {
       const a = items.find((x) => x.productId === cart.dataset.alertCart);
       if (a?.produto) addCart(a.produto, 1, { source: cart.closest("li").querySelector("img") });
     } else if (remove) {
+      const [id, tipo] = remove.dataset.alertRemove.split("|");
       try {
-        await send(`/alerts/${encodeURIComponent(remove.dataset.alertRemove)}`, {}, "DELETE");
-        items = items.filter((x) => x.productId !== remove.dataset.alertRemove);
+        await send(`/alerts/${encodeURIComponent(id)}${tipo === "preco" ? "?tipo=preco" : ""}`, {}, "DELETE");
+        items = items.filter((x) => !(x.productId === id && (x.tipo || "estoque") === tipo));
         render();
         toast("Aviso removido.", { type: "success" });
       } catch (error) {

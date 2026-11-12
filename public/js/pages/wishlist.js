@@ -1,5 +1,6 @@
 import { icon } from "../icons.js";
-import { catalogProducts, getWishlist, setWishlist, getCart, setCart, toast } from "../common.js";
+import { catalogProducts, getWishlist, setWishlist, getCart, setCart, toast, sessionReady } from "../common.js";
+import { setPriceAlert, watchedPrices } from "../alerts.js";
 import { productCard, skeletonCards, bindCards, emptyState, errorState } from "../components.js";
 import { openCart } from "../drawer.js";
 
@@ -53,6 +54,35 @@ export default async function wishlist() {
     }
     openCart(`${added} ${added === 1 ? "favorito adicionado" : "favoritos adicionados"} ao carrinho.`);
   });
+  // Aviso de queda de preço para todos os favoritos de uma vez (conta necessária).
+  document.querySelector("#wishlist-price").addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    if (!(await sessionReady)) {
+      toast("Entre na sua conta para receber avisos de preço dos favoritos.", {
+        action: { label: "Entrar", onClick: () => (location.href = "/login.html?next=%2Ffavoritos.html") },
+      });
+      return;
+    }
+    const watched = await watchedPrices();
+    const pending = getWishlist().filter((id) => products.some((p) => p.id === id) && !watched.has(id));
+    if (!pending.length) return toast("Todos os favoritos já têm aviso de preço ativo.", { type: "info" });
+    button.disabled = true;
+    let done = 0;
+    for (const id of pending) {
+      try {
+        await setPriceAlert(id, true);
+        done++;
+      } catch {
+        /* segue com os demais */
+      }
+    }
+    button.disabled = false;
+    toast(done ? `Aviso de preço ativado para ${done} ${done === 1 ? "favorito" : "favoritos"}.` : "Não foi possível ativar os avisos agora.", {
+      type: done ? "success" : "error",
+      action: done ? { label: "Ver avisos", onClick: () => (location.href = "/minha-conta.html#avisos") } : undefined,
+    });
+  });
+  document.querySelector("#wishlist-price").insertAdjacentHTML("afterbegin", icon("tag", { size: 18 }));
   document.querySelector("#wishlist-clear").addEventListener("click", () => {
     const previous = getWishlist();
     try {

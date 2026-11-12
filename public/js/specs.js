@@ -41,6 +41,11 @@ export const SPEC_FIELDS = {
     { key: "ponte", label: "Ponte", type: "enum", values: ["Tremolo", "Fixa", "Tune-o-matic", "Floyd Rose"] },
     { key: "timbre", label: "Timbre", type: "multi", filter: true, values: ["Brilhante", "Encorpado", "Equilibrado", "Agressivo", "Quente"], max: 3 },
     { key: "nivel", label: "Nível", type: "enum", filter: true, values: NIVEIS },
+    { key: "mao", label: "Mão", type: "enum", filter: true, values: ["Destro", "Canhoto"] },
+    { key: "cordas", label: "Cordas", type: "enum", filter: true, values: ["6 cordas", "7 cordas", "8 cordas"] },
+    { key: "captadores", label: "Captadores", type: "enum", filter: true, values: ["Passivos", "Ativos"] },
+    { key: "trastes", label: "Trastes", type: "number", min: 18, max: 30 },
+    { key: "escala", label: "Escala (pol.)", type: "number", min: 22, max: 28 },
   ],
   Amplificadores: [
     ...comuns,
@@ -114,7 +119,10 @@ export function checkSpecs(categoria, input) {
 export function specValue(field, value) {
   if (value === undefined || value === null) return "";
   if (Array.isArray(value)) return value.join(", ");
-  if (field.type === "number") return field.key === "potencia" ? `${value} W` : field.key === "comprimento" ? `${String(value).replace(".", ",")} m` : String(value);
+  if (field.type === "number") {
+    const br = String(value).replace(".", ",");
+    return field.key === "potencia" ? `${value} W` : field.key === "comprimento" ? `${br} m` : field.key === "escala" ? `${br}"` : br;
+  }
   return String(value);
 }
 

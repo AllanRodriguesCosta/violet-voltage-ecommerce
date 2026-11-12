@@ -1,3 +1,36 @@
+# Fase 3, etapa 18 — 12/11/2026
+
+- Testes novos ou ampliados: manifesto com IDs sequenciais `demo-001` a
+  `demo-075`, arquivos e modelos únicos, nomes de foto sem espaço nem acento,
+  estoques e contagem por categoria do lote original e da expansão; cada um dos
+  16 gêneros com guitarra, amplificador e pedal etiquetados; etiquetas coerentes
+  com a base de conhecimento (formato ou captação, tecnologia ou sonoridade,
+  tipo de efeito) e pedais utilitários versáteis; conversa-alvo com pelo menos
+  três Strats vintage para blues rock em estoque, de três marcas, e uma
+  alternativa; `docs/FOTOS-PENDENTES.txt` com uma linha por foto nova; afinidade
+  e "versátil"; "Compre junto" (cabo de instrumento para guitarra, patch e
+  pedalboard ou afinador para pedal, efeito para pedalboard, gênero em comum
+  para amplificador, no máximo dois itens sem repetição em todo o catálogo);
+  seed no modo parcial (carrega quem tem foto, lista quem falta, completa depois
+  sem duplicar, recusa pasta sem nenhuma foto) e mensagem do modo normal com
+  todos os arquivos ausentes. Testes de aplicação, cache HTTP e PostgreSQL
+  passaram a usar o tamanho do manifesto.
+- No navegador (23 verificações novas): 75 produtos, primeira página com 24,
+  "Mostrar mais" até exibir todos, foco no primeiro item novo, volta à primeira
+  página ao trocar filtro; 16 atalhos de gênero na home abrindo o catálogo
+  filtrado; montador com estilo Blues (8 de 17 guitarras, selo "Indicado para",
+  estilo na URL, amplificadores indicados antes dos versáteis, escolha anterior
+  preservada ao trocar de estilo, "Ver todas", link com estilo e item);
+  "Compre junto" de pedal com cabo patch e pedalboard.
+- Regressão completa (224 verificações em 11 roteiros, com as contagens
+  atualizadas para 75 produtos), acessibilidade em claro, escuro, 375 e 1440 px
+  (incluindo montador com estilo e catálogo após "Mostrar mais") e reflow em 320
+  px, sem problemas.
+- Só 6 itens de alto valor ficam com estoque baixo, para o selo "Últimas
+  unidades" não perder o sentido.
+
+---
+
 # Fase 3, etapa 17 — 12/11/2026
 
 - Testes novos em `tests/catalog-specs.test.js` (9): esquema cobre as seis

@@ -4,6 +4,7 @@ import { icon } from "../icons.js";
 import { catalogProducts, getCart, setCart, money, productImage, escapeHtml as esc, toast } from "../common.js";
 import { stockState, installmentText, freeShippingHTML, productUrl, errorState, skeletonCards } from "../components.js";
 import { openCart } from "../drawer.js";
+import { GENEROS, fitsGenre } from "../specs.js";
 
 const steps = [
   { id: "guitarra", categoria: "Guitarras", title: "Guitarra", hint: "O coração do setup. Escolha uma.", multi: false },
@@ -23,12 +24,20 @@ export default async function setup() {
   const chosen = new Map(steps.map((s) => [s.id, []]));
   let current = 0;
   let products = [];
+  // Estilo musical (?genero=): mostra o que combina com ele e os itens versáteis.
+  const genreSelect = $("#setup-genre");
+  const requested = new URLSearchParams(location.search).get("genero");
+  let genero = GENEROS.includes(requested) ? requested : "";
+  genreSelect.insertAdjacentHTML("beforeend", GENEROS.map((g) => `<option${g === genero ? " selected" : ""}>${esc(g)}</option>`).join(""));
 
   const byId = (id) => products.find((p) => p.id === id);
   const selection = () => steps.flatMap((s) => chosen.get(s.id)).map(byId).filter(Boolean);
   function syncUrl() {
+    const params = new URLSearchParams();
     const ids = selection().map((p) => p.id);
-    history.replaceState(null, "", `${location.pathname}${ids.length ? `?itens=${ids.join(",")}` : ""}`);
+    if (ids.length) params.set("itens", ids.join(","));
+    if (genero) params.set("genero", genero);
+    history.replaceState(null, "", `${location.pathname}${params.size ? `?${params}`.replace(/%2C/g, ",") : ""}`);
   }
   function renderNav() {
     nav.innerHTML = steps
@@ -40,14 +49,23 @@ export default async function setup() {
   }
   function renderStage() {
     const step = steps[current];
-    const items = products.filter((p) => p.categoria === step.categoria).sort((a, b) => a.priceCents - b.priceCents);
     const picked = chosen.get(step.id);
+    const all = products.filter((p) => p.categoria === step.categoria);
+    // Com estilo: primeiro os indicados para ele, depois os versáteis; escolhas feitas nunca somem.
+    const tagged = (p) => (p.ficha?.generos || []).includes(genero);
+    const items = (genero ? all.filter((p) => fitsGenre(p, genero) || picked.includes(p.id)) : all).sort(
+      (a, b) => (genero ? tagged(b) - tagged(a) : 0) || a.priceCents - b.priceCents,
+    );
+    const note = genero
+      ? `<p class="setup-filter-note small" role="status">${items.length} de ${all.length} ${all.length === 1 ? "opção combina" : "opções combinam"} com <strong>${esc(genero)}</strong>. <button type="button" class="text-button" data-all-genres>Ver todas</button></p>`
+      : "";
     const type = step.multi ? "checkbox" : "radio";
-    stage.innerHTML = `<div class="setup-stage-head"><span class="eyebrow">Etapa ${current + 1} de ${steps.length}</span><h2 id="stage-title" tabindex="-1">${step.title}</h2><p class="muted">${step.hint}</p></div>
+    stage.innerHTML = `<div class="setup-stage-head"><span class="eyebrow">Etapa ${current + 1} de ${steps.length}</span><h2 id="stage-title" tabindex="-1">${step.title}</h2><p class="muted">${step.hint}</p>${note}</div>
 <fieldset class="setup-options"><legend class="sr-only">${step.title}: ${step.multi ? "escolha quantos quiser" : "escolha um"}</legend>${items
       .map((p) => {
         const stock = stockState(p);
-        return `<label class="setup-option${stock.key === "out" ? " is-out" : ""}"><input type="${type}" name="setup-${step.id}" value="${esc(p.id)}"${picked.includes(p.id) ? " checked" : ""}${stock.key === "out" ? " disabled" : ""}><span class="setup-option-media"><img src="${esc(productImage(p))}" alt="" width="120" height="120" loading="lazy"></span><span class="setup-option-text"><small>${esc(p.marca)}</small><strong>${esc(p.modelo)}</strong><span class="setup-option-price">${money(p.priceCents)}</span><span class="small muted">${stock.key === "in" ? (installmentText(p.priceCents) || "À vista") : stock.label}</span></span><span class="setup-option-check" aria-hidden="true">${icon("check", { size: 16 })}</span></label>`;
+        const fit = genero && tagged(p) ? `<span class="setup-option-tag">Indicado para ${esc(genero)}</span>` : "";
+        return `<label class="setup-option${stock.key === "out" ? " is-out" : ""}"><input type="${type}" name="setup-${step.id}" value="${esc(p.id)}"${picked.includes(p.id) ? " checked" : ""}${stock.key === "out" ? " disabled" : ""}><span class="setup-option-media"><img src="${esc(productImage(p))}" alt="" width="120" height="120" loading="lazy"></span><span class="setup-option-text"><small>${esc(p.marca)}</small><strong>${esc(p.modelo)}</strong>${fit}<span class="setup-option-price">${money(p.priceCents)}</span><span class="small muted">${stock.key === "in" ? (installmentText(p.priceCents) || "À vista") : stock.label}</span></span><span class="setup-option-check" aria-hidden="true">${icon("check", { size: 16 })}</span></label>`;
       })
       .join("")}</fieldset>
 <div class="setup-stage-actions">${actionsHTML()}</div>`;
@@ -156,10 +174,20 @@ export default async function setup() {
       summary.querySelector("h2").focus();
     } else if (t.closest("[data-add-setup]")) addAll();
     else if (t.closest("[data-share]")) share();
+    else if (t.closest("[data-all-genres]")) {
+      genero = genreSelect.value = "";
+      render();
+      $("#stage-title").focus({ preventScroll: true });
+    }
     else if (t.closest("[data-reset]")) {
       steps.forEach((s) => chosen.set(s.id, []));
       go(0);
     }
+  });
+
+  genreSelect.addEventListener("change", () => {
+    genero = genreSelect.value;
+    render();
   });
 
   stage.innerHTML = `<div class="product-grid">${skeletonCards(3)}</div>`;

@@ -50,7 +50,7 @@ export const SPEC_FIELDS = {
   ],
   Pedais: [
     ...comuns,
-    { key: "efeito", label: "Tipo", type: "enum", filter: true, values: ["Overdrive", "Distorção", "Fuzz", "Chorus", "Delay", "Reverb", "Wah", "Multiefeitos", "Gabinete virtual (IR)", "Pedalboard"] },
+    { key: "efeito", label: "Tipo", type: "enum", filter: true, values: ["Overdrive", "Distorção", "Fuzz", "Compressor", "Chorus", "Tremolo", "Delay", "Reverb", "Wah", "Afinador", "Looper", "Multiefeitos", "Gabinete virtual (IR)", "Pedalboard"] },
     { key: "tecnologia", label: "Tecnologia", type: "enum", values: ["Analógico", "Digital", "Não se aplica"] },
     { key: "uso", label: "Uso", type: "multi", values: USOS, max: 4 },
     { key: "nivel", label: "Nível", type: "enum", values: NIVEIS },
@@ -142,3 +142,17 @@ export const specList = (product, key) => {
   const value = product?.ficha?.[key];
   return value === undefined || value === null ? [] : Array.isArray(value) ? value : [value];
 };
+
+// Recomendação pela ficha, compartilhada por "Compre junto", montador de setup e assistente.
+// Produto sem gêneros (ou sem ficha) é versátil: serve para qualquer estilo.
+export const fitsGenre = (product, genero) =>
+  !genero || !product?.ficha?.generos?.length || product.ficha.generos.includes(genero);
+export const UTILITY_EFFECTS = ["Pedalboard", "Afinador", "Looper", "Multiefeitos", "Gabinete virtual (IR)"];
+export function affinity(a, b) {
+  const mine = a?.ficha?.generos || [];
+  const theirs = b?.ficha?.generos || [];
+  let score = mine.filter((g) => theirs.includes(g)).length;
+  if (a?.ficha?.estilo && a.ficha.estilo === b?.ficha?.estilo) score += 1;
+  if (!theirs.length) score += 0.5;
+  return score;
+}

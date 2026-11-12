@@ -526,3 +526,15 @@ body:has(.setup-bar:not([hidden])) .to-top { bottom: calc(var(--bottom-nav-h) + 
   .legal-layout { grid-template-columns: 240px minmax(0, 1fr); gap: 40px; }
   .legal-toc { position: sticky; top: calc(var(--header-h) + 20px); }
 }
+
+/* Etapa 18: catálogo ampliado */
+.catalog-more { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 28px; }
+.catalog-more:empty { display: none; }
+.catalog-more p { margin: 0; }
+.genre-cloud { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.genre-chip { text-decoration: none; min-height: 44px; padding-inline: 16px; font-size: 15px; }
+.genre-chip .facet-count { margin-left: 2px; }
+.setup-genre { min-width: min(100%, 260px); margin: 0; }
+.setup-genre select { width: 100%; }
+.setup-filter-note { margin: 8px 0 0; color: var(--ink-2); }
+.setup-option-tag { align-self: flex-start; margin: 2px 0; padding: 2px 8px; border-radius: 999px; background: var(--violet-soft); color: var(--violet-strong); font-size: 12px; font-weight: 600; }

@@ -17,6 +17,8 @@ const sorters = {
 // Filtros da ficha técnica: sem categoria, só os comuns (estilo e gêneros); com categoria, os dela.
 const commonFilters = SPEC_FIELDS.Guitarras.filter((f) => f.key === "estilo" || f.key === "generos");
 const filterFields = (categoria) => (categoria ? specFields(categoria) : commonFilters).filter((f) => f.filter);
+// Resultados em páginas de 24: "Mostrar mais" acrescenta a próxima sem recarregar.
+const PAGE = 24;
 const reais = (value) => (/^\d{1,7}$/.test(value || "") ? Number(value) : null);
 
 export default async function catalog() {
@@ -48,6 +50,7 @@ export default async function catalog() {
   if (state.q) rememberSearch(state.q);
   let products = [];
   let showAllBrands = false;
+  let limit = PAGE;
   search.value = state.q;
   sort.value = state.sort;
   form.elements.min.value = state.min;
@@ -149,7 +152,8 @@ export default async function catalog() {
     $("#catalog-lead").textContent = state.categoria ? categoryInfo[state.categoria] : "Guitarras, efeitos, amplificadores e acessórios em um só lugar.";
     document.title = `${state.categoria || "Catálogo"} | Violet Voltage`;
   }
-  function render() {
+  function render({ more = false } = {}) {
+    if (!more) limit = PAGE;
     corrected = state.q && !state.exato && !searchProducts(products, state.q).length ? correctQuery(products, state.q) : null;
     activeQuery = corrected || state.q;
     const notice = $("#search-correction");
@@ -167,14 +171,21 @@ export default async function catalog() {
     if (state.sort !== "default") list.sort(sorters[state.sort]);
     $("#catalog-count").textContent = `${list.length} ${list.length === 1 ? "equipamento encontrado" : "equipamentos encontrados"}${activeQuery ? ` para “${activeQuery}”` : ""}`;
     $("#filters-apply").textContent = `Ver ${list.length} ${list.length === 1 ? "resultado" : "resultados"}`;
+    const shown = list.slice(0, limit);
     grid.innerHTML = list.length
-      ? list.map((p, i) => productCard(p, i)).join("")
+      ? shown.map((p, i) => productCard(p, i)).join("")
       : emptyState({
           level: 3,
           title: state.q ? `Nada encontrado para “${esc(state.q)}”.` : "Nenhum equipamento com esses filtros.",
           text: "Confira a grafia, use menos palavras ou remova um filtro.",
           actions: `<button type="button" data-remove="all">Limpar filtros</button><a class="button secondary" href="/catalogo.html">Ver todo o catálogo</a>`,
         });
+    $("#catalog-more").innerHTML =
+      list.length > shown.length
+        ? `<p class="small muted">Mostrando ${shown.length} de ${list.length}</p><button type="button" class="button secondary" data-more>Mostrar mais ${Math.min(PAGE, list.length - shown.length)}</button>`
+        : list.length > PAGE
+          ? `<p class="small muted">Todos os ${list.length} equipamentos exibidos.</p>`
+          : "";
     facets();
     applied();
     syncUrl();
@@ -275,6 +286,14 @@ export default async function catalog() {
     if (remove && (remove.closest("#applied-filters") || remove.closest("#products"))) removeFilter(remove.dataset.remove);
   });
   $("#clear-filters").addEventListener("click", reset);
+  $("#catalog-more").addEventListener("click", (event) => {
+    if (!event.target.closest("[data-more]")) return;
+    const before = grid.children.length;
+    limit += PAGE;
+    render({ more: true });
+    // O foco vai para o primeiro item novo, para quem navega por teclado ou leitor de tela.
+    grid.children[before]?.querySelector("a, button")?.focus();
+  });
 
   // Filtros no celular: painel lateral com foco controlado.
   const trigger = $("#filters-open");

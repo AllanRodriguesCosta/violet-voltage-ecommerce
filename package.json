@@ -12,6 +12,7 @@
     "test": "node --test",
     "lint": "eslint .",
     "seed": "node scripts/seed.js",
+    "fotos:conferir": "node scripts/check-photos.js",
     "db:migrate": "node scripts/migrate.js"
   },
   "dependencies": {

@@ -80,7 +80,7 @@ export const genres = [
     resumo: "Timbres limpos com brilho ou crunch leve, uso criativo de efeitos.",
     guitarras: { formato: ["Offset", "Tele", "Semiacústica", "Double cut"], captacao: ["Single-coil", "P90", "Humbucker"], timbre: ["Brilhante", "Equilibrado"] },
     amplificadores: { tecnologia: ["Valvulado"], voicing: ["Britânico"] },
-    pedais: { efeito: ["Fuzz", "Chorus", "Delay", "Reverb"] },
+    pedais: { efeito: ["Fuzz", "Chorus", "Tremolo", "Delay", "Reverb"] },
     referencias: ["Arctic Monkeys", "The Strokes", "Oasis"],
   },
   {
@@ -90,7 +90,7 @@ export const genres = [
     resumo: "Timbres limpos e definidos, com chorus, delay e reverb discretos.",
     guitarras: { formato: ["Strat", "Tele", "Superstrat"], captacao: ["Single-coil", "Humbucker e single-coil"], timbre: ["Brilhante", "Equilibrado"] },
     amplificadores: { tecnologia: ["Modelagem digital", "Transistor", "Valvulado"], voicing: ["Versátil", "Americano"] },
-    pedais: { efeito: ["Chorus", "Delay", "Reverb", "Multiefeitos"] },
+    pedais: { efeito: ["Compressor", "Chorus", "Delay", "Reverb", "Multiefeitos"] },
     referencias: ["John Mayer", "Coldplay"],
   },
   {
@@ -100,7 +100,7 @@ export const genres = [
     resumo: "Limpo, percussivo e brilhante, com palhetada abafada e wah.",
     guitarras: { formato: ["Strat", "Tele"], captacao: ["Single-coil"], timbre: ["Brilhante"] },
     amplificadores: { tecnologia: ["Valvulado", "Transistor"], voicing: ["Americano"] },
-    pedais: { efeito: ["Wah", "Chorus"] },
+    pedais: { efeito: ["Wah", "Compressor", "Chorus"] },
     referencias: ["Nile Rodgers", "Prince", "Red Hot Chili Peppers"],
   },
   {
@@ -118,10 +118,10 @@ export const genres = [
     sinonimos: ["country", "sertanejo", "rockabilly country", "chicken picking"],
     estilo: "Vintage",
     resumo: "Brilhante e estalado, com compressão e limpo cristalino.",
-    guitarras: { formato: ["Tele", "Strat"], captacao: ["Single-coil"], timbre: ["Brilhante"] },
+    guitarras: { formato: ["Tele", "Strat", "Semiacústica"], captacao: ["Single-coil"], timbre: ["Brilhante"] },
     amplificadores: { tecnologia: ["Valvulado"], voicing: ["Americano"] },
-    pedais: { efeito: ["Delay", "Reverb", "Overdrive"] },
-    referencias: ["Brad Paisley", "Albert Lee"],
+    pedais: { efeito: ["Compressor", "Delay", "Reverb", "Overdrive"] },
+    referencias: ["Brad Paisley", "Albert Lee", "Chet Atkins"],
   },
   {
     nome: "Surf",
@@ -130,7 +130,7 @@ export const genres = [
     resumo: "Muito reverb de mola, limpo brilhante e tremolo.",
     guitarras: { formato: ["Offset", "Strat"], captacao: ["Single-coil"], timbre: ["Brilhante"] },
     amplificadores: { tecnologia: ["Valvulado"], voicing: ["Americano"] },
-    pedais: { efeito: ["Reverb", "Delay"] },
+    pedais: { efeito: ["Reverb", "Tremolo", "Delay"] },
     referencias: ["Dick Dale", "The Ventures"],
   },
   {
@@ -140,7 +140,7 @@ export const genres = [
     resumo: "Limpo com slapback (delay curto) e crunch leve.",
     guitarras: { formato: ["Semiacústica", "Tele"], captacao: ["Humbucker", "Single-coil"], timbre: ["Brilhante", "Quente"] },
     amplificadores: { tecnologia: ["Valvulado"], voicing: ["Americano"] },
-    pedais: { efeito: ["Delay", "Reverb"] },
+    pedais: { efeito: ["Delay", "Reverb", "Tremolo"] },
     referencias: ["Brian Setzer", "Elvis Presley (Scotty Moore)"],
   },
   {

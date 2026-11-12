@@ -1,5 +1,5 @@
 import { icon } from "../icons.js";
-import { specRows } from "../specs.js";
+import { specRows, affinity, UTILITY_EFFECTS } from "../specs.js";
 import {
   api,
   catalogProducts,
@@ -87,23 +87,34 @@ async function share(name) {
     if (error?.name !== "AbortError") toast("Não foi possível compartilhar. Copie o endereço da página.", { type: "error" });
   }
 }
-// Compre junto: o item mais acessível, em estoque, de categorias que completam este produto.
+// Compre junto: para cada categoria que completa o produto, o item em estoque que mais combina
+// pela ficha (gêneros e estilo) e cabe no orçamento; empate fica com o mais acessível.
+const instrumentCable = (x) => x.ficha?.tipo !== "Patch";
+const effect = (x) => !UTILITY_EFFECTS.includes(x.ficha?.efeito);
 const complements = {
-  Guitarras: ["Cabos", "Correias", "Amplificadores"],
-  Amplificadores: ["Cabos", "Pedais"],
-  Pedais: ["Cabos", "Pedais"],
-  Cabos: ["Pedais", "Acessórios"],
-  Correias: ["Acessórios", "Cabos"],
-  Acessórios: ["Cabos", "Correias"],
+  Guitarras: [["Cabos", instrumentCable], ["Correias"], ["Amplificadores"]],
+  Amplificadores: [["Cabos", instrumentCable], ["Pedais", effect]],
+  Pedais: [["Cabos", (x) => x.ficha?.tipo === "Patch"], ["Pedais", (x, p) => (effect(p) ? ["Pedalboard", "Afinador"].includes(x.ficha?.efeito) : effect(x))]],
+  Cabos: [["Pedais", effect], ["Acessórios"]],
+  Correias: [["Acessórios"], ["Cabos", instrumentCable]],
+  Acessórios: [["Cabos", instrumentCable], ["Correias"]],
 };
-function bundle(p, others) {
-  const section = document.querySelector("#bundle");
+export function bundlePicks(p, others) {
   const picks = [];
-  for (const category of complements[p.categoria] || []) {
-    const item = others.filter((x) => x.categoria === category && !picks.includes(x)).sort((a, b) => a.priceCents - b.priceCents)[0];
+  for (const [category, fits = () => true] of complements[p.categoria] || []) {
+    const all = others.filter((x) => x.categoria === category && !picks.includes(x));
+    const suitable = all.filter((x) => fits(x, p));
+    const pool = suitable.length ? suitable : all;
+    const affordable = pool.filter((x) => x.priceCents <= Math.max(p.priceCents * 1.5, 30000));
+    const item = (affordable.length ? affordable : pool).sort((a, b) => affinity(p, b) - affinity(p, a) || a.priceCents - b.priceCents)[0];
     if (item) picks.push(item);
     if (picks.length === 2) break;
   }
+  return picks;
+}
+function bundle(p, others) {
+  const section = document.querySelector("#bundle");
+  const picks = bundlePicks(p, others);
   if (!p.estoque || !picks.length) return;
   const all = [p, ...picks];
   const item = (x, main) =>
@@ -151,7 +162,7 @@ async function extras(p) {
   const others = products.filter((x) => x.id !== p.id && x.estoque > 0);
   bundle(p, others);
   const related = [
-    ...others.filter((x) => x.categoria === p.categoria).sort((a, b) => Math.abs(a.priceCents - p.priceCents) - Math.abs(b.priceCents - p.priceCents)),
+    ...others.filter((x) => x.categoria === p.categoria).sort((a, b) => affinity(p, b) - affinity(p, a) || Math.abs(a.priceCents - p.priceCents) - Math.abs(b.priceCents - p.priceCents)),
     ...others.filter((x) => x.categoria !== p.categoria).sort((a, b) => a.priceCents - b.priceCents),
   ].slice(0, 4);
   const relatedSection = document.querySelector("#related");

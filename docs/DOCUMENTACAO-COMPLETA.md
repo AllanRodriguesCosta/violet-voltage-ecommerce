@@ -215,6 +215,11 @@ nos avisos, disparado na edição de preço pelo painel). Perguntas e respostas
 (`src/services/questions.js`, tabela `questions`): públicas só depois de
 respondidas, moderadas na aba Perguntas do painel.
 
+Etapa 23: o resumo do painel (`summary` em `src/services/orders.js`) soma vendas
+por categoria, mais vendidos, serviços, kits e cancelamentos a partir dos
+pedidos não cancelados. `src/http/seo.js` entrega produto, categoria e início
+com metadados e dados estruturados no HTML, sem depender do JavaScript.
+
 ### Conta e administração
 
 Cadastro, login/logout, perfil e histórico privado. Cadastro público não cria
@@ -328,9 +333,9 @@ local), só para usuários logados, um agente unificado para recomendação, dú
 da loja, pedidos e setup. Etapas 17 (ficha técnica e base de conhecimento), 18
 (catálogo ampliado) e 19 (assistente com PLN local, ver
 [ASSISTENTE.md](ASSISTENTE.md)) e 20 (conta, privacidade e Central de Ajuda)
-prontas. Etapas 21 (comparador, kits, compatibilidade e comprovante) e 22
-(serviços, guias, filtros do segmento, aviso de preço e perguntas) prontas;
-as etapas 23 a 25 (painel, SEO, assistente que age, Gemini opcional e voz) estão no
+prontas. Etapas 21 (comparador, kits, compatibilidade e comprovante), 22
+(serviços, guias, filtros do segmento, aviso de preço e perguntas) e 23 (painel
+e SEO) prontas; as etapas 24 e 25 (assistente que age, Gemini opcional e voz) estão no
 [roadmap](ROADMAP.md). Tarefas manuais ou do Codex: `docs/PENDENCIAS-MANUAIS.txt` e
 `docs/FERRAMENTAS-E-BIBLIOTECAS.txt`.
 

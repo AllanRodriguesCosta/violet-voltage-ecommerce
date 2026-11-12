@@ -371,10 +371,15 @@ instrumento usado na troca fica de fora.
 
 ### 23. Painel e SEO
 
-- [ ] Painel: vendas por categoria, mais vendidos, interesse (avisos), serviços
-      e perguntas pendentes.
-- [ ] SEO: prévia de link (Open Graph) por produto gerada no servidor e dados
-      estruturados revisados.
+- [x] Painel: vendas por categoria, 5 mais vendidos, serviços e kits vendidos,
+      taxa de cancelamento, interesse em preço (avisos ativos) e atalho para as
+      perguntas aguardando resposta (indicador novo).
+- [x] SEO no servidor (`src/http/seo.js`): página do produto sai com título,
+      descrição com preço e ficha, Open Graph (imagem, tipo produto), link
+      canônico e dados estruturados de produto (com a ficha) e trilha de
+      navegação; catálogo por categoria com título e descrição próprios; início
+      com dados da loja e da busca interna; `robots.txt` bloqueia comprovante e
+      carrinho.
 
 ### 24. Assistente que age
 

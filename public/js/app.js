@@ -5,6 +5,7 @@ import { initSearch } from "./search.js";
 import { initTheme } from "./theme.js";
 import { initMotion } from "./motion.js";
 import { initAlerts } from "./alerts.js";
+import { initCompare } from "./compare.js";
 
 document.documentElement.classList.add("js");
 if (!matchMedia("(prefers-reduced-motion: reduce)").matches)
@@ -19,6 +20,7 @@ initMotion();
 initDrawer();
 initSearch();
 initAlerts();
+initCompare();
 // Instalação e páginas já visitadas disponíveis sem conexão (somente em HTTPS ou localhost).
 if ("serviceWorker" in navigator && (location.protocol === "https:" || ["localhost", "127.0.0.1"].includes(location.hostname)))
   addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
@@ -41,6 +43,9 @@ const routes = {
   "/cadastro.html": "auth",
   "/ajuda.html": "help",
   "/setup.html": "setup",
+  "/comparar.html": "compare",
+  "/kits.html": "kits",
+  "/pedido.html": "order",
 };
 try {
   if (location.pathname === "/admin.html") {

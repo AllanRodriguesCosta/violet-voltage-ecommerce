@@ -9,7 +9,7 @@ Portfólio full stack de uma loja de instrumentos musicais. O fluxo registra
 pedidos demonstrativos, sem cobrar, entregar produtos ou integrar serviços fiscais.
 Não há avaliações, estrelas, gateway, recuperação de senha ou agentes ativos.
 Dados do banco antigo do professor não foram recuperados: o catálogo foi
-reconstruído com 22 produtos e imagens locais e ampliado para 75 na etapa 18.
+reconstruído com 22 produtos e imagens locais e ampliado para 75 na etapa 18 e 77 na etapa 21.
 
 ## Arquitetura e arquivos
 
@@ -31,7 +31,7 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/services/addresses.js` | Validação e regras dos endereços de entrega (até 5, um principal) |
 | `src/services/notifications.js` | Notificações da conta e avisos "Avise-me" disparados na reposição |
 | `src/services/bootstrap.js` | Criação/atualização privada do administrador |
-| `src/services/seed*.js` | Manifesto, fichas técnicas e carga dos 75 produtos/imagens (modo parcial para fotos em andamento) |
+| `src/services/seed*.js` | Manifesto, fichas técnicas e carga dos 77 produtos/imagens (modo parcial para fotos em andamento) |
 | `scripts/check-photos.js` | `npm run fotos:conferir`: confere as fotos locais sem alterar nada |
 | `src/knowledge/help.js` | Central de Ajuda: perguntas e respostas (fonte da página `ajuda.html` e da busca do assistente) |
 | `src/services/account.js` | Troca de senha, cópia dos dados e exclusão da conta pelo cliente |
@@ -198,6 +198,14 @@ nenhum dado de cartão é coletado. Pedido e estoque compartilham transação
 serializável no PostgreSQL. Repetir requestId do mesmo cliente devolve o pedido
 já registrado. Falhar ao limpar o carrinho depois do sucesso não oculta o pedido.
 
+Etapa 21: kits com desconto (`public/js/kits.js`, fonte única da vitrine e do
+servidor; desconto automático com o kit completo, cada unidade em um kit só,
+cupom sobre o restante), comparador de 2 a 4 produtos (`public/js/compare.js`,
+tabela com `compareRows` da ficha) e avisos de compatibilidade no carrinho
+(`public/js/compat.js`: cabo, amplificador, fonte de 9V pela alimentação na
+ficha dos pedais, cabos patch, pedalboard, correia, cordas e kit quase
+completo), com sugestão do catálogo e botão de adicionar.
+
 ### Conta e administração
 
 Cadastro, login/logout, perfil e histórico privado. Cadastro público não cria
@@ -207,7 +215,9 @@ Minha conta mostra indicadores, filtros e a linha do tempo de cada pedido, com
 mostra volume, pedidos, ticket médio, pedidos por status, vendas dos últimos 14
 dias e estoque baixo, com busca e filtros. Status só avançam no fluxo; o
 cancelamento, permitido até a preparação, devolve os itens ao estoque na mesma
-transação do pedido. Exclusões são lógicas para preservar histórico. Não há modo público de edição nem conta admin compartilhada.
+transação do pedido. Cada pedido mostra a previsão de entrega em dias úteis;
+ao ser enviado, recebe um código de rastreio (também na notificação) e tem
+comprovante em `/pedido.html` com impressão ou PDF pelo navegador. Exclusões são lógicas para preservar histórico. Não há modo público de edição nem conta admin compartilhada.
 
 ### Ajuda e acesso
 
@@ -309,7 +319,10 @@ local), só para usuários logados, um agente unificado para recomendação, dú
 da loja, pedidos e setup. Etapas 17 (ficha técnica e base de conhecimento), 18
 (catálogo ampliado) e 19 (assistente com PLN local, ver
 [ASSISTENTE.md](ASSISTENTE.md)) e 20 (conta, privacidade e Central de Ajuda)
-prontas; a etapa 21 (Gemini opcional) está no [roadmap](ROADMAP.md). Tarefas manuais ou do Codex: `docs/PENDENCIAS-MANUAIS.txt` e
+prontas. Etapa 21 (comparador, kits, compatibilidade e comprovante) pronta;
+as etapas 22 a 25 (serviços, guias, filtros, alerta de preço, perguntas,
+painel, SEO, assistente que age, Gemini opcional e voz) estão no
+[roadmap](ROADMAP.md). Tarefas manuais ou do Codex: `docs/PENDENCIAS-MANUAIS.txt` e
 `docs/FERRAMENTAS-E-BIBLIOTECAS.txt`.
 
 Fase 2 do [roadmap](ROADMAP.md), em andamento: amplia o antigo Roadmap 2

@@ -22,6 +22,12 @@ initAlerts();
 // Instalação e páginas já visitadas disponíveis sem conexão (somente em HTTPS ou localhost).
 if ("serviceWorker" in navigator && (location.protocol === "https:" || ["localhost", "127.0.0.1"].includes(location.hostname)))
   addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+// Assistente de compras: só para quem está logado, carregado depois da página.
+session
+  .then((user) => {
+    if (user && location.pathname !== "/admin.html") return import("./assistant.js").then((m) => m.mountAssistant(user));
+  })
+  .catch(() => {});
 const routes = {
   "/": "home",
   "/index.html": "home",

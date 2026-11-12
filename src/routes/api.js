@@ -26,6 +26,7 @@ import {
 } from "../services/notifications.js";
 import { publicProduct, publicOrder } from "../controllers/serialization.js";
 import { specText } from "../../public/js/specs.js";
+import { reply } from "../assistant/index.js";
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024, files: 1 },
@@ -224,6 +225,25 @@ export function apiRouter(storage, config) {
     res.json({ data: { ok: true } });
   });
   // Notificações da conta: últimas 30 e contagem de não lidas.
+  // Assistente de compras (PLN local): só para quem está logado, com limite por usuário.
+  const assistantLimit = rateLimit({
+    windowMs: 5 * 60 * 1000,
+    limit: 40,
+    keyGenerator: (req) => req.user.id,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    handler: (_req, res) =>
+      res.status(429).json({ error: { message: "Muitas mensagens seguidas. Aguarde alguns minutos e tente de novo." } }),
+  });
+  r.post("/assistente", authenticated, assistantLimit, async (req, res) => {
+    const mensagem = text(req.body?.mensagem, "mensagem", 1, 500);
+    const contexto = req.body?.contexto;
+    if (contexto !== undefined && JSON.stringify(contexto).length > 4000)
+      throw new AppError(400, "Contexto da conversa muito grande.", "contexto");
+    const products = (await storage.list("products")).filter((p) => p.ativo).map(publicProduct);
+    const orders = async () => (await storage.listByPartition("orders", req.user.id)).map(publicOrder);
+    res.json({ data: await reply({ mensagem, contexto }, { products, orders, user: req.user }) });
+  });
   r.get("/notifications", authenticated, async (req, res) =>
     res.set("Cache-Control", "no-store").json({ data: await listNotifications(storage, req.user.id) }),
   );

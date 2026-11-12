@@ -1,3 +1,49 @@
+# Fase 3, etapa 19 — 12/11/2026
+
+- Testes novos em `tests/assistant.test.js` (13):
+  - Texto: normalização, vogal alongada, radicais e atributos.
+  - Classificador: frase sem palavra conhecida tem confiança zero; tolera erro
+    de digitação; nenhuma frase de avaliação está no treino.
+  - Preço: mil, k, faixa, aproximação; 10x, watts, metros e "anos 60" ignorados.
+  - Entidades: gênero mais longo primeiro; "single cut" não vira captação;
+    "rock clássico" não vira estilo; afinador sem categoria; marcas e apelidos;
+    "procuro" não é Pro Co; produtos pelo nome; gênero e ficha técnica não
+    viram nome de produto.
+  - Conversa-alvo: pergunta o gênero vintage, depois Strats indicadas para
+    blues rock em estoque; "e um amplificador?" mantém o gênero.
+  - "Mais barato" só mostra itens mais baratos e inéditos; pedido novo não
+    herda o gênero.
+  - Setup: pergunta estilo e orçamento, respeita o orçamento, cabo de
+    instrumento, ações com IDs e links internos.
+  - Cards só com produtos reais em estoque e preço do servidor.
+  - Pedidos: mais recente, por código, cancelamento e sem pedidos.
+  - Dúvidas com valores do checkout.
+  - Contexto malicioso revalidado.
+  - Avaliação acima de 90%.
+  - API: 401 sem login, 400 para mensagem vazia, longa ou contexto grande,
+    pedidos de outra pessoa invisíveis, 41ª mensagem em 5 minutos recusada só
+    para o usuário que excedeu.
+- Avaliação (`npm run agente:eval`): 95,5% de acerto de intenção em 88 frases
+  fora do treino, 46/46 entidades e 2/2 conversas. Erros: "eae" e "boa, até
+  amanhã" abaixo da confiança mínima; duas perguntas fora do assunto caíram em
+  "não entendi".
+- No navegador (22 verificações):
+  - Visitante não vê o assistente; logado vê.
+  - Saudação pelo nome, foco no campo.
+  - Conversa-alvo por digitação e por sugestão clicável.
+  - Adicionar pelo card; setup com "adicionar tudo" abrindo o minicarrinho;
+    link do setup com itens e estilo.
+  - Pagamento, pedidos, histórico mantido entre páginas, Esc devolvendo o
+    foco, nova conversa.
+  - No celular: botão acima da navegação inferior, da barra de compra e sem
+    cobrir o "voltar ao topo"; painel em tela cheia; sem rolagem horizontal.
+- Acessibilidade com o painel aberto (recomendação e pedido) em claro, escuro,
+  375 e 1440 px, sem problemas. A auditoria passou a ignorar alvos recortados
+  por áreas com rolagem própria ou encobertos pelo painel.
+- Regressão completa: 246 verificações em 12 roteiros, sem falhas.
+
+---
+
 # Fase 3, etapa 18 — 12/11/2026
 
 - Testes novos ou ampliados: manifesto com IDs sequenciais `demo-001` a

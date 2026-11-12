@@ -288,13 +288,20 @@ pagamento. Decisões:
 
 ### 19. Assistente com PLN local
 
-- [ ] Endpoint `POST /api/assistente` (só logados, limite por usuário).
-- [ ] Normalização, intenção, entidades (preço, categoria, marca, gênero,
-      época, uso) e diálogo com perguntas de afunilamento.
-- [ ] Módulos: recomendação com cards, FAQ, status de pedidos, sugestão de
-      setup. Chat na loja com histórico da sessão.
-- [ ] Conjunto de avaliação com frases e respostas esperadas; métrica de
-      acerto por intenção.
+- [x] Endpoint `POST /api/assistente` (só logados; 40 mensagens a cada 5 min
+      por usuário; mensagem até 500 caracteres; contexto revalidado).
+- [x] Normalização, radicalização, classificador Naive Bayes de 15 intenções
+      com tolerância a erros de digitação, entidades (preço, categoria, tipo,
+      marca, gênero, estilo, formato, captação, uso, nível e produto pelo
+      nome) e diálogo com perguntas de afunilamento.
+- [x] Módulos: recomendação com cards e motivo, produto pelo nome, setup
+      dentro do orçamento, status e cancelamento de pedidos, dúvidas da loja
+      geradas das regras do checkout. Chat na loja com histórico da aba,
+      sugestões clicáveis, adicionar ao carrinho e link para o catálogo
+      filtrado.
+- [x] Conjunto de avaliação com 88 frases fora do treino e duas conversas;
+      `npm run agente:eval` mostra o acerto por intenção (95,5%) e de
+      entidades (100%). Detalhes em [ASSISTENTE.md](ASSISTENTE.md).
 
 ### 20. Reforço com Gemini gratuito
 

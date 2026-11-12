@@ -1,0 +1,125 @@
+// Conjunto de avaliação: frases que NÃO estão no treino (intents.js), com a intenção final
+// esperada e, em parte delas, as entidades. Usado por tests/assistant.test.js e por
+// "npm run agente:eval", que mostra o acerto por intenção.
+export const evalSet = [
+  // saudacao
+  ["olá!", "saudacao"],
+  ["oi, boa tarde", "saudacao"],
+  ["bom dia, tudo certo?", "saudacao"],
+  ["eae", "saudacao"],
+  ["oii", "saudacao"],
+  // ajuda
+  ["o que você consegue fazer?", "ajuda"],
+  ["como você me ajuda?", "ajuda"],
+  ["quais perguntas posso fazer", "ajuda"],
+  ["você é uma inteligência artificial?", "ajuda"],
+  ["preciso de uma ajuda", "ajuda"],
+  // recomendar
+  ["queria uma guitarra para tocar blues", "recomendar", { categoria: "Guitarras", genero: "Blues" }],
+  ["me indica um amplificador valvulado", "recomendar", { categoria: "Amplificadores", tecnologia: "Valvulado" }],
+  ["tem pedal de delay?", "recomendar", { categoria: "Pedais", tipo: "Delay" }],
+  ["busco uma telecaster até 2 mil", "recomendar", { categoria: "Guitarras", formato: "Tele", max: 200000 }],
+  ["guitarra para metal", "recomendar", { categoria: "Guitarras", genero: "Heavy metal" }],
+  ["qual pedal de fuzz vocês têm", "recomendar", { tipo: "Fuzz" }],
+  ["preciso de um cabo de 6 metros", "recomendar", { categoria: "Cabos" }],
+  ["quero uma correia de couro", "recomendar", { categoria: "Correias" }],
+  ["vocês vendem palheta?", "recomendar", { tipo: "Palhetas" }],
+  ["um amp pequeno para estudar em casa", "recomendar", { categoria: "Amplificadores", uso: "Estudo em casa" }],
+  ["guitarra boa para quem está começando", "recomendar", { categoria: "Guitarras", nivel: "Iniciante" }],
+  ["quero uma les paul", "recomendar", { formato: "Single cut" }],
+  ["amplificador britânico entre 3 mil e 6 mil", "recomendar", { voicing: "Britânico", min: 300000, max: 600000 }],
+  ["algum overdrive bom pra blues rock", "recomendar", { tipo: "Overdrive", genero: "Blues rock" }],
+  ["quanto custa o tube screamer?", "recomendar"],
+  ["vocês têm a katana?", "recomendar"],
+  ["queria um pedal de reverb pra surf music", "recomendar", { tipo: "Reverb", genero: "Surf" }],
+  ["tem guitarra semiacústica para jazz?", "recomendar", { formato: "Semiacústica", genero: "Jazz" }],
+  ["mostra guitarras da fender", "recomendar", { marca: "Fender" }],
+  ["quero um afinador", "recomendar", { tipo: "Afinador" }],
+  ["pedaleira para iniciante", "recomendar", { tipo: "Multiefeitos", nivel: "Iniciante" }],
+  ["sugestão de cubo para ensaio com a banda", "recomendar", { categoria: "Amplificadores", uso: "Ensaio" }],
+  ["uma guitarra estilo strat com humbucker", "recomendar", { formato: "Strat", captacao: "Humbucker" }],
+  ["preciso trocar as cordas da minha guitarra", "recomendar", { tipo: "Encordoamento" }],
+  ["tem algo para tocar grunge", "recomendar", { genero: "Grunge" }],
+  ["queria um som bem anos 60", "recomendar", { estilo: "Vintage" }],
+  ["guitarra de uns 5 mil reais", "recomendar", { categoria: "Guitarras", max: 575000 }],
+  // setup
+  ["me monta um kit completo pra começar", "setup"],
+  ["quero um setup de metal", "setup", { genero: "Heavy metal" }],
+  ["o que comprar para começar a tocar?", "setup"],
+  ["monta um equipamento completo de blues com orçamento de 8 mil", "setup", { genero: "Blues", max: 800000 }],
+  ["preciso de tudo: guitarra, amp e cabo", "setup"],
+  ["setup completo para indie", "setup", { genero: "Indie" }],
+  // pedido_status
+  ["cadê meu pedido?", "pedido_status"],
+  ["meu pedido já saiu?", "pedido_status"],
+  ["como está minha compra", "pedido_status"],
+  ["quero saber do meu pedido", "pedido_status"],
+  ["ainda não recebi minha encomenda", "pedido_status"],
+  ["status do pedido", "pedido_status"],
+  // pedido_cancelar
+  ["quero cancelar meu pedido", "pedido_cancelar"],
+  ["dá para cancelar a compra?", "pedido_cancelar"],
+  ["desisti do pedido", "pedido_cancelar"],
+  ["como faço para cancelar", "pedido_cancelar"],
+  // entrega
+  ["qual o valor do frete?", "entrega"],
+  ["em quantos dias chega?", "entrega"],
+  ["vocês fazem entrega expressa?", "entrega"],
+  ["dá para retirar pessoalmente?", "entrega"],
+  ["o frete sai de graça?", "entrega"],
+  ["prazo de envio", "entrega"],
+  // pagamento
+  ["posso pagar com pix?", "pagamento"],
+  ["parcelam no cartão?", "pagamento"],
+  ["aceitam boleto", "pagamento"],
+  ["em quantas vezes posso parcelar", "pagamento"],
+  ["quais cartões aceitam", "pagamento"],
+  // cupom
+  ["tem algum cupom?", "cupom"],
+  ["existe código de desconto?", "cupom"],
+  ["como ganho desconto", "cupom"],
+  ["qual o cupom da primeira compra", "cupom"],
+  // troca
+  ["como devolvo um produto", "troca"],
+  ["quero trocar uma guitarra que comprei", "troca"],
+  ["prazo para devolução", "troca"],
+  ["chegou com defeito, e agora?", "troca"],
+  // conta
+  ["como mudo meu telefone", "conta"],
+  ["perdi a senha", "conta"],
+  ["onde vejo meus favoritos", "conta"],
+  ["como atualizo meu endereço", "conta"],
+  ["dá para trocar o email da conta?", "conta"],
+  // agradecimento / despedida
+  ["muito obrigado!", "agradecimento"],
+  ["valeu, ajudou bastante", "agradecimento"],
+  ["obrigada pela ajuda", "agradecimento"],
+  ["tchau tchau", "despedida"],
+  ["até mais, valeu", "despedida"],
+  ["boa, até amanhã", "despedida"],
+  // fora_escopo
+  ["qual o resultado do jogo do flamengo", "fora_escopo"],
+  ["me conta uma história", "fora_escopo"],
+  ["qual a previsão para amanhã", "fora_escopo"],
+  ["quem descobriu o brasil", "fora_escopo"],
+  ["me ajuda com uma receita de lasanha", "fora_escopo"],
+];
+
+// Conversas com várias mensagens: cada passo traz a intenção e um trecho esperado na resposta.
+export const dialogs = [
+  {
+    nome: "guitarra vintage para blues rock (conversa-alvo)",
+    passos: [
+      ["eu gostaria de uma guitarra mais vintage", "recomendar", /qual som vintage/i],
+      ["talvez blues rock", "recomendar", /blues rock/i],
+    ],
+  },
+  {
+    nome: "setup em três passos",
+    passos: [
+      ["quero montar um setup", "setup", /estilo musical/i],
+      ["rock clássico", "setup", /orçamento/i],
+      ["até 5 mil", "setup", /Total:/],
+    ],
+  },
+];

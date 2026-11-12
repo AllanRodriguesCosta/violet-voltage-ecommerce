@@ -1,7 +1,7 @@
 VIOLET VOLTAGE - FERRAMENTAS, CONTAS E BIBLIOTECAS
 ==================================================
 
-Ultima atualizacao: 12/11/2026 (etapa 18 da Fase 3).
+Ultima atualizacao: 12/11/2026 (etapa 19 da Fase 3).
 
 Regra do projeto: custo zero. Nenhuma conta com forma de pagamento cadastrada,
 nenhum plano pago, nenhuma biblioteca paga. Tarefas pendentes que usam estas
@@ -33,6 +33,7 @@ Comandos uteis (na raiz do projeto):
   npm run fotos:conferir  confere as fotos de seed-assets sem alterar nada
   npm run seed       carga do catalogo (precisa das fotos; ver T06)
   npm run seed -- --parcial   carrega so os produtos que ja tem foto
+  npm run agente:eval  acerto do assistente em frases fora do treino
   npm run db:migrate cria/confere as tabelas
 
 2. CONTAS E SERVICOS GRATUITOS
@@ -61,7 +62,8 @@ Comandos uteis (na raiz do projeto):
 
 Etapas 17 a 20: NENHUMA biblioteca nova prevista.
 - A PLN local do assistente (normalizacao, intencao, entidades, dialogo) e
-  escrita em JavaScript puro dentro do projeto.
+  escrita em JavaScript puro dentro do projeto (src/assistant/, pronta na
+  etapa 19).
 - O Gemini sera chamado com o fetch nativo do Node, sem SDK.
 
 Se no futuro uma biblioteca for necessaria, o Copilot a registra aqui, porque

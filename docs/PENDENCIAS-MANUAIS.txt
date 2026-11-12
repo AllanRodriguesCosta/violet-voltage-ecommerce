@@ -1,7 +1,7 @@
 VIOLET VOLTAGE - PENDENCIAS MANUAIS (ALLAN E CODEX)
 ====================================================
 
-Ultima atualizacao: 12/11/2026 (etapa 18 da Fase 3).
+Ultima atualizacao: 12/11/2026 (etapa 19 da Fase 3).
 
 PARA QUE SERVE
 --------------
@@ -29,9 +29,9 @@ REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
    usado. Nao tente "consertar" mudando codigo.
 
 ----------------------------------------------------------------------
-T01 [ ] ALLAN - Publicar as etapas 17 e 18 no Render
+T01 [ ] ALLAN - Publicar as etapas 17, 18 e 19 no Render
 ----------------------------------------------------------------------
-Depois do merge dos pull requests das etapas 17 e 18 em main:
+Depois do merge dos pull requests das etapas 17, 18 e 19 em main:
 - Se o servico do Render tem deploy automatico, so confirme que o ultimo
   deploy terminou com sucesso. Caso contrario, use "Manual Deploy" > "Deploy
   latest commit".
@@ -45,6 +45,9 @@ Como conferir no site publicado:
   originais estiverem no banco; depois da T06 aparecem mais).
 - Home mostra "Escolha por estilo musical"; setup.html tem o campo "Estilo
   musical".
+- Logado, aparece o botao "Assistente" no canto da tela. Teste: "quero uma
+  guitarra mais vintage", depois "blues rock" (precisa das guitarras no
+  banco; com so os 22 produtos originais aparece a ST Electric Pink).
 Os 53 produtos novos so aparecem no site depois da T06 (seed com as fotos).
 Resultado:
 
@@ -135,4 +138,17 @@ escritos a partir de especificacoes conhecidas dos fabricantes e de precos
 aproximados, sem consulta a lojas (precos academicos). Se algo nao bater com
 o produto da foto escolhida (ex.: outra versao do modelo, cor, potencia,
 comprimento do cabo), anote produto, campo e valor certo e passe ao Copilot.
+Resultado:
+
+----------------------------------------------------------------------
+T09 [ ] CODEX - Avaliar o assistente e testar frases reais (opcional)
+----------------------------------------------------------------------
+Na raiz do projeto (nao precisa de banco nem de internet):
+  npm run agente:eval
+Anote em "Resultado" a linha "Intencao: X% de acerto" e a de entidades.
+Depois, com o site no ar e logado, mande ao assistente 10 a 20 perguntas que
+um cliente faria de verdade (de preferencia escritas por outra pessoa) e anote
+as que ele errou ou nao entendeu, com a resposta recebida. Passe a lista ao
+Copilot: ela vira novas frases de treino e de avaliacao. Nao altere os
+arquivos de src/assistant/.
 Resultado:

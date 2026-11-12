@@ -90,6 +90,15 @@ export const evalSet = [
   ["onde vejo meus favoritos", "conta"],
   ["como atualizo meu endereço", "conta"],
   ["dá para trocar o email da conta?", "conta"],
+  // central de ajuda e conta (etapa 20 do roadmap; as cinco primeiras foram examinadas no ajuste da busca)
+  ["o valor pode mudar quando eu fechar a compra?", "central_ajuda"],
+  ["vocês avisam quando um produto esgotado voltar?", "central_ajuda"],
+  ["como fico sabendo que o pedido mudou de etapa", "central_ajuda"],
+  ["como desativo minha conta", "conta"],
+  ["dá pra mudar a senha?", "conta"],
+  ["o chat salva o que eu escrevo?", "central_ajuda"],
+  ["quero uma cópia de tudo que vocês têm sobre mim", "conta"],
+  ["como ativo o aviso de produto esgotado", "central_ajuda"],
   // agradecimento / despedida
   ["muito obrigado!", "agradecimento"],
   ["valeu, ajudou bastante", "agradecimento"],

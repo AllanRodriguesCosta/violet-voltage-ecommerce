@@ -105,6 +105,10 @@ export default async function home() {
     location.replace(`/catalogo.html${location.search}`);
     return;
   }
+  if (params.get("conta") === "excluida") {
+    toast("Sua conta foi excluída e seus dados pessoais foram apagados.", { type: "success" });
+    history.replaceState(null, "", "/");
+  }
   document.querySelector("#highlights").innerHTML = skeletonCards(4);
   let products;
   try {

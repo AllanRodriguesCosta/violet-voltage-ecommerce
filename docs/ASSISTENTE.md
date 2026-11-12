@@ -16,6 +16,7 @@ carrinho" dependem de um clique.
 | Setup | "monta um setup de metal até 4 mil" | Guitarra, amplificador, pedal, cabo e correia dentro do orçamento, com "adicionar tudo" e link para o montador |
 | Pedidos | "onde está meu pedido?", "quero cancelar" | Etapa do pedido mais recente (ou do código citado) e se ainda dá para cancelar |
 | Dúvidas da loja | frete, prazos, retirada, pagamento, parcelas, cupons, trocas, conta | Texto gerado das mesmas regras do checkout (`src/services/pricing.js`) |
+| Central de Ajuda | "o preço muda no carrinho?", "como excluo minha conta?", "vocês avisam quando voltar ao estoque?" | A resposta da pergunta mais parecida da Central de Ajuda, com link para ela (etapa 20) |
 | Conversa | saudação, ajuda, agradecimento, despedida, assunto fora da loja | Respostas curtas, com sugestões de próxima pergunta |
 
 Disponível só para quem está logado (botão "Assistente" no canto da tela).
@@ -53,8 +54,14 @@ contexto da conversa (vem do navegador, revalidado) ─────────�
    - Frase com entidade de compra vira recomendação.
    - Confiança abaixo de 0,45 ou cobertura baixa viram "não entendi", com
      exemplos de pergunta. Essas frases ficam marcadas (`entendeu: false`) para
-     a camada opcional do Gemini (etapa 20).
-5. **Recomendação** (`recommend.js`): filtros obrigatórios (categoria, preço,
+     a camada opcional do Gemini (etapa 21).
+5. **Central de Ajuda** (`help-search.js`, etapa 20): busca nas perguntas de
+   `src/knowledge/help.js` (a mesma fonte da página `ajuda.html`) por palavras
+   em comum, com peso maior para as raras (IDF); a pergunta e os termos valem
+   inteiro e o texto da resposta, 30%. Só responde sozinha com pelo menos duas
+   palavras da pergunta e metade do peso da frase; entra nas dúvidas de conta
+   e antes do "não entendi".
+6. **Recomendação** (`recommend.js`): filtros obrigatórios (categoria, preço,
    marca, tipo, formato…), e o gênero limita guitarras, amplificadores e pedais
    aos indicados para ele ou versáteis. A pontuação soma:
    - gênero indicado na ficha: 4;
@@ -66,7 +73,7 @@ contexto da conversa (vem do navegador, revalidado) ─────────�
    "Mais barato" mostra só itens mais baratos que os já exibidos. O setup
    divide o orçamento por peça e troca a peça mais cara por uma alternativa
    quando estoura; se sobra orçamento, melhora a guitarra e o amplificador.
-6. **Contexto**: a conversa guarda filtros, a pergunta pendente, as perguntas
+7. **Contexto**: a conversa guarda filtros, a pergunta pendente, as perguntas
    já feitas e os produtos já mostrados. O objeto vai e volta pelo navegador
    (o servidor não guarda estado). Tudo que chega é revalidado
    (`context.js`): só chaves conhecidas, valores das listas do esquema e
@@ -85,19 +92,25 @@ contexto da conversa (vem do navegador, revalidado) ─────────�
 
 ## Avaliação
 
-`npm run agente:eval` roda o pipeline completo sobre 88 frases **que não
+`npm run agente:eval` roda o pipeline completo sobre 96 frases **que não
 estão no treino** (`src/assistant/eval-set.js`), com intenção esperada. Em parte
 delas também verifica as entidades. Também roda duas conversas de várias
 mensagens. O teste `tests/assistant.test.js` garante que nenhuma frase de
 avaliação esteja no treino e que a acurácia fique acima de 90%.
 
-Resultado em 12/11/2026:
+Resultado em 12/11/2026, depois da etapa 20 (Central de Ajuda e conta):
 
 | Medida | Resultado |
 | --- | --- |
-| Intenção (88 frases fora do treino) | 95,5% |
+| Intenção (96 frases fora do treino) | 93,8% |
 | Entidades (46 campos) | 100% |
 | Conversas de várias mensagens | 2 de 2 |
+
+Na etapa 20 entraram 8 frases de ajuda e conta; as cinco primeiras foram
+examinadas enquanto a busca era ajustada, então só as três últimas são
+inéditas de verdade. Duas delas falharam ("o chat salva o que eu escrevo?" e
+"quero uma cópia de tudo que vocês têm sobre mim") e ficaram como estão, para
+a medida não ser viciada. Na etapa 19 o resultado era 95,5% em 88 frases.
 
 Erros restantes:
 - "eae" e "boa, até amanhã" ficaram abaixo da confiança mínima.
@@ -111,5 +124,5 @@ Limitações conhecidas:
 - Frases muito longas e com vários pedidos ao mesmo tempo atendem só ao
   principal.
 
-A etapa 20 acrescenta o Gemini gratuito só para as frases que a PLN local não
+A etapa 21 acrescenta o Gemini gratuito só para as frases que a PLN local não
 entender, mantendo as respostas presas aos dados da loja.

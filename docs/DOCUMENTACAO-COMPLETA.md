@@ -33,6 +33,8 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/services/bootstrap.js` | Criação/atualização privada do administrador |
 | `src/services/seed*.js` | Manifesto, fichas técnicas e carga dos 75 produtos/imagens (modo parcial para fotos em andamento) |
 | `scripts/check-photos.js` | `npm run fotos:conferir`: confere as fotos locais sem alterar nada |
+| `src/knowledge/help.js` | Central de Ajuda: perguntas e respostas (fonte da página `ajuda.html` e da busca do assistente) |
+| `src/services/account.js` | Troca de senha, cópia dos dados e exclusão da conta pelo cliente |
 | `src/knowledge/genres.js` | Base de conhecimento musical por gênero, usada pelo assistente |
 | `src/assistant/` | Assistente de compras: pré-processamento, classificador Naive Bayes, entidades, recomendação, setup, dúvidas, contexto e avaliação ([ASSISTENTE.md](ASSISTENTE.md)) |
 | `public/js/assistant.js` | Painel do assistente (só para quem está logado) |
@@ -306,8 +308,8 @@ híbrido (PLN local sempre ativa e Gemini gratuito opcional, com retorno à PLN
 local), só para usuários logados, um agente unificado para recomendação, dúvidas
 da loja, pedidos e setup. Etapas 17 (ficha técnica e base de conhecimento), 18
 (catálogo ampliado) e 19 (assistente com PLN local, ver
-[ASSISTENTE.md](ASSISTENTE.md)) prontas; a etapa 20 (Gemini opcional) está no
-[roadmap](ROADMAP.md). Tarefas manuais ou do Codex: `docs/PENDENCIAS-MANUAIS.txt` e
+[ASSISTENTE.md](ASSISTENTE.md)) e 20 (conta, privacidade e Central de Ajuda)
+prontas; a etapa 21 (Gemini opcional) está no [roadmap](ROADMAP.md). Tarefas manuais ou do Codex: `docs/PENDENCIAS-MANUAIS.txt` e
 `docs/FERRAMENTAS-E-BIBLIOTECAS.txt`.
 
 Fase 2 do [roadmap](ROADMAP.md), em andamento: amplia o antigo Roadmap 2

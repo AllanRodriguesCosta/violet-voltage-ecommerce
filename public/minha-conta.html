@@ -76,6 +76,31 @@
               <h2 id="alerts-title">Avisos de estoque</h2>
               <div id="alert-list"><div class="loading" role="status">Carregando avisos…</div></div>
             </section>
+            <section class="panel security-panel" id="seguranca" aria-labelledby="security-title">
+              <h2 id="security-title">Segurança e privacidade</h2>
+              <form id="password-form">
+                <h3>Trocar senha</h3>
+                <div class="field"><label for="senha-atual">Senha atual</label><input id="senha-atual" name="atual" type="password" required maxlength="72" autocomplete="current-password" /></div>
+                <div class="field"><label for="senha-nova">Nova senha</label><input id="senha-nova" name="nova" type="password" required minlength="10" maxlength="72" autocomplete="new-password" aria-describedby="senha-nova-help" /><p class="form-help" id="senha-nova-help">De 10 a 72 caracteres. As sessões abertas em outros aparelhos serão encerradas.</p></div>
+                <div class="field"><label for="senha-confirmacao">Repita a nova senha</label><input id="senha-confirmacao" name="confirmacao" type="password" required minlength="10" maxlength="72" autocomplete="new-password" /></div>
+                <button type="submit" class="secondary full">Trocar senha</button>
+              </form>
+              <div class="privacy-block">
+                <h3>Seus dados</h3>
+                <p class="form-help">Arquivo com seu cadastro, endereços, pedidos, avisos de estoque e notificações.</p>
+                <a class="button secondary full" href="/api/account/export" download="violet-voltage-meus-dados.json" id="export-data"><span data-icon="package" data-size="18"></span>Baixar meus dados</a>
+              </div>
+              <div class="privacy-block danger-zone">
+                <h3>Excluir conta</h3>
+                <p class="form-help" id="delete-help">Apaga nome, telefone, endereços, avisos e notificações e encerra o acesso. Os pedidos ficam guardados sem seus dados pessoais, como registro da venda.</p>
+                <button type="button" class="danger full" id="delete-open" aria-expanded="false" aria-controls="delete-form">Excluir minha conta</button>
+                <form id="delete-form" hidden>
+                  <div class="field"><label for="delete-senha">Confirme com sua senha</label><input id="delete-senha" name="senha" type="password" required maxlength="72" autocomplete="current-password" aria-describedby="delete-help" /></div>
+                  <div class="row"><button type="button" class="secondary" id="delete-cancel">Manter conta</button><button type="submit" class="danger-solid">Excluir definitivamente</button></div>
+                </form>
+              </div>
+              <p class="form-help"><a href="/privacidade.html">Como usamos seus dados</a></p>
+            </section>
           </div>
         </div>
       </div>

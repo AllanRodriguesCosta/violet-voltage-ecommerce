@@ -6,6 +6,7 @@ import { extract } from "./entities.js";
 import { normalize } from "./text.js";
 import { recommend, reasonFor, genreIntro, buildSetup, GROUP } from "./recommend.js";
 import { faqAnswer, brl } from "./faq.js";
+import { searchHelp, strongHelp } from "./help-search.js";
 import { sanitizeContext } from "./context.js";
 import { genreQuestion } from "../knowledge/genres.js";
 import { maxInstallments, delivery, FREE_SHIPPING_CENTS } from "../services/pricing.js";
@@ -18,11 +19,12 @@ const INFO = {
   entrega: /frete|entreg|prazo|cheg|retir|envio|correio|sedex|demor/,
   pagamento: /pag|pix|boleto|cart|parcel|juros|vezes|\d+ ?x\b/,
   cupom: /cupo|desconto|promo|codigo/,
-  troca: /\btroc|devol|garantia|defeito|estragad|quebrad/,
+  troca: /^(?!.*\b(senha|e-?mail|endereco|dados)\b).*(\btroc|devol|garantia|defeito|estragad|quebrad)/,
   conta: /senha|dados|e-?mail|endereco|favorit|cadastr|telefone|minha conta|da conta|na conta/,
-  pedido_status: /\bpedidos?\b|\bcompras?\b|encomenda|rastre|status|enviad|cheg|\bsaiu\b|recebi/,
+  pedido_status: /\bpedidos?\b|minhas? compras?|encomenda|rastre|status|enviad|cheg|\bsaiu\b|recebi/,
   pedido_cancelar: /cancel|desist|arrepend/,
 };
+const CONVERSATION = ["saudacao", "ajuda", "agradecimento", "despedida", "setup", "fora_escopo"];
 const SETUP_WORDS = /setup|complet|comec|tudo|equipamento|mont|junt|kit para|kit de guitarra/;
 const SKIP = /\b(tanto faz|qualquer( um| uma)?|nao sei|sem preferencia|nao importa|pular|sem limite|sem orcamento)\b/;
 const FILTERS = ["categoria", "tipo", "genero", "estilo", "formato", "captacao", "tecnologia", "voicing", "uso", "nivel", "marca", "min", "max"];
@@ -258,6 +260,13 @@ function handleSetup(e, ctx, products, override = {}, titulo) {
   };
 }
 
+// Resposta tirada da Central de Ajuda, com link para a pergunta exata.
+function helpAnswer(entry) {
+  const acoes = [link("Ver na Central de Ajuda", `/ajuda.html#${entry.ancora}`)];
+  if (entry.link) acoes.push(link(entry.link.rotulo, entry.link.href));
+  return { texto: entry.resposta, acoes, sugestoes: START.slice(0, 3) };
+}
+
 const STATUS_TEXT = {
   Recebido: () => "recebemos o pedido e ele ainda pode ser cancelado em Minha conta",
   "Em preparação": () => "estamos separando os itens",
@@ -300,9 +309,11 @@ export async function reply({ mensagem, contexto }, { products, orders = async (
   const shopping = Boolean(e.categoria || e.tipo || e.genero || e.estilo || e.formato || e.captacao || e.tecnologia || e.voicing || e.marca || e.produtos.length);
   const slotAnswer = shopping || e.min || e.max || e.estilo || e.uso || e.nivel || SKIP.test(text);
   const confirmed = (intent) => INFO[intent]?.test(text);
+  const help = searchHelp(mensagem);
   // Intenção informativa confirmada por palavra-chave entre as três mais prováveis.
   const informative = ranking.slice(0, 3).find((r, i) => confirmed(r.intent) && r.p >= (i ? 0.15 : 0.35));
 
+  const accepted = top.p >= THRESHOLD && top.coverage >= (top.intent === "fora_escopo" ? 0.2 : 0.34) && !INFO[top.intent] && top.intent !== "refinar";
   let intent;
   if (ctx.aguardando && slotAnswer && !(confirmed(top.intent) && top.p >= 0.5)) intent = ctx.intent || "recomendar";
   else if (informative) intent = informative.intent;
@@ -310,7 +321,8 @@ export async function reply({ mensagem, contexto }, { products, orders = async (
   else if (top.intent === "refinar" && top.p >= 0.35 && !shopping) intent = ctx.intent ? "refinar" : "recomendar";
   else if (shopping) intent = "recomendar";
   else if (e.ordem && ctx.intent) intent = "refinar";
-  else if (top.p >= THRESHOLD && top.coverage >= (top.intent === "fora_escopo" ? 0.2 : 0.34) && !INFO[top.intent] && top.intent !== "refinar") intent = top.intent;
+  else if (strongHelp(help) && !(accepted && CONVERSATION.includes(top.intent))) intent = "central_ajuda";
+  else if (accepted) intent = top.intent;
   else intent = "nao_entendi";
 
   const keep = { ...ctx, aguardando: null };
@@ -325,6 +337,8 @@ export async function reply({ mensagem, contexto }, { products, orders = async (
     } else out = handleRecommend(e, ctx, products, { refine: true });
   } else if (intent === "setup") out = handleSetup(e, ctx, products);
   else if (intent === "pedido_status" || intent === "pedido_cancelar") out = { ...(await handleOrders(intent, text, orders)), contexto: keep };
+  else if (intent === "central_ajuda" || (intent === "conta" && strongHelp(help)))
+    out = { ...helpAnswer(help.entry), contexto: keep };
   else if (INFO[intent]) out = { ...faqAnswer(intent, text), sugestoes: START.slice(0, 3), contexto: keep };
   else if (intent === "saudacao")
     out = { texto: `Oi${first ? `, ${first}` : ""}! Sou o assistente da Violet Voltage. Posso indicar equipamentos pelo seu estilo, montar um setup, contar em que etapa está seu pedido e tirar dúvidas sobre frete, pagamento e trocas. Por onde começamos?`, sugestoes: START, contexto: keep };

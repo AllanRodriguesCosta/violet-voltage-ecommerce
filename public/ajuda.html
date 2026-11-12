@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="description" content="Central de ajuda da Violet Voltage: pedidos, entregas, frete grátis, parcelamento, cupons, trocas e conta." />
+    <meta name="description" content="Central de ajuda da Violet Voltage: pedidos, entregas, frete grátis, parcelamento, cupons, produtos, trocas, conta e privacidade." />
     <meta name="theme-color" content="#120b19" />
     <meta property="og:site_name" content="Violet Voltage" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pt_BR" />
     <meta property="og:title" content="Central de ajuda | Violet Voltage" />
-    <meta property="og:description" content="Central de ajuda da Violet Voltage: pedidos, entregas, frete grátis, parcelamento, cupons, trocas e conta." />
+    <meta property="og:description" content="Central de ajuda da Violet Voltage: pedidos, entregas, frete grátis, parcelamento, cupons, produtos, trocas, conta e privacidade." />
     <title>Central de ajuda | Violet Voltage</title>
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="/manifest.webmanifest" />
@@ -39,34 +39,45 @@
         <header class="help-hero">
           <span class="eyebrow">Central de ajuda</span>
           <h1 class="page-title">Como podemos ajudar?</h1>
-          <p class="lead">Pedidos, entregas, pagamentos, cupons e trocas em respostas diretas.</p>
-          <form class="help-search" role="search"><label class="sr-only" for="faq-q">Buscar na ajuda</label><span data-icon="search" data-size="18"></span><input id="faq-q" type="search" placeholder="Busque por frete, parcelas, troca…" autocomplete="off" /></form>
-          <nav class="help-topics chip-row" aria-label="Assuntos"><a class="chip" href="#pedidos">Pedidos</a><a class="chip" href="#entregas">Entregas</a><a class="chip" href="#pagamentos">Pagamentos e cupons</a><a class="chip" href="#trocas">Trocas</a><a class="chip" href="#conta">Conta</a></nav>
+          <p class="lead">Pedidos, entregas, pagamentos, produtos, trocas e conta em respostas diretas.</p>
+          <form class="help-search" role="search"><label class="sr-only" for="faq-q">Buscar na ajuda</label><span data-icon="search" data-size="18"></span><input id="faq-q" type="search" placeholder="Busque por frete, parcelas, senha…" autocomplete="off" /></form>
+          <nav class="help-topics chip-row" aria-label="Assuntos"><a class="chip" href="#pedidos">Pedidos</a><a class="chip" href="#entregas">Entregas</a><a class="chip" href="#pagamentos">Pagamentos e cupons</a><a class="chip" href="#produtos">Produtos</a><a class="chip" href="#trocas">Trocas</a><a class="chip" href="#conta">Conta</a></nav>
         </header>
         <p class="catalog-meta" id="faq-status" aria-live="polite"></p>
         <section class="faq-group" id="pedidos" aria-labelledby="faq-pedidos"><h2 id="faq-pedidos">Pedidos</h2>
-          <details class="faq-item"><summary>Como acompanho meu pedido?</summary><p>Em <a href="/minha-conta.html#pedidos">Minha conta</a>, cada pedido mostra a linha do tempo com as etapas Recebido, Em preparação, Enviado e Concluído e a data de cada uma.</p></details>
-          <details class="faq-item"><summary>Posso cancelar um pedido?</summary><p>Sim, enquanto o status for “Recebido”: use “Cancelar pedido” em Minha conta. Os itens voltam para o estoque e o pedido não pode ser reaberto. Depois que a preparação começa, o cancelamento passa a ser feito pela loja.</p></details>
-          <details class="faq-item"><summary>Como compro os mesmos itens de novo?</summary><p>Em Minha conta, “Comprar novamente” coloca no carrinho os itens do pedido que ainda estão disponíveis.</p></details>
+          <details class="faq-item" id="pedidos-1"><summary>Como acompanho meu pedido?</summary><p>Em Minha conta, cada pedido mostra a linha do tempo com as etapas Recebido, Em preparação, Enviado e Concluído e a data de cada uma. O assistente também conta em que etapa está o seu pedido mais recente. <a href="/minha-conta.html#pedidos">Ver meus pedidos</a></p></details>
+          <details class="faq-item" id="pedidos-2"><summary>Como fico sabendo quando o pedido muda de etapa?</summary><p>Cada mudança feita pela loja vira uma notificação no sino do topo da página, com o número do pedido. As não lidas aparecem em destaque até você abri-las.</p></details>
+          <details class="faq-item" id="pedidos-3"><summary>Posso cancelar um pedido?</summary><p>Sim, enquanto o status for “Recebido”: use “Cancelar pedido” em Minha conta. Os itens voltam para o estoque e o pedido não pode ser reaberto. Depois que a preparação começa, o cancelamento passa a ser feito pela loja.</p></details>
+          <details class="faq-item" id="pedidos-4"><summary>Como compro os mesmos itens de novo?</summary><p>Em Minha conta, “Comprar novamente” coloca no carrinho os itens do pedido que ainda estão disponíveis.</p></details>
         </section>
         <section class="faq-group" id="entregas" aria-labelledby="faq-entregas"><h2 id="faq-entregas">Entregas e retirada</h2>
-          <details class="faq-item"><summary>Quais são as formas de entrega e os prazos?</summary><p>Entrega padrão em 5 a 8 dias úteis (R$ 25,00), entrega expressa em 1 a 3 dias úteis (R$ 45,00) e retirada na loja sem custo, disponível em 1 dia útil.</p></details>
-          <details class="faq-item"><summary>Como funciona o frete grátis?</summary><p>A entrega padrão fica grátis quando os produtos somam R$ 999,00 ou mais. O minicarrinho e o carrinho mostram quanto falta.</p></details>
-          <details class="faq-item"><summary>O que levo para retirar na loja?</summary><p>Um documento com foto e o número do pedido, que aparece na confirmação e em Minha conta.</p></details>
+          <details class="faq-item" id="entregas-1"><summary>Quais são as formas de entrega e os prazos?</summary><p>Entrega padrão em 5 a 8 dias úteis (R$ 25,00), entrega expressa em 1 a 3 dias úteis (R$ 45,00) e retirada na loja sem custo, disponível em 1 dia útil.</p></details>
+          <details class="faq-item" id="entregas-2"><summary>Como funciona o frete grátis?</summary><p>A entrega padrão fica grátis quando os produtos somam R$ 999,00 ou mais. O minicarrinho e o carrinho mostram quanto falta.</p></details>
+          <details class="faq-item" id="entregas-3"><summary>O que levo para retirar na loja?</summary><p>Um documento com foto e o número do pedido, que aparece na confirmação e em Minha conta.</p></details>
+          <details class="faq-item" id="entregas-4"><summary>Posso salvar mais de um endereço?</summary><p>Sim, até 5 endereços de entrega em Minha conta. O endereço principal já vem escolhido no checkout, e o CEP preenche o estado sozinho. <a href="/minha-conta.html">Ir para Minha conta</a></p></details>
         </section>
         <section class="faq-group" id="pagamentos" aria-labelledby="faq-pagamentos"><h2 id="faq-pagamentos">Pagamentos e cupons</h2>
-          <details class="faq-item"><summary>Quais formas de pagamento são aceitas?</summary><p>Pix, cartão de crédito e boleto. A escolha é feita no checkout.</p></details>
-          <details class="faq-item"><summary>Como funciona o parcelamento?</summary><p>No cartão de crédito, em até 10x sem juros, com parcela mínima de R$ 50,00. As opções aparecem no checkout de acordo com o total do pedido.</p></details>
-          <details class="faq-item"><summary>Como uso um cupom de desconto?</summary><p>Digite o código no carrinho ou no checkout. Cupons ativos: <strong>VOLTAGE10</strong> (10% nos produtos, até R$ 500,00), <strong>PRIMEIROACORDE</strong> (R$ 30,00 em compras a partir de R$ 200,00) e <strong>FRETEVOLT</strong> (frete padrão ou expresso grátis). Vale um cupom por pedido.</p></details>
+          <details class="faq-item" id="pagamentos-1"><summary>Quais formas de pagamento são aceitas?</summary><p>Pix, cartão de crédito e boleto. A escolha é feita no checkout.</p></details>
+          <details class="faq-item" id="pagamentos-2"><summary>Como funciona o parcelamento?</summary><p>No cartão de crédito, em até 10x sem juros, com parcela mínima de R$ 50,00. As opções aparecem no checkout de acordo com o total do pedido.</p></details>
+          <details class="faq-item" id="pagamentos-3"><summary>Como uso um cupom de desconto?</summary><p>Digite o código no carrinho ou no checkout. Cupons ativos: VOLTAGE10 (10% de desconto nos produtos, até R$ 500,00), PRIMEIROACORDE (r$ 30,00 de desconto a partir de R$ 200,00), FRETEVOLT (frete grátis na entrega padrão ou expressa). Vale um cupom por pedido.</p></details>
+          <details class="faq-item" id="pagamentos-4"><summary>O preço muda depois que eu coloco no carrinho?</summary><p>Preço e estoque são conferidos novamente ao confirmar o pedido. Se algo mudar, o checkout avisa antes de concluir.</p></details>
+        </section>
+        <section class="faq-group" id="produtos" aria-labelledby="faq-produtos"><h2 id="faq-produtos">Produtos e escolha</h2>
+          <details class="faq-item" id="produtos-1"><summary>Como sei se um equipamento combina com o meu estilo?</summary><p>Cada produto tem ficha técnica com estilo (vintage, moderno ou atemporal), gêneros indicados e as características da categoria, como formato e captação das guitarras ou tecnologia e sonoridade dos amplificadores. No catálogo, filtre por estilo e gênero; na página do produto, os gêneros levam a outros itens indicados. <a href="/catalogo.html">Abrir o catálogo</a></p></details>
+          <details class="faq-item" id="produtos-2"><summary>O que é o Monte seu setup?</summary><p>Um montador em seis etapas (guitarra, amplificador, efeitos, cabos, correia e acessórios) que mostra o total, as parcelas e o frete grátis na hora. Dá para filtrar pelo estilo musical, compartilhar o link e colocar tudo no carrinho de uma vez. <a href="/setup.html">Montar um setup</a></p></details>
+          <details class="faq-item" id="produtos-3"><summary>Um produto esgotou. Como sei quando volta?</summary><p>Na página do produto esgotado, ative “Avise-me quando chegar”. Quando a loja repuser o estoque, você recebe uma notificação no sino. Os avisos ativos ficam em Minha conta.</p></details>
+          <details class="faq-item" id="produtos-4"><summary>Como funciona o assistente?</summary><p>Disponível para quem está logado, no botão Assistente no canto da tela. Ele indica equipamentos pelo seu estilo e orçamento, monta setups, conta em que etapa está seu pedido e responde dúvidas desta central. As respostas são automáticas e usam só o catálogo e as regras da loja; nada é comprado sem você clicar, e a conversa fica apenas nesta aba do navegador.</p></details>
         </section>
         <section class="faq-group" id="trocas" aria-labelledby="faq-trocas"><h2 id="faq-trocas">Trocas e devoluções</h2>
-          <details class="faq-item"><summary>Qual é o prazo para troca?</summary><p>Até 7 dias após o recebimento, com o produto sem sinais de uso, acompanhado de acessórios e embalagem original.</p></details>
-          <details class="faq-item"><summary>O preço muda depois que eu coloco no carrinho?</summary><p>Preço e estoque são conferidos novamente ao confirmar o pedido. Se algo mudar, o checkout avisa antes de concluir.</p></details>
+          <details class="faq-item" id="trocas-1"><summary>Qual é o prazo para troca?</summary><p>Até 7 dias após o recebimento, com o produto sem sinais de uso, acompanhado de acessórios e embalagem original.</p></details>
         </section>
-        <section class="faq-group" id="conta" aria-labelledby="faq-conta"><h2 id="faq-conta">Conta e favoritos</h2>
-          <details class="faq-item"><summary>Como altero meus dados?</summary><p>Em <a href="/minha-conta.html">Minha conta</a>, na seção Meus dados. O e-mail de acesso não pode ser alterado.</p></details>
-          <details class="faq-item"><summary>Esqueci minha senha. E agora?</summary><p>A recuperação de senha ainda não está disponível. Você pode criar uma conta com outro e-mail.</p></details>
-          <details class="faq-item"><summary>Onde ficam meus favoritos?</summary><p>Neste navegador. Em outro aparelho ou navegador, a lista começa vazia.</p></details>
+        <section class="faq-group" id="conta" aria-labelledby="faq-conta"><h2 id="faq-conta">Conta e privacidade</h2>
+          <details class="faq-item" id="conta-1"><summary>Como altero meus dados?</summary><p>Em Minha conta, na seção Meus dados, você muda nome e telefone. O e-mail de acesso não pode ser alterado. <a href="/minha-conta.html">Ir para Minha conta</a></p></details>
+          <details class="faq-item" id="conta-2"><summary>Como troco minha senha?</summary><p>Em Minha conta, na seção Segurança e privacidade, informe a senha atual e a nova (de 10 a 72 caracteres). Por segurança, as sessões abertas em outros aparelhos são encerradas. <a href="/minha-conta.html">Ir para Minha conta</a></p></details>
+          <details class="faq-item" id="conta-3"><summary>Esqueci minha senha. E agora?</summary><p>A loja ainda não envia e-mail de recuperação de senha. Se perdeu o acesso, crie uma conta com outro e-mail.</p></details>
+          <details class="faq-item" id="conta-4"><summary>Como baixo uma cópia dos meus dados?</summary><p>Em Minha conta, na seção Segurança e privacidade, use “Baixar meus dados”: você recebe um arquivo com seu cadastro, endereços, pedidos, avisos de estoque e notificações. <a href="/minha-conta.html">Ir para Minha conta</a></p></details>
+          <details class="faq-item" id="conta-5"><summary>Como excluo minha conta?</summary><p>Em Minha conta, na seção Segurança e privacidade, confirme com sua senha. Nome, telefone, endereços, avisos e notificações são apagados e o acesso é encerrado; os pedidos ficam guardados sem seus dados pessoais, como registro da venda. Com pedido em andamento, a exclusão espera a conclusão ou o cancelamento. <a href="/minha-conta.html">Ir para Minha conta</a></p></details>
+          <details class="faq-item" id="conta-6"><summary>Onde ficam meus favoritos?</summary><p>Neste navegador. Em outro aparelho ou navegador, a lista começa vazia. <a href="/favoritos.html">Ver favoritos</a></p></details>
         </section>
         <div id="faq-empty" hidden></div>
       </div>

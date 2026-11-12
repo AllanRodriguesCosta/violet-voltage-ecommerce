@@ -1,3 +1,32 @@
+# Fase 3, etapa 21 — 12/11/2026
+
+- Testes novos em `tests/stage21.test.js` (5), com a loja de teste em
+  `tests/helpers/api-fixture.js`:
+  - Kits: itens existem, sem repetição, desconto de 5% a 15%; desconto só com o
+    kit completo, em dobro com dois kits, unidade compartilhada conta uma vez,
+    cupom sobre o valor já com o kit e total coerente.
+  - Compatibilidade: cabo, amplificador, correia e cordas para guitarra;
+    fonte isolada para 3 pedais, fonte simples para 1, nada para pedaleira com
+    fonte inclusa; patch sozinho; carrinho completo sem avisos.
+  - Ficha: alimentação em todos os pedais e comparação marcando diferenças.
+  - API: cotação e pedido com kit, comprovante só do dono (404 para outro
+    cliente, 401 sem login), rastreio `VV#########BR` ao enviar e notificação
+    com o código e o link do comprovante.
+- No navegador (39 verificações): comparador (barra, tabela, só diferenças,
+  foco, link copiado e aberto em outro navegador, página do produto, limpar,
+  vazio), kits (home, página, adicionar, desconto no carrinho), avisos de
+  compatibilidade (guitarra, pedais, kit quase completo, adicionar resolve),
+  checkout e confirmação com economia, comprovante (impressão sem cabeçalho),
+  rastreio na conta e na notificação, pedido inexistente e celular (barra
+  acima da navegação, tabela com rolagem própria, sem rolagem lateral).
+- Acessibilidade em claro, escuro, 375 e 1440 px, com 7 telas novas (kits,
+  comparador vazio, com 3 e só diferenças, barra, carrinho com avisos e
+  comprovante), sem problemas. Alvos de toque de listas de links ajustados.
+- Regressão completa (14 roteiros) sem falhas; roteiros antigos atualizados
+  para 77 produtos e para os kits da home.
+
+---
+
 # Fase 3, etapa 20 — 12/11/2026
 
 - Testes novos em `tests/help-account.test.js` (3):

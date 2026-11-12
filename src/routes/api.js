@@ -335,6 +335,12 @@ export function apiRouter(storage, config) {
       data: (await storage.listByPartition("orders", req.user.id)).map(publicOrder),
     }),
   );
+  // Um pedido do próprio cliente (comprovante); de outro cliente responde 404.
+  r.get("/orders/:id", authenticated, async (req, res) => {
+    const order = await storage.getByRowKey("orders", String(req.params.id));
+    if (!order || order.partitionKey !== req.user.id) throw new AppError(404, "Pedido não encontrado.");
+    res.set("Cache-Control", "no-store").json({ data: publicOrder(order) });
+  });
   r.post("/orders", authenticated, async (req, res) =>
     res.status(201).json({
       data: publicOrder(await placeOrder(storage, req.user, req.body)),

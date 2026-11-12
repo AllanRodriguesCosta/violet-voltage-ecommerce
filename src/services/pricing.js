@@ -1,4 +1,5 @@
 import { AppError, integer } from "../utils/validation.js";
+import { kitDiscounts } from "../../public/js/kits.js";
 
 // Regras comerciais únicas para cotação e pedido. Valores em centavos.
 export const shipping = { padrao: 2500, expressa: 4500, retirada: 0 };
@@ -31,6 +32,9 @@ export function couponCode(value) {
 export function quote(items, { entrega, cupom } = {}) {
   if (!Object.hasOwn(shipping, entrega)) throw new AppError(400, "Forma de entrega inválida.", "entrega");
   const subtotalCents = items.reduce((sum, i) => sum + i.priceCents * i.quantidade, 0);
+  // Kits completos no carrinho ganham desconto automático; o cupom vale sobre o restante.
+  const { kits, descontoKitsCents } = kitDiscounts(items);
+  const baseCents = subtotalCents - descontoKitsCents;
   const freteGratis = entrega === "padrao" && subtotalCents >= FREE_SHIPPING_CENTS;
   let freteCents = freteGratis ? 0 : shipping[entrega];
   let descontoCents = 0;
@@ -42,18 +46,20 @@ export function quote(items, { entrega, cupom } = {}) {
     if (rule.minCents && subtotalCents < rule.minCents)
       throw new AppError(400, `Este cupom vale para compras a partir de ${brl(rule.minCents)}.`, "cupom");
     if (rule.type === "percent")
-      descontoCents = Math.min(Math.round((subtotalCents * rule.value) / 100), rule.maxCents);
-    else if (rule.type === "fixed") descontoCents = Math.min(rule.value, subtotalCents);
+      descontoCents = Math.min(Math.round((baseCents * rule.value) / 100), rule.maxCents);
+    else if (rule.type === "fixed") descontoCents = Math.min(rule.value, baseCents);
     else if (freteCents === 0)
       throw new AppError(400, "O frete desta compra já é grátis.", "cupom");
     else freteCents = 0;
     applied = { codigo: code, descricao: rule.description };
   }
-  const totalCents = subtotalCents + freteCents - descontoCents;
+  const totalCents = baseCents + freteCents - descontoCents;
   return {
     subtotalCents,
     freteCents,
     descontoCents,
+    descontoKitsCents,
+    kits,
     totalCents,
     freteGratis,
     faltaFreteGratisCents: Math.max(0, FREE_SHIPPING_CENTS - subtotalCents),

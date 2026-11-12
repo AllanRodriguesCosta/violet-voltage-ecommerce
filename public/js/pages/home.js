@@ -4,22 +4,12 @@ import {
   catalogProducts,
   categories,
   getRecent,
-  getCart,
-  setCart,
-  money,
   productImage,
   escapeHtml as esc,
   toast,
 } from "../common.js";
-import { productCard, skeletonCards, bindCards, categoryInfo, errorState, productUrl, carousel } from "../components.js";
-import { openCart } from "../drawer.js";
-
-// Combinações curadas; itens ausentes ou inativos são ignorados.
-const setups = [
-  { id: "primeiro", title: "Primeiro setup", text: "Guitarra, amplificador, cabo e correia para plugar e tocar.", items: ["demo-013", "demo-006", "demo-021", "demo-001"] },
-  { id: "pedalboard", title: "Pedalboard essencial", text: "Base, efeitos e cabos para organizar a cadeia de pedais.", items: ["demo-009", "demo-008", "demo-012", "demo-019"] },
-  { id: "palco", title: "Pronto para o palco", text: "Timbre de show do primeiro ao último acorde.", items: ["demo-014", "demo-004", "demo-011", "demo-020"] },
-];
+import { kitsHTML, bindKits } from "../kit-cards.js";
+import { productCard, skeletonCards, bindCards, categoryInfo, errorState, carousel } from "../components.js";
 
 // Atalhos por estilo musical: gêneros da ficha com quantos itens indicados cada um tem.
 function renderGenres(products) {
@@ -49,47 +39,13 @@ function renderCategories(products) {
     })
     .join("");
 }
+// Kits com desconto: os três primeiros no início; todos em /kits.html.
 function renderSetups(products) {
-  const byId = new Map(products.map((p) => [p.id, p]));
-  const cards = setups
-    .map((setup) => {
-      const items = setup.items.map((id) => byId.get(id)).filter((p) => p && p.estoque > 0);
-      if (items.length < 2) return "";
-      const total = items.reduce((s, p) => s + p.priceCents, 0);
-      return `<article class="setup-card" data-reveal><div class="setup-thumbs">${items.map((p) => `<img src="${esc(productImage(p))}" alt="" loading="lazy" width="96" height="96">`).join("")}</div><h3>${setup.title}</h3><p>${setup.text}</p><ul class="setup-items">${items.map((p) => `<li><a href="${productUrl(p)}">${esc(p.marca)} ${esc(p.modelo)}</a><span>${money(p.priceCents)}</span></li>`).join("")}</ul><div class="setup-total"><span>${items.length} itens</span><strong>${money(total)}</strong></div><button type="button" class="button full" data-setup="${setup.id}">${icon("bag", { size: 18 })}Adicionar setup ao carrinho</button><a class="setup-customize" href="/setup.html?itens=${items.map((p) => encodeURIComponent(p.id)).join(",")}">Personalizar este setup ${icon("arrowRight", { size: 16 })}</a></article>`;
-    })
-    .join("");
   const grid = document.querySelector("#setup-grid");
+  const cards = kitsHTML(products, { limit: 3 });
   grid.innerHTML = cards;
   document.querySelector("#setups").hidden = !cards;
-  grid.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-setup]");
-    if (!button) return;
-    const setup = setups.find((s) => s.id === button.dataset.setup);
-    const cart = getCart();
-    let added = 0;
-    let skipped = 0;
-    for (const id of setup.items) {
-      const p = byId.get(id);
-      if (!p || p.estoque < 1) continue;
-      const current = cart.find((i) => i.id === id);
-      if ((current?.quantidade || 0) + 1 > Math.min(99, p.estoque)) {
-        skipped++;
-        continue;
-      }
-      if (current) current.quantidade++;
-      else cart.push({ id, quantidade: 1 });
-      added++;
-    }
-    try {
-      setCart(cart);
-    } catch {
-      toast("Não foi possível salvar o carrinho neste navegador.", { type: "error" });
-      return;
-    }
-    if (added) openCart(`${setup.title}: ${added} ${added === 1 ? "item adicionado" : "itens adicionados"} ao carrinho.`);
-    if (skipped) toast(`${skipped} ${skipped === 1 ? "item já está" : "itens já estão"} no limite do estoque.`, { type: "info" });
-  });
+  bindKits(grid, () => products);
 }
 function renderRow(selector, list, products) {
   const section = document.querySelector(selector);

@@ -23,6 +23,9 @@ export const GENEROS = [
 export const ESTILOS = ["Vintage", "Moderno", "Atemporal"];
 export const NIVEIS = ["Iniciante", "Intermediário", "Profissional"];
 export const USOS = ["Estudo em casa", "Ensaio", "Palco", "Estúdio"];
+// Alimentação de pedais: "Fonte 9V" e "Fonte 9V ou bateria" pedem fonte vendida à parte.
+export const ALIMENTACAO = ["Fonte 9V", "Fonte 9V ou bateria", "Fonte inclusa", "Bateria recarregável", "Não se aplica"];
+export const needsPower = (product) => product?.categoria === "Pedais" && /^Fonte 9V/.test(product?.ficha?.alimentacao || "");
 
 // Campos comuns a todas as categorias. "generos" vazio significa uso versátil.
 const comuns = [
@@ -52,6 +55,7 @@ export const SPEC_FIELDS = {
     ...comuns,
     { key: "efeito", label: "Tipo", type: "enum", filter: true, values: ["Overdrive", "Distorção", "Fuzz", "Compressor", "Chorus", "Tremolo", "Delay", "Reverb", "Wah", "Afinador", "Looper", "Multiefeitos", "Gabinete virtual (IR)", "Pedalboard"] },
     { key: "tecnologia", label: "Tecnologia", type: "enum", values: ["Analógico", "Digital", "Não se aplica"] },
+    { key: "alimentacao", label: "Alimentação", type: "enum", values: ALIMENTACAO },
     { key: "uso", label: "Uso", type: "multi", values: USOS, max: 4 },
     { key: "nivel", label: "Nível", type: "enum", values: NIVEIS },
   ],
@@ -68,7 +72,7 @@ export const SPEC_FIELDS = {
   ],
   Acessórios: [
     ...comuns,
-    { key: "tipo", label: "Tipo", type: "enum", filter: true, values: ["Suporte de parede", "Suporte de chão", "Palhetas", "Afinador", "Encordoamento", "Capotraste", "Limpeza"] },
+    { key: "tipo", label: "Tipo", type: "enum", filter: true, values: ["Suporte de parede", "Suporte de chão", "Palhetas", "Afinador", "Encordoamento", "Capotraste", "Limpeza", "Fonte"] },
     { key: "compatibilidade", label: "Compatível com", type: "text", maxLength: 80 },
   ],
 };
@@ -155,4 +159,23 @@ export function affinity(a, b) {
   if (a?.ficha?.estilo && a.ficha.estilo === b?.ficha?.estilo) score += 1;
   if (!theirs.length) score += 0.5;
   return score;
+}
+
+// Comparação lado a lado: linhas comuns, preço e ficha; "differs" marca valores diferentes.
+export function compareRows(products) {
+  const list = products.filter(Boolean);
+  const text = (p, field) => {
+    const row = specRows(p).find((r) => r.field.key === field.key);
+    return row ? row.text : "—";
+  };
+  const fields = [];
+  for (const p of list)
+    for (const field of specFields(p.categoria))
+      if (!fields.some((f) => f.key === field.key && f.label === field.label)) fields.push(field);
+  const rows = [
+    { key: "marca", label: "Marca", values: list.map((p) => p.marca) },
+    { key: "categoria", label: "Categoria", values: list.map((p) => p.categoria) },
+    ...fields.map((field) => ({ key: field.key, label: field.label, values: list.map((p) => text(p, field)) })),
+  ].filter((row) => row.values.some((v) => v && v !== "—"));
+  return rows.map((row) => ({ ...row, differs: new Set(row.values).size > 1 }));
 }

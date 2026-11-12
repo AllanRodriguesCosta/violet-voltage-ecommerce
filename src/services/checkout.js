@@ -66,6 +66,8 @@ export async function placeOrder(storage, user, body) {
       subtotalCents: totals.subtotalCents,
       freteCents: totals.freteCents,
       descontoCents: totals.descontoCents,
+      descontoKitsCents: totals.descontoKitsCents,
+      kits: totals.kits,
       cupom: totals.cupom?.codigo || null,
       totalCents: totals.totalCents,
       pagamento: body.pagamento,

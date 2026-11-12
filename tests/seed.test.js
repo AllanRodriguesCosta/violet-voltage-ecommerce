@@ -43,7 +43,7 @@ test("catálogo seed: IDs sequenciais únicos, arquivos e modelos únicos, preç
     Pedais: 15,
     Cabos: 3,
     Correias: 3,
-    Acessórios: 8,
+    Acessórios: 10,
   });
   assert.ok(
     seedProducts

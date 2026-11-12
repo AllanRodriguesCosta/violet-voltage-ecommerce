@@ -322,12 +322,63 @@ pagamento. Decisões:
 - [x] No celular, o painel do assistente em tela cheia deixa o resto da página
       inerte para teclado e leitor de tela.
 
-### 21. Reforço com Gemini gratuito
+### 21. Comparador, kits, compatibilidade e comprovante
+
+Decisões de 12/11/2026: ferramentas musicais (afinador, metrônomo, acordes)
+ficam para um futuro site de estudos, ligado à loja depois; avaliação de
+instrumento usado na troca fica de fora.
+
+- [x] Comparador de 2 a 4 produtos: botão "Comparar" no cartão e na página do
+      produto, barra flutuante, tabela com a ficha lado a lado, linhas
+      diferentes destacadas, "mostrar só as diferenças", menor preço sinalizado
+      e link compartilhável (`/comparar.html?ids=`).
+- [x] Kits com desconto (`public/js/kits.js`, fonte única da vitrine e do
+      servidor): 5 kits; com o kit completo no carrinho o desconto entra sozinho
+      na cotação e no pedido, cada unidade conta para um kit só e o cupom vale
+      sobre o restante. Página `/kits.html` e kits na home.
+- [x] Compatibilidade no carrinho (`public/js/compat.js`): guitarra sem cabo ou
+      sem amplificador, pedais sem fonte de 9V (fonte simples ou isolada),
+      pedais sem cabos patch, pedalboard, patch sozinho, correia e cordas
+      reserva, e kit a 1 ou 2 itens de completar, sempre com sugestão do
+      catálogo e botão de adicionar.
+- [x] Ficha dos pedais com alimentação; 2 fontes novas no catálogo (77
+      produtos; fotos em [FOTOS-PENDENTES.txt](FOTOS-PENDENTES.txt)).
+- [x] Pedido: previsão de entrega em dias úteis, código de rastreio gerado ao
+      enviar (também na notificação), comprovante em `/pedido.html` com
+      impressão/PDF e economia na confirmação.
+
+### 22. Serviços, guias, filtros do segmento, alerta de preço e perguntas
+
+- [ ] Serviços no checkout: regulagem por luthier, troca de cordas e garantia
+      estendida, calculados pelo servidor.
+- [ ] Guias de compra e glossário (fonte única, também usada pelo assistente).
+- [ ] Filtros do segmento: mão (destro/canhoto), número de cordas, captadores
+      ativos/passivos, trastes e escala.
+- [ ] Aviso de queda de preço nos favoritos.
+- [ ] Perguntas e respostas no produto, respondidas pelo painel (sem notas).
+
+### 23. Painel e SEO
+
+- [ ] Painel: vendas por categoria, mais vendidos, interesse (avisos), serviços
+      e perguntas pendentes.
+- [ ] SEO: prévia de link (Open Graph) por produto gerada no servidor e dados
+      estruturados revisados.
+
+### 24. Assistente que age
+
+- [ ] Adicionar ao carrinho e montar setup pelo chat (sempre com confirmação),
+      comparar produtos, responder sobre a ficha, entender "essa" pela página
+      atual, compatibilidade, kit dentro do orçamento, sugestões pelo
+      histórico, glossário, pedido de troca, aviso proativo no carrinho e
+      registro anônimo das frases não entendidas para revisão no painel.
+
+### 25. Reforço com Gemini gratuito e voz
 
 - [ ] Camada opcional com `fetch` nativo, `GEMINI_API_KEY` só no ambiente,
       tempo limite e retorno à PLN local.
 - [ ] Scripts `npm run agente:smoke` e `npm run agente:eval` para o Codex rodar
       com a chave real.
+- [ ] Entrada por voz no chat (recurso do navegador), com aviso de privacidade.
 
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

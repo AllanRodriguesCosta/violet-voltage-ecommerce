@@ -11,13 +11,13 @@ funcionalidades, arquitetura, dependências instaladas e desenvolvimento planeja
 
 ## Voltar ao ar
 
-Siga [o guia Supabase + Render](docs/COLOCAR-NO-AR.md). O backend agora usa PostgreSQL e não depende do servidor do professor. O seed reconstrói o catálogo de 75 produtos e imagens; sem exportação do banco antigo, clientes e pedidos anteriores não podem ser recuperados pelo código.
+Siga [o guia Supabase + Render](docs/COLOCAR-NO-AR.md). O backend agora usa PostgreSQL e não depende do servidor do professor. O seed reconstrói o catálogo de 77 produtos e imagens; sem exportação do banco antigo, clientes e pedidos anteriores não podem ser recuperados pelo código.
 
 ## Arquitetura
 
 Node.js 24, Express 5, JavaScript ES modules e frontend HTML/CSS/JavaScript sem frameworks. Um serviço Express atende páginas e API. Autenticação própria com bcrypt e JWT em cookie HttpOnly; não exige Supabase Auth nem chaves Supabase no navegador.
 
-PostgreSQL persiste produtos, clientes, pedidos e imagens no schema privado `violet_voltage`. Registros usam JSONB para preservar o contrato dos repositórios, com chaves e versões em colunas e restrições SQL. Esta migração não remodela todo o domínio em tabelas relacionais. As imagens usam `bytea`: as 22 fontes originais somam aproximadamente 3,28 MB; com as 75 fotos até 1 MB cada, o banco continua bem abaixo do limite do plano gratuito do Supabase. A rota `/api/images/:id` serve os arquivos sem expor a conexão.
+PostgreSQL persiste produtos, clientes, pedidos e imagens no schema privado `violet_voltage`. Registros usam JSONB para preservar o contrato dos repositórios, com chaves e versões em colunas e restrições SQL. Esta migração não remodela todo o domínio em tabelas relacionais. As imagens usam `bytea`: as 22 fontes originais somam aproximadamente 3,28 MB; com as 77 fotos até 1 MB cada, o banco continua bem abaixo do limite do plano gratuito do Supabase. A rota `/api/images/:id` serve os arquivos sem expor a conexão.
 
 Checkout recalcula valores em centavos no servidor. Estoque e pedido são gravados em transação serializável com rollback e tentativas limitadas em conflitos de serialização. Atualizações usam versões para detectar concorrência; pedidos possuem unicidade por cliente e `requestId`.
 
@@ -47,7 +47,7 @@ npm run seed
 npm start
 ```
 
-O seed exige os PNGs locais descritos em `seed-assets/README.md` (lista das fotos novas em `docs/FOTOS-PENDENTES.txt`; `npm run fotos:conferir` mostra o que falta e `npm run seed -- --parcial` carrega só os produtos com foto). Em PostgreSQL ele termina após a carga. Não execute em todo deploy: repetir restaura preços, estoques e dados de `demo-001` a `demo-075`.
+O seed exige os PNGs locais descritos em `seed-assets/README.md` (lista das fotos novas em `docs/FOTOS-PENDENTES.txt`; `npm run fotos:conferir` mostra o que falta e `npm run seed -- --parcial` carrega só os produtos com foto). Em PostgreSQL ele termina após a carga. Não execute em todo deploy: repetir restaura preços, estoques e dados de `demo-001` a `demo-077`.
 
 Para demonstração temporária sem banco:
 
@@ -76,7 +76,7 @@ Senha administrativa: 12 a 72 caracteres e até 72 bytes UTF-8. Bootstrap reapli
 
 ## Funcionalidades e API
 
-Home de descoberta, catálogo com busca instantânea e filtros com contagens (inclusive por estilo, gênero e ficha técnica de cada categoria) e resultados em páginas de 24, atalhos por estilo musical na home, página do produto com ficha técnica, sugestões de busca tolerantes a erros de digitação e buscas recentes, montador de setup com filtro por estilo musical e link compartilhável, "Compre junto" escolhido pela ficha (cabo certo, estilo parecido, orçamento), assistente de compras para quem está logado (PLN local, sem custo: recomenda pelo estilo musical, monta setups, conta o status dos pedidos e tira dúvidas da loja; ver [docs/ASSISTENTE.md](docs/ASSISTENTE.md)), visualização rápida, favoritos, minicarrinho com aviso de item adicionado, tema claro/escuro/automático, cadastro/login/perfil, troca de senha (encerra as outras sessões), cópia dos dados e exclusão da conta pelo próprio cliente, endereços de entrega, "Avise-me" para itens esgotados, notificações da conta, histórico próprio, checkout demonstrativo e painel com produtos, imagens, clientes, pedidos e indicadores. Upload PNG/JPEG/WebP até 5 MB. Fretes em centavos: padrão 2500 (grátis a partir de 99900 de subtotal), expresso 4500, retirada zero. Cartão em até 10x sem juros, com parcela mínima de 5000. Cupons de teste: `VOLTAGE10` (10% nos produtos, até R$ 500), `PRIMEIROACORDE` (R$ 30 a partir de R$ 200) e `FRETEVOLT` (frete padrão ou expresso grátis). Regras em `src/services/pricing.js`.
+Home de descoberta, catálogo com busca instantânea e filtros com contagens (inclusive por estilo, gênero e ficha técnica de cada categoria) e resultados em páginas de 24, atalhos por estilo musical na home, página do produto com ficha técnica, sugestões de busca tolerantes a erros de digitação e buscas recentes, montador de setup com filtro por estilo musical e link compartilhável, "Compre junto" escolhido pela ficha (cabo certo, estilo parecido, orçamento), comparador de 2 a 4 produtos com link compartilhável, kits com desconto automático, avisos de compatibilidade no carrinho (cabo, amplificador, fonte de 9V, cabos patch, kit quase completo), comprovante do pedido com impressão, previsão de entrega e código de rastreio, assistente de compras para quem está logado (PLN local, sem custo: recomenda pelo estilo musical, monta setups, conta o status dos pedidos e tira dúvidas da loja; ver [docs/ASSISTENTE.md](docs/ASSISTENTE.md)), visualização rápida, favoritos, minicarrinho com aviso de item adicionado, tema claro/escuro/automático, cadastro/login/perfil, troca de senha (encerra as outras sessões), cópia dos dados e exclusão da conta pelo próprio cliente, endereços de entrega, "Avise-me" para itens esgotados, notificações da conta, histórico próprio, checkout demonstrativo e painel com produtos, imagens, clientes, pedidos e indicadores. Upload PNG/JPEG/WebP até 5 MB. Fretes em centavos: padrão 2500 (grátis a partir de 99900 de subtotal), expresso 4500, retirada zero. Cartão em até 10x sem juros, com parcela mínima de 5000. Cupons de teste: `VOLTAGE10` (10% nos produtos, até R$ 500), `PRIMEIROACORDE` (R$ 30 a partir de R$ 200) e `FRETEVOLT` (frete padrão ou expresso grátis). Regras em `src/services/pricing.js`.
 
 Desempenho e instalação: arquivos de texto e respostas JSON comprimidos (Brotli ou gzip), cache HTTP por tipo de arquivo, manifesto com ícones e service worker de rede primeiro, que mantém as páginas já abertas disponíveis sem conexão. Páginas de privacidade e termos de uso no rodapé.
 
@@ -94,6 +94,7 @@ Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..."
 | PATCH | `/api/profile` | Autenticado |
 | POST | `/api/checkout/quote` | Público; cotação sem gravar pedido |
 | GET / POST | `/api/orders` | Histórico próprio / checkout |
+| GET | `/api/orders/:id` | Autenticado; só o dono (comprovante), 404 para outro cliente |
 | GET / POST | `/api/addresses` | Autenticado; endereços de entrega (até 5) |
 | PATCH / DELETE | `/api/addresses/:id` | Autenticado; editar, tornar principal ou excluir |
 | GET / POST | `/api/alerts` | Autenticado; avisos "Avise-me" (só itens esgotados) |
@@ -114,7 +115,7 @@ Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..."
 | GET | `/api/admin/orders` | Admin |
 | PATCH | `/api/admin/orders/:id` | Admin, campo `status`; só transições válidas |
 
-Filtros: `q` (também busca na ficha técnica), `marca`, `modelo`, `categoria`, `min`, `max` (centavos). Produtos trazem `ficha` (objeto ou `null`), validada pelo esquema de `public/js/specs.js` quando enviada pelo painel. Checkout: `items: [{id, quantidade}]`, `pagamento`, `entrega`, `endereco`, `requestId` e, opcionalmente, `cupom` e `parcelas` (cartão). A cotação recebe `items`, `entrega` e `cupom` e devolve subtotal, frete, desconto, total, parcelas máximas e opções de entrega. Valores enviados pelo navegador são ignorados; repetir um pedido persistido com o mesmo identificador devolve esse pedido.
+Filtros: `q` (também busca na ficha técnica), `marca`, `modelo`, `categoria`, `min`, `max` (centavos). Produtos trazem `ficha` (objeto ou `null`), validada pelo esquema de `public/js/specs.js` quando enviada pelo painel. Checkout: `items: [{id, quantidade}]`, `pagamento`, `entrega`, `endereco`, `requestId` e, opcionalmente, `cupom` e `parcelas` (cartão). A cotação recebe `items`, `entrega` e `cupom` e devolve subtotal, desconto de kits (`descontoKitsCents`, `kits`; regras em `public/js/kits.js`), frete, desconto do cupom (sobre o valor já com os kits), total, parcelas máximas e opções de entrega. Valores enviados pelo navegador são ignorados; repetir um pedido persistido com o mesmo identificador devolve esse pedido.
 
 ## Limites
 

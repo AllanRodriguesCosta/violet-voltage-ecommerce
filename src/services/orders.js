@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import { AppError } from "../utils/validation.js";
 import { exclusive } from "./checkout.js";
 import { notify, orderNotice, restockAlerts } from "./notifications.js";
@@ -31,6 +32,9 @@ export async function updateOrderStatus(storage, orderId, status, options = {}) 
       status,
       statusHistory: [...history(order), { status, at: new Date().toISOString() }],
     };
+    // Envio pela transportadora gera o código de rastreio (retirada na loja não tem).
+    if (status === "Enviado" && order.entrega !== "retirada" && !order.rastreio)
+      next.rastreio = `VV${String(randomInt(0, 1e9)).padStart(9, "0")}BR`;
     if (status === "Cancelado") {
       // Devolve os itens ao estoque; no PostgreSQL, na mesma transação do pedido.
       const items = JSON.parse(order.itens);
@@ -48,7 +52,7 @@ export async function updateOrderStatus(storage, orderId, status, options = {}) 
     }
     await storage.save("orders", next, order.etag);
     // Mudanças feitas pela loja geram notificação para o cliente, na mesma transação.
-    if (options.notify) await notify(storage, order.partitionKey, orderNotice(order, status));
+    if (options.notify) await notify(storage, order.partitionKey, orderNotice(next, status));
     return next;
   });
 }

@@ -1,8 +1,8 @@
-VIOLET VOLTAGE - FOTOS PENDENTES (ETAPA 18)
-===========================================
+VIOLET VOLTAGE - FOTOS PENDENTES (ETAPAS 18 E 21)
+=================================================
 
-Ultima atualizacao: 12/11/2026. 53 fotos novas, uma por produto adicionado na
-etapa 18 (catalogo passa de 22 para 75 produtos). Os 22 produtos originais
+Ultima atualizacao: 12/11/2026. 55 fotos novas, uma por produto adicionado nas
+etapas 18 e 21 (catalogo passa de 22 para 77 produtos). Os 22 produtos originais
 continuam com as fotos que ja estao na pasta.
 
 O QUE FAZER
@@ -97,8 +97,8 @@ O que fotografar: correia inteira mostrando a cor ou a estampa.
 [ ] correias/violet-voltage-correia-flower-power.png  |  Violet Voltage Correia Flower Power 70s  |  demo-066
 [ ] correias/violet-voltage-correia-algodao-cru.png  |  Violet Voltage Correia Algodão Cru  |  demo-067
 
-ACESSORIOS (8) - pasta acessorios/
-----------------------------------
+ACESSORIOS (10) - pasta acessorios/
+-----------------------------------
 O que fotografar: produto em destaque (a embalagem tambem serve).
 [ ] acessorios/daddario-exl110.png  |  D'Addario Encordoamento EXL110 0.10  |  demo-068
 [ ] acessorios/ernie-ball-regular-slinky.png  |  Ernie Ball Encordoamento Regular Slinky 0.10  |  demo-069
@@ -108,3 +108,5 @@ O que fotografar: produto em destaque (a embalagem tambem serve).
 [ ] acessorios/dunlop-system-65.png  |  Dunlop Kit de Limpeza System 65  |  demo-073
 [ ] acessorios/dunlop-tortex-073.png  |  Dunlop Palhetas Tortex 0,73 mm (12 un.)  |  demo-074
 [ ] acessorios/violet-voltage-suporte-triplo.png  |  Violet Voltage Suporte Triplo de Chão  |  demo-075
+[ ] acessorios/violet-voltage-fonte-9v.png  |  Violet Voltage Fonte 9V 1A Pedal Power  |  demo-076
+[ ] acessorios/joyo-jp-02.png  |  Joyo JP-02 Fonte Isolada 10 Saídas  |  demo-077

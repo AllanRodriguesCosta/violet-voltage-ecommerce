@@ -48,6 +48,14 @@ export function totalsFactsHTML(order) {
   return `<div><dt>Subtotal</dt><dd>${money(order.subtotalCents)}</dd></div>${order.servicosCents ? `<div><dt>Serviços</dt><dd>${money(order.servicosCents)}</dd></div>` : ""}${kits.map((k) => `<div><dt>Desconto ${esc(k.nome)}${k.quantidade > 1 ? ` (${k.quantidade}x)` : ""}</dt><dd>− ${money(k.descontoCents)}</dd></div>`).join("")}<div><dt>Frete</dt><dd>${order.freteCents ? money(order.freteCents) : "Grátis"}</dd></div>${order.descontoCents ? `<div><dt>Desconto${order.cupom ? ` (${esc(order.cupom)})` : ""}</dt><dd>− ${money(order.descontoCents)}</dd></div>` : ""}`;
 }
 export { paymentLabels, deliveryLabels };
+// Solicitação de troca: aviso no cartão do pedido; no painel, com resposta da loja.
+function exchangeNoteHTML(order, admin) {
+  const t = (order.trocas || []).at(-1);
+  if (!t) return "";
+  const names = new Map(order.itens.map((i) => [i.id, i.nome]));
+  const label = `${t.tipo === "troca" ? "Troca" : "Devolução"} ${t.status === "Aberta" ? "solicitada" : t.status === "Aprovada" ? "aprovada" : "recusada"}`;
+  return `<div class="exchange-note${t.status === "Aberta" ? " is-open" : ""}"><p>${icon("refresh", { size: 16 })}<strong>${label}</strong>: ${esc(t.itens.map((id) => names.get(id) || id).join(", "))}. <span class="muted">“${esc(t.motivo)}”</span></p>${admin && t.status === "Aberta" ? `<form class="exchange-admin" data-exchange="${esc(order.id)}"><label class="sr-only" for="exchange-reply-${esc(order.id)}">Resposta ao cliente</label><input id="exchange-reply-${esc(order.id)}" name="resposta" maxlength="500" placeholder="Resposta ao cliente (opcional)"><button type="submit" name="status" value="Aprovada" class="small-button">Aprovar</button><button type="submit" name="status" value="Recusada" class="secondary small-button">Recusar</button></form>` : ""}</div>`;
+}
 const steps = [
   ["Recebido", "package"],
   ["Em preparação", "store"],
@@ -73,7 +81,7 @@ export function orderCardHTML(order, { products = [], admin = false, customer, r
 <div class="order-thumbs">${items.slice(0, 4).map((i) => `<img src="${esc(productImage(byId.get(i.id) || { categoria: "" }))}" alt="${esc(i.nome)}" width="52" height="52" title="${esc(i.nome)}">`).join("")}${items.length > 4 ? `<span>+${items.length - 4}</span>` : ""}<p><strong>${money(order.totalCents)}</strong><small>${count} ${count === 1 ? "item" : "itens"} · ${esc(paymentLabels[order.pagamento] || order.pagamento)}${order.parcelas > 1 ? ` em ${order.parcelas}x` : ""}</small></p></div>
 ${timelineHTML(order)}${trackingHTML(order)}
 <details class="order-details"><summary>Detalhes do pedido ${icon("chevronDown", { size: 16 })}</summary><ul class="order-items">${items.map((i) => `<li><span>${i.quantidade} × ${esc(i.nome)}${(i.servicos || []).map((s) => `<small class="order-service">+ ${esc(s.nome)}</small>`).join("")}</span><strong>${money((i.priceCents + (i.servicos || []).reduce((t, s) => t + s.priceCents, 0)) * i.quantidade)}</strong></li>`).join("")}</ul><dl class="order-facts">${totalsFactsHTML(order)}<div><dt>Entrega</dt><dd>${esc(deliveryLabels[order.entrega] || order.entrega)}</dd></div><div class="wide"><dt>Endereço</dt><dd>${esc(order.endereco)}</dd></div><div class="wide"><dt>Número completo</dt><dd>${esc(order.id)}</dd></div></dl></details>
-${readonly ? "" : `<footer class="order-actions">${
+${exchangeNoteHTML(order, admin)}${readonly ? "" : `<footer class="order-actions">${
     admin
       ? next.length
         ? `<label class="sr-only" for="status-${esc(order.id)}">Novo status</label><select id="status-${esc(order.id)}" data-status-select><option value="">Alterar status…</option>${next.map((s) => `<option>${s}</option>`).join("")}</select>`

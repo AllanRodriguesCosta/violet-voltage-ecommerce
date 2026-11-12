@@ -1,12 +1,34 @@
 // Assistente de compras: painel não modal, disponível só para quem está logado.
 // As respostas vêm de /api/assistente (PLN local do servidor); o histórico fica nesta aba.
 import { icon } from "./icons.js";
-import { send, money, productImage, escapeHtml as esc, addCart } from "./common.js";
+import { send, money, productImage, escapeHtml as esc, addCart, getCart, getWishlist, catalogProducts, toast } from "./common.js";
 import { openCart } from "./drawer.js";
 
 const KEY = "vv_assistente";
 const LIMIT = 40;
-const START = ["Quero uma guitarra vintage", "Montar um setup de rock", "Onde está meu pedido?", "Como funciona o frete?"];
+const START = ["Quero uma guitarra vintage", "Montar um setup de rock", "Onde está meu pedido?", "O que é humbucker?"];
+// Sugestões iniciais conforme a página: o assistente sabe qual produto está aberto.
+function pageInfo() {
+  const params = new URLSearchParams(location.search);
+  if (location.pathname === "/produto.html" && params.get("id")) return { tipo: "produto", id: params.get("id") };
+  if (location.pathname === "/carrinho.html") return { tipo: "carrinho" };
+  if (location.pathname === "/comparar.html") return { tipo: "comparar" };
+  if (location.pathname === "/checkout.html") return { tipo: "checkout" };
+  return { tipo: "outra" };
+}
+function startChips() {
+  const page = pageInfo();
+  if (page.tipo === "produto") {
+    const title = document.querySelector(".detail-info .eyebrow")?.textContent || "";
+    return /Guitarras/.test(title)
+      ? ["Quantos trastes tem essa?", "Ela serve para blues?", "Comparar com outra", "Adicionar ao carrinho"]
+      : /Pedais/.test(title)
+        ? ["Esse pedal precisa de fonte?", "Funciona no meu amplificador?", "Adicionar ao carrinho"]
+        : ["Me conta mais sobre esse produto", "Tem em estoque?", "Adicionar ao carrinho"];
+  }
+  if (page.tipo === "carrinho") return ["O que falta no meu carrinho?", "Tem cupom de desconto?", "Qual o prazo de entrega?"];
+  return START;
+}
 const safeHref = (href) => (typeof href === "string" && /^\/(?!\/)/.test(href) ? href : "/");
 
 function load(userId) {
@@ -41,7 +63,9 @@ function messageHTML(m, last) {
         .map((a) =>
           a.tipo === "carrinho"
             ? `<button type="button" class="button small" data-assistant-cart="${esc(a.itens.join(","))}">${icon("bag", { size: 16 })}${esc(a.rotulo)}</button>`
-            : `<a class="button secondary small" href="${esc(safeHref(a.href))}">${esc(a.rotulo)}</a>`,
+            : a.tipo === "cupom"
+              ? `<button type="button" class="button small" data-assistant-coupon="${esc(a.codigo)}">${icon("tag", { size: 16 })}${esc(a.rotulo)}</button>`
+              : `<a class="button secondary small" href="${esc(safeHref(a.href))}">${esc(a.rotulo)}</a>`,
         )
         .join("")}</div>`
     : "";
@@ -72,8 +96,8 @@ export function mountAssistant(user) {
 
   const greeting = () => ({
     de: "assistente",
-    texto: `Oi${first ? `, ${first}` : ""}! Posso indicar equipamentos pelo seu estilo, montar um setup, contar em que etapa está seu pedido e tirar dúvidas sobre frete, pagamento e trocas.`,
-    sugestoes: START,
+    texto: `Oi${first ? `, ${first}` : ""}! Posso indicar e comparar equipamentos, responder sobre a ficha do produto que você está vendo, conferir o que falta no carrinho, montar um setup, explicar termos e contar em que etapa está seu pedido.`,
+    sugestoes: startChips(),
   });
   function render() {
     const last = state.mensagens.length - 1;
@@ -112,7 +136,14 @@ export function mountAssistant(user) {
     input.value = "";
     render();
     try {
-      const r = await send("/assistente", { mensagem, contexto: state.contexto });
+      // Só IDs e quantidades: o servidor confere tudo no catálogo.
+      const r = await send("/assistente", {
+        mensagem,
+        contexto: state.contexto,
+        pagina: pageInfo(),
+        carrinho: getCart().map(({ id, quantidade }) => ({ id, quantidade })),
+        favoritos: getWishlist().slice(0, 100),
+      });
       state.contexto = r.contexto;
       state.mensagens.push({ de: "assistente", texto: r.texto, cards: r.cards, acoes: r.acoes, sugestoes: r.sugestoes });
     } catch (error) {
@@ -126,6 +157,23 @@ export function mountAssistant(user) {
   const cardOf = (id) => state.mensagens.flatMap((m) => m.cards || []).findLast((c) => c.id === id);
 
   launcher.addEventListener("click", () => open(panel.hidden));
+  // No carrinho, o botão avisa quando falta algo essencial (cabo, amplificador, fonte...).
+  if (location.pathname === "/carrinho.html") {
+    const hint = async () => {
+      try {
+        const [{ cartAdvice }, products] = await Promise.all([import("./compat.js"), catalogProducts()]);
+        const lines = getCart().map((i) => ({ product: products.find((p) => p.id === i.id), quantidade: i.quantidade })).filter((l) => l.product);
+        const n = cartAdvice(lines, products).filter((a) => a.nivel === "essencial").length;
+        launcher.querySelector(".assistant-hint")?.remove();
+        if (n) launcher.insertAdjacentHTML("beforeend", `<span class="assistant-hint">${n}</span>`);
+        launcher.setAttribute("aria-label", n ? `Assistente: ${n} ${n === 1 ? "dica" : "dicas"} para o seu carrinho` : "Assistente");
+      } catch {
+        /* a dica é opcional */
+      }
+    };
+    hint();
+    document.addEventListener("vv:cart", hint);
+  }
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     ask(input.value);
@@ -149,8 +197,22 @@ export function mountAssistant(user) {
       if (card) addCart(card, 1, { source: button });
     } else if (t.closest("[data-assistant-cart]")) {
       const ids = t.closest("[data-assistant-cart]").dataset.assistantCart.split(",");
-      const added = ids.map(cardOf).filter((c) => c && addCart(c, 1, { notify: false })).length;
-      if (added) openCart(`${added} ${added === 1 ? "item adicionado" : "itens adicionados"} ao carrinho pelo assistente.`);
+      // Itens de kit podem não estar entre os cartões: completa com o catálogo atual.
+      catalogProducts()
+        .catch(() => [])
+        .then((products) => {
+          const added = ids.map((id) => cardOf(id) || products.find((p) => p.id === id)).filter((c) => c && addCart(c, 1, { notify: false })).length;
+          if (added) openCart(`${added} ${added === 1 ? "item adicionado" : "itens adicionados"} ao carrinho pelo assistente.`);
+          else toast("Esses itens já estão no carrinho no limite do estoque.", { type: "info" });
+        });
+    } else if (t.closest("[data-assistant-coupon]")) {
+      const code = t.closest("[data-assistant-coupon]").dataset.assistantCoupon;
+      try {
+        localStorage.setItem("vv_coupon", code);
+        toast(`Cupom ${code} aplicado. Ele aparece no carrinho e no checkout.`, { type: "success", action: { label: "Ver carrinho", onClick: () => (location.href = "/carrinho.html") } });
+      } catch {
+        toast("Não foi possível guardar o cupom neste navegador.", { type: "error" });
+      }
     }
   });
 }

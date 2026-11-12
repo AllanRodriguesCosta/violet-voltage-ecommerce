@@ -1,7 +1,7 @@
 VIOLET VOLTAGE - PENDENCIAS MANUAIS (ALLAN E CODEX)
 ====================================================
 
-Ultima atualizacao: 12/11/2026 (etapa 21 da Fase 3).
+Ultima atualizacao: 12/11/2026 (etapa 22 da Fase 3).
 
 PARA QUE SERVE
 --------------
@@ -10,7 +10,7 @@ do GitHub (uma branch e um pull request por etapa, merge so com o CI verde).
 Este arquivo lista o que o Copilot NAO consegue fazer a partir do GitHub e que
 precisa ser feito no computador do Allan, por ele ou pelo Codex.
 Ferramentas, contas e bibliotecas: docs/FERRAMENTAS-E-BIBLIOTECAS.txt.
-Fotos de produtos novos: docs/FOTOS-PENDENTES.txt (55 fotos, etapas 18 e 21).
+Fotos de produtos novos: docs/FOTOS-PENDENTES.txt (58 fotos, etapas 18, 21 e 22).
 
 REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
 --------------------------------------------
@@ -29,9 +29,12 @@ REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
    usado. Nao tente "consertar" mudando codigo.
 
 ----------------------------------------------------------------------
-T01 [ ] ALLAN - Publicar as etapas 17 a 21 no Render
+T01 [ ] ALLAN - Publicar as etapas 17 a 22 no Render
 ----------------------------------------------------------------------
-Depois do merge dos pull requests das etapas 17 a 21 em main:
+Depois do merge dos pull requests das etapas 17 a 22 em main:
+- A etapa 22 cria a tabela de perguntas (violet_voltage.questions). O
+  servidor cria sozinho ao iniciar; se preferir, rode antes "npm run db:migrate"
+  com o .env de producao (nao apaga nada).
 - Se o servico do Render tem deploy automatico, so confirme que o ultimo
   deploy terminou com sucesso. Caso contrario, use "Manual Deploy" > "Deploy
   latest commit".
@@ -56,7 +59,12 @@ Como conferir no site publicado:
   22 produtos originais no banco, nenhum kit aparece completo: os kits usam
   produtos da etapa 18). No carrinho, uma guitarra sozinha mostra "Falta o
   cabo da guitarra". Em Minha conta, cada pedido tem "Comprovante".
-Os 55 produtos novos so aparecem no site depois da T06 (seed com as fotos).
+- Etapa 22: no carrinho, guitarras, amplificadores e pedais mostram "Servicos
+  da loja"; o produto tem "Avisar se baixar o preco" e "Perguntas e
+  respostas"; o painel tem a aba "Perguntas"; /guias.html tem 6 guias e o
+  glossario; no catalogo de guitarras aparecem os filtros Mao, Cordas e
+  Captadores (Canhoto, 7 cordas e Ativos so depois da T06).
+Os 58 produtos novos so aparecem no site depois da T06 (seed com as fotos).
 Resultado:
 
 ----------------------------------------------------------------------
@@ -73,6 +81,8 @@ Confira principalmente:
 - Behringer Ultra Chorus: analogico?
 - Cabos: comprimentos (MXT 0,15 m; Ernie Ball espiral 7,6 m; Santo Angelo
   Ninja 3 m; Ernie Ball Instrument 3 m) e conectores (reto ou em L).
+- Etapa 22: trastes e escala das 3 guitarras da marca propria (ST Electric
+  Pink 22 / 25,5"; Single Cut Gold e Double Cut Ocean Blue 22 / 24,75").
 Como corrigir:
 - Liste as correcoes (produto, campo, valor certo) e passe ao Copilot, que
   atualiza o arquivo de fichas e os testes no proximo pull request.
@@ -106,7 +116,8 @@ Resultado:
 ----------------------------------------------------------------------
 T05 [ ] ALLAN - Fotos dos produtos novos (etapas 18 e 21)
 ----------------------------------------------------------------------
-Siga docs/FOTOS-PENDENTES.txt: 55 fotos PNG (2 fontes de pedal novas na etapa 21), cada uma com o nome exato da
+Siga docs/FOTOS-PENDENTES.txt: 58 fotos PNG (2 fontes de pedal na etapa 21 e
+3 guitarras na etapa 22: canhota, 7 cordas e captadores ativos), cada uma com o nome exato da
 lista, em seed-assets/produtos-violet-voltage/<subpasta>/. Formato, tamanho e
 ferramentas gratuitas para reduzir o peso estao no inicio daquele arquivo.
 Nao precisa entregar todas de uma vez (ver T06, modo parcial).
@@ -122,12 +133,12 @@ seed-assets/README.md e docs/COLOCAR-NO-AR.md. Resumo, na raiz do projeto:
                            invalidos e arquivos acima de 1 MB)
 - .env local com DATABASE_URL, DATABASE_SSL=true e JWT_SECRET (sem mostrar
   os valores) e DEV_MEMORY_STORAGE=false.
-- Todas as 77 fotos prontas:  npm run seed
+- Todas as 80 fotos prontas:  npm run seed
   Parte das fotos:            npm run seed -- --parcial
 O resumo deve informar produtos criados/atualizados e imagens enviadas; no
 modo parcial, tambem a lista dos que ficaram sem foto. Rodar de novo quando
 chegarem mais fotos completa o catalogo sem duplicar. Atencao: o seed
-restaura precos e estoques do manifesto nos produtos demo-001 a demo-077.
+restaura precos e estoques do manifesto nos produtos demo-001 a demo-080.
 Depois, confira no site publicado: /catalogo.html mostra "Mostrando 24 de N".
 Resultado:
 

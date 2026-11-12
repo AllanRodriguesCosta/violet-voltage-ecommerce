@@ -9,7 +9,7 @@ Portfólio full stack de uma loja de instrumentos musicais. O fluxo registra
 pedidos demonstrativos, sem cobrar, entregar produtos ou integrar serviços fiscais.
 Não há avaliações, estrelas, gateway, recuperação de senha ou agentes ativos.
 Dados do banco antigo do professor não foram recuperados: o catálogo foi
-reconstruído com 22 produtos e imagens locais e ampliado para 75 na etapa 18 e 77 na etapa 21.
+reconstruído com 22 produtos e imagens locais e ampliado para 75 na etapa 18, 77 na etapa 21 e 80 na etapa 22.
 
 ## Arquitetura e arquivos
 
@@ -31,7 +31,7 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/services/addresses.js` | Validação e regras dos endereços de entrega (até 5, um principal) |
 | `src/services/notifications.js` | Notificações da conta e avisos "Avise-me" disparados na reposição |
 | `src/services/bootstrap.js` | Criação/atualização privada do administrador |
-| `src/services/seed*.js` | Manifesto, fichas técnicas e carga dos 77 produtos/imagens (modo parcial para fotos em andamento) |
+| `src/services/seed*.js` | Manifesto, fichas técnicas e carga dos 80 produtos/imagens (modo parcial para fotos em andamento) |
 | `scripts/check-photos.js` | `npm run fotos:conferir`: confere as fotos locais sem alterar nada |
 | `src/knowledge/help.js` | Central de Ajuda: perguntas e respostas (fonte da página `ajuda.html` e da busca do assistente) |
 | `src/services/account.js` | Troca de senha, cópia dos dados e exclusão da conta pelo cliente |
@@ -206,6 +206,15 @@ tabela com `compareRows` da ficha) e avisos de compatibilidade no carrinho
 ficha dos pedais, cabos patch, pedalboard, correia, cordas e kit quase
 completo), com sugestão do catálogo e botão de adicionar.
 
+Etapa 22: serviços por item (`public/js/services.js`: regulagem, troca de
+cordas e garantia estendida), validados e cobrados pelo servidor, fora do
+cupom. Guias de compra e glossário (`src/knowledge/guides.js` e `glossary.js`)
+geram `/guias.html`. Ficha das guitarras com mão, cordas, captadores, trastes
+e escala, e filtros correspondentes. Aviso de queda de preço (`tipo: "preco"`
+nos avisos, disparado na edição de preço pelo painel). Perguntas e respostas
+(`src/services/questions.js`, tabela `questions`): públicas só depois de
+respondidas, moderadas na aba Perguntas do painel.
+
 ### Conta e administração
 
 Cadastro, login/logout, perfil e histórico privado. Cadastro público não cria
@@ -319,9 +328,9 @@ local), só para usuários logados, um agente unificado para recomendação, dú
 da loja, pedidos e setup. Etapas 17 (ficha técnica e base de conhecimento), 18
 (catálogo ampliado) e 19 (assistente com PLN local, ver
 [ASSISTENTE.md](ASSISTENTE.md)) e 20 (conta, privacidade e Central de Ajuda)
-prontas. Etapa 21 (comparador, kits, compatibilidade e comprovante) pronta;
-as etapas 22 a 25 (serviços, guias, filtros, alerta de preço, perguntas,
-painel, SEO, assistente que age, Gemini opcional e voz) estão no
+prontas. Etapas 21 (comparador, kits, compatibilidade e comprovante) e 22
+(serviços, guias, filtros do segmento, aviso de preço e perguntas) prontas;
+as etapas 23 a 25 (painel, SEO, assistente que age, Gemini opcional e voz) estão no
 [roadmap](ROADMAP.md). Tarefas manuais ou do Codex: `docs/PENDENCIAS-MANUAIS.txt` e
 `docs/FERRAMENTAS-E-BIBLIOTECAS.txt`.
 

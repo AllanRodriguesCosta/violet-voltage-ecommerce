@@ -1,3 +1,26 @@
+# Fase 3, etapa 22 — 12/11/2026
+
+- Testes novos em `tests/stage22.test.js` (5): IDs estáveis do catálogo e fichas
+  completas das 20 guitarras; serviços por categoria, garantia proporcional,
+  recusa de serviço inválido, cupom fora dos serviços e total; página de guias
+  em dia com as fontes e atalhos do catálogo válidos; API com serviços no
+  pedido, aviso de queda de preço (aumento não avisa, avisa uma vez, remoção),
+  perguntas (login, tamanho, repetida, pendente oculta, só admin responde,
+  notificação, ocultar, limite de 5 pendentes, cópia dos dados); exclusão da
+  conta apaga pendentes e anonimiza respondidas.
+- No navegador (31 verificações): filtros Mão/Cordas/Captadores, ficha com
+  trastes e escala, serviços no produto, carrinho, checkout e comprovante,
+  aviso de preço (visitante, cliente, favoritos, conta, notificação), pergunta
+  (validação, envio, resposta no painel, publicação e notificação), guias
+  (busca sem acento, termo destacado pelo link) e celular sem rolagem lateral.
+- Acessibilidade em claro, escuro, 375 e 1440 px com 6 telas novas (guias,
+  guias com busca, catálogo com filtros do segmento, perguntas para visitante e
+  cliente, carrinho com serviços e aba Perguntas do painel), sem problemas.
+- Regressão completa (15 roteiros) sem falhas; contagens atualizadas para 80
+  produtos, 20 guitarras e 6 indicadores do painel.
+
+---
+
 # Fase 3, etapa 21 — 12/11/2026
 
 - Testes novos em `tests/stage21.test.js` (5), com a loja de teste em

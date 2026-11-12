@@ -25,6 +25,7 @@ import {
   demandByProduct,
 } from "../services/notifications.js";
 import { publicProduct, publicOrder } from "../controllers/serialization.js";
+import { specText } from "../../public/js/specs.js";
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024, files: 1 },
@@ -230,7 +231,9 @@ export function apiRouter(storage, config) {
     res.json({ data: { naoLidas: await markRead(storage, req.user.id, req.body?.ids) } }),
   );
   r.get("/products", async (req, res) => {
-    let products = (await storage.list("products")).filter((p) => p.ativo);
+    let products = (await storage.list("products"))
+      .filter((p) => p.ativo)
+      .map(publicProduct);
     for (const key of ["marca", "modelo", "categoria"])
       if (req.query[key])
         products = products.filter((p) =>
@@ -238,7 +241,7 @@ export function apiRouter(storage, config) {
         );
     if (req.query.q)
       products = products.filter((p) =>
-        `${p.marca} ${p.modelo} ${p.descricao}`
+        `${p.marca} ${p.modelo} ${p.descricao} ${specText(p)}`
           .toLowerCase()
           .includes(String(req.query.q).toLowerCase()),
       );
@@ -253,7 +256,7 @@ export function apiRouter(storage, config) {
       products = products.filter((p) => p.priceCents >= Number(req.query.min));
     if (req.query.max)
       products = products.filter((p) => p.priceCents <= Number(req.query.max));
-    res.json({ data: products.map(publicProduct) });
+    res.json({ data: products });
   });
   r.get("/products/:id", async (req, res) =>
     res.json({ data: publicProduct(await product(req.params.id)) }),

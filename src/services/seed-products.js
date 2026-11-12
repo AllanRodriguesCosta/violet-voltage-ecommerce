@@ -1,3 +1,5 @@
+import { seedSpecs } from "./seed-specs.js";
+
 // Preços acadêmicos definidos para o projeto; não são cotações comerciais.
 // IDs reservados ao seed. Nomes de arquivos correspondem às fontes locais do usuário.
 const catalog = [
@@ -213,5 +215,10 @@ export const seedProducts = catalog.map(
     priceCents,
     estoque,
     descricao,
+    ficha: seedSpecs[modelo] || null,
   }),
+);
+// Ficha do catálogo inicial por ID: produtos já gravados antes da ficha existir a recebem na leitura.
+export const seedSpecsById = new Map(
+  seedProducts.map((product) => [product.rowKey, product.ficha]),
 );

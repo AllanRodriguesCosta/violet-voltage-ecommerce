@@ -31,7 +31,8 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/services/addresses.js` | Validação e regras dos endereços de entrega (até 5, um principal) |
 | `src/services/notifications.js` | Notificações da conta e avisos "Avise-me" disparados na reposição |
 | `src/services/bootstrap.js` | Criação/atualização privada do administrador |
-| `src/services/seed*.js` | Manifesto e carga dos 22 produtos/imagens |
+| `src/services/seed*.js` | Manifesto, fichas técnicas e carga dos 22 produtos/imagens |
+| `src/knowledge/genres.js` | Base de conhecimento musical por gênero (para o assistente da Fase 3) |
 | `src/repositories/factory.js`, `postgres.js` | Seleção de backend e persistência PostgreSQL |
 | `src/repositories/memory.js` | Armazenamento volátil de desenvolvimento e testes |
 | `src/http/static.js` | Compressão Brotli/gzip de arquivos e JSON e cache HTTP por tipo de arquivo |
@@ -44,6 +45,7 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `public/js/pages/` | Home, catálogo, montador de setup, favoritos, produto, carrinho, checkout, conta e acesso |
 | `public/js/components.js`, `drawer.js`, `search.js`, `icons.js` | Cards, minicarrinho e aviso de item adicionado, sugestões de busca e ícones SVG |
 | `public/js/admin.js` | Painel administrativo |
+| `public/js/specs.js` | Esquema da ficha técnica, validação e textos (compartilhado com o servidor) |
 | `public/fonts/` | Fonte Geist (licença OFL) servida pelo próprio site |
 | `public/sw.js`, `manifest.webmanifest`, `offline.html`, `icons/` | Service worker de rede primeiro, manifesto, página sem conexão e ícones do app |
 | `public/css/` | Base visual, componentes e regras responsivas |
@@ -127,7 +129,29 @@ tela cheia, descrição, marca, modelo, categoria, preço, parcelas, disponibili
 prazos de entrega, relacionados, vistos recentemente, compartilhamento,
 "Comprar agora", barra de compra fixa no celular e dados estruturados
 schema.org `Product` (sem avaliações). Produto inválido tem retorno
-ao catálogo. Não há dados técnicos inventados para preencher especificações.
+ao catálogo.
+
+Ficha técnica (etapa 17): o esquema por categoria fica em `public/js/specs.js` e
+é o mesmo para loja, painel e servidor. Todo produto pode ter estilo (vintage,
+moderno ou atemporal), gêneros indicados (vazio significa versátil) e campos da
+categoria, como formato, captação, ponte e timbre das guitarras ou tecnologia,
+potência, falantes e sonoridade dos amplificadores. As fichas dos 22 produtos
+iniciais (`src/services/seed-specs.js`) são atributos editoriais definidos para o
+projeto acadêmico, a partir do nome, da descrição e do tipo de cada modelo; devem
+ser conferidos contra as fotos (lista em `docs/PENDENCIAS-MANUAIS.txt`). Um
+produto gravado antes da ficha existir a recebe na leitura pela API; uma ficha
+gravada (inclusive vazia, pelo painel) prevalece. O catálogo filtra por estilo e
+gênero em qualquer categoria e pelos campos marcados como filtro na categoria
+escolhida (parâmetros na URL com o nome do campo, por exemplo
+`?categoria=Guitarras&generos=Blues+rock&captacao=Humbucker`); a busca também
+considera os valores da ficha. A página do produto lista a ficha e transforma os
+gêneros em atalhos para o catálogo filtrado. O painel gera os campos a partir do
+esquema e o servidor recusa campo de outra categoria ou valor fora da lista.
+
+A base de conhecimento musical (`src/knowledge/genres.js`) descreve 16 gêneros:
+sinônimos, época, resumo do timbre e formatos, captação, amplificadores e
+efeitos que combinam. Ela não aparece na loja ainda; será usada pelo assistente
+da Fase 3.
 
 ### Carrinho e checkout
 
@@ -252,11 +276,13 @@ Apresentação: [demonstração](DEMONSTRACAO.md). Evidências: [validação](..
 | 4 — Fluxos | Feedback, recuperação de rede, confirmação e testes simulados | Validar fluxos completos de erro em navegador e produzir apresentação admin |
 | 5 — Técnica | CI aprovado no GitHub, README, estudo de caso e roteiro | Capturas fictícias e medições |
 
-Agentes posteriores: primeiro, assistente de descoberta com consulta ao catálogo
-real e ferramentas somente de leitura. Definir contratos, limites, custo, dados
-permitidos, fallback e avaliações antes de implementar. Segundo agente opcional:
-qualidade do catálogo para administrador, inicialmente só sugestões; qualquer
-escrita futura exige revisão e autorização backend. Nenhum agente está instalado.
+Fase 3 (assistente de compras), decidida em 12/11/2026: sem custo, motor
+híbrido (PLN local sempre ativa e Gemini gratuito opcional, com retorno à PLN
+local), só para usuários logados, um agente unificado para recomendação, dúvidas
+da loja, pedidos e setup. A etapa 17 (ficha técnica e base de conhecimento) está
+pronta; as etapas 18 a 20 estão no [roadmap](ROADMAP.md). Nenhum agente está
+instalado ainda. Tarefas manuais ou do Codex: `docs/PENDENCIAS-MANUAIS.txt` e
+`docs/FERRAMENTAS-E-BIBLIOTECAS.txt`.
 
 Fase 2 do [roadmap](ROADMAP.md), em andamento: amplia o antigo Roadmap 2
 (descoberta separada dos resultados, cards ricos, lista de desejos, busca fixa e

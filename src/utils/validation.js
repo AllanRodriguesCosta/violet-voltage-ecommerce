@@ -1,3 +1,4 @@
+import { checkSpecs } from "../../public/js/specs.js";
 export class AppError extends Error {
   constructor(status, message, field) {
     super(message);
@@ -48,7 +49,15 @@ export function productInput(body) {
     descricao: text(body.descricao, "descricao", 10, 4000),
     priceCents: integer(body.priceCents, "priceCents", 1),
     estoque: integer(body.estoque, "estoque", 0, 100000),
+    ...fichaInput(categoria, body.ficha),
   };
+}
+// Ficha técnica opcional: ausente preserva a atual; null limpa.
+function fichaInput(categoria, value) {
+  if (value === undefined) return {};
+  const { ficha, erro } = checkSpecs(categoria, value);
+  if (erro) throw new AppError(400, erro, "ficha");
+  return { ficha };
 }
 export function profileInput(body) {
   return {

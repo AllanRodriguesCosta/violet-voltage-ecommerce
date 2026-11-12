@@ -1,3 +1,31 @@
+# Fase 3, etapa 17 — 12/11/2026
+
+- Testes novos em `tests/catalog-specs.test.js` (9): esquema cobre as seis
+  categorias sem chaves repetidas; os 22 produtos têm ficha válida e coerente
+  com a categoria; validação recusa campo de outra categoria, valor fora da
+  lista, número fora da faixa e excesso de opções, e normaliza vazios e
+  repetições; linhas exibidas ("15 W", "3 m", "Versátil"); busca pela ficha
+  ("humbucker", "valvulado britânico", "guitarra vintage blues"); base de
+  gêneros usa só valores do esquema, com um perfil por gênero e sinônimos sem
+  ambiguidade; produto antigo recebe a ficha inicial na leitura e `null`
+  explícito é respeitado; API lista e detalha com ficha, busca por atributo, e
+  o painel recusa ficha inválida (400 com `field: "ficha"`), grava, preserva
+  num PATCH sem ficha e limpa com ficha vazia.
+- No navegador (19 verificações): filtros de estilo e gênero sem categoria;
+  campos da categoria ao escolher Guitarras, mantendo o gênero; Blues rock +
+  Humbucker = 1 item; trocar para Cabos descarta Captação; "Limpar tudo"; URL
+  direta com `tecnologia=Valvulado` marca o filtro; ficha na página do produto
+  com gêneros como links que abrem o catálogo filtrado; edição da ficha no
+  painel gravada e lida de volta pela API.
+- Auditoria de acessibilidade (claro, escuro, 375 e 1440 px), incluindo o
+  catálogo com filtros da ficha, sem problemas; reflow em 320 px; regressão das
+  etapas 13 a 16 (descoberta, interface, formulários, conta e qualidade) sem
+  falhas.
+- As fichas dos 22 produtos são atributos editoriais e precisam ser conferidas
+  contra as fotos: `docs/PENDENCIAS-MANUAIS.txt`.
+
+---
+
 # Fase 2, etapa 16 — 10/11/2026
 
 - Testes novos em `tests/http-cache.test.js`: negociação de codificação (com

@@ -227,14 +227,73 @@ preço no servidor e ciclo de vida dos pedidos.
 - [x] Páginas de privacidade (dados guardados, cookie de sessão e armazenamento
       local) e termos de uso, com links no rodapé e no sitemap.
 
-## Fase 3 — Agentes (depois da Fase 2)
+## Fase 3 — Assistente de compras (decisões de 12/11/2026)
 
-Escolher um agente com utilidade comprovável. Primeiro candidato: assistente de
-descoberta com consulta somente leitura ao catálogo real. Segundo, opcional:
-qualidade do catálogo para o administrador, inicialmente só com sugestões;
-qualquer escrita futura exige revisão e autorização no backend. Antes de
-implementar, definir provedor, custo mensal, limites, dados permitidos, fallback
-e avaliações.
+Projeto universitário, sem custo: nada pago, nenhuma conta com forma de
+pagamento. Decisões:
+
+- **Motor híbrido.** PLN local em JavaScript (normalização, intenção,
+  entidades e diálogo com perguntas de afunilamento) sempre ativa, sem chave e
+  sem internet. Gemini gratuito (chave do Google AI Studio, sem faturamento) só
+  como reforço para frases que a PLN local não entender, sempre ancorado nos
+  dados do catálogo; sem chave, sem cota ou com demora, a PLN local responde.
+  No plano gratuito o Google pode usar o conteúdo enviado: só vão a pergunta e
+  dados do catálogo, nunca dados pessoais.
+- **Só usuários logados.**
+- **Um agente unificado** com módulos internos: compras e recomendação, dúvidas
+  da loja (FAQ), status dos próprios pedidos e sugestão de setup. Nada é
+  alterado sem o cliente clicar (ex.: "adicionar ao carrinho").
+- **Dados antes do agente.** Conversa-alvo: "quero uma guitarra mais vintage" →
+  "e qual gênero vintage?" → "blues rock" → sugere modelos Strat. Isso exige
+  ficha técnica estruturada e mais produtos.
+- **Divisão de trabalho.** Código e testes unitários aqui (Copilot, via
+  repositório); tarefas locais (fotos, chave em `.env`, testes com o Gemini de
+  verdade, conferência do site publicado) com o Codex ou manualmente, conforme
+  [PENDENCIAS-MANUAIS.txt](PENDENCIAS-MANUAIS.txt) e
+  [FERRAMENTAS-E-BIBLIOTECAS.txt](FERRAMENTAS-E-BIBLIOTECAS.txt).
+
+### 17. Ficha técnica e base de conhecimento
+
+- [x] Esquema de ficha técnica por categoria (`public/js/specs.js`), único para
+      loja, painel e servidor: estilo (vintage, moderno, atemporal), gêneros
+      indicados e campos próprios (formato, captação, ponte e timbre das
+      guitarras; tecnologia, potência, falantes e sonoridade dos amplificadores;
+      tipo de efeito dos pedais; tipo, conectores e comprimento dos cabos etc.).
+- [x] Fichas dos 22 produtos iniciais (`src/services/seed-specs.js`); produtos
+      já gravados recebem a ficha na leitura, sem precisar rodar o seed.
+- [x] Catálogo: filtros por estilo e gênero em todas as categorias e pelos
+      campos da categoria escolhida, com contagem, chips e URL compartilhável;
+      a busca também encontra pela ficha ("humbucker", "valvulado britânico").
+- [x] Página do produto com a ficha completa; gêneros viram atalhos para o
+      catálogo filtrado. Painel do administrador edita a ficha com campos
+      gerados pelo esquema, validados no servidor.
+- [x] Base de conhecimento musical (`src/knowledge/genres.js`): 16 gêneros com
+      sinônimos, época, resumo do timbre e o que combina em guitarra,
+      amplificador e pedais, validada contra o esquema.
+
+### 18. Catálogo ampliado
+
+- [ ] Cerca de 60 a 80 produtos, misturando marcas reais e a marca própria,
+      todos com ficha técnica, cobrindo os gêneros da base de conhecimento.
+- [ ] Lista de fotos necessárias em `docs/FOTOS-PENDENTES.txt` (arquivo, pasta
+      e produto); o seed só roda com todas as fotos presentes.
+
+### 19. Assistente com PLN local
+
+- [ ] Endpoint `POST /api/assistente` (só logados, limite por usuário).
+- [ ] Normalização, intenção, entidades (preço, categoria, marca, gênero,
+      época, uso) e diálogo com perguntas de afunilamento.
+- [ ] Módulos: recomendação com cards, FAQ, status de pedidos, sugestão de
+      setup. Chat na loja com histórico da sessão.
+- [ ] Conjunto de avaliação com frases e respostas esperadas; métrica de
+      acerto por intenção.
+
+### 20. Reforço com Gemini gratuito
+
+- [ ] Camada opcional com `fetch` nativo, `GEMINI_API_KEY` só no ambiente,
+      tempo limite e retorno à PLN local.
+- [ ] Scripts `npm run agente:smoke` e `npm run agente:eval` para o Codex rodar
+      com a chave real.
 
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

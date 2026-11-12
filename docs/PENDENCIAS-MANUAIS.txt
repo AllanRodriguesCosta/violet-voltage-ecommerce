@@ -1,0 +1,118 @@
+VIOLET VOLTAGE - PENDENCIAS MANUAIS (ALLAN E CODEX)
+====================================================
+
+Ultima atualizacao: 12/11/2026 (etapa 17 da Fase 3).
+
+PARA QUE SERVE
+--------------
+O codigo e os testes unitarios sao feitos pelo Copilot, direto no repositorio
+do GitHub (uma branch e um pull request por etapa, merge so com o CI verde).
+Este arquivo lista o que o Copilot NAO consegue fazer a partir do GitHub e que
+precisa ser feito no computador do Allan, por ele ou pelo Codex.
+Ferramentas, contas e bibliotecas: docs/FERRAMENTAS-E-BIBLIOTECAS.txt.
+Fotos de produtos novos: docs/FOTOS-PENDENTES.txt (criado na etapa 18).
+
+REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
+--------------------------------------------
+1. Cada tarefa tem um codigo (ex.: T01), um responsavel e um estado:
+   [ ] pendente   [x] concluida   [!] bloqueada (anote o motivo).
+   Responsavel: ALLAN, CODEX ou ALLAN/CODEX (qualquer um dos dois).
+2. Nao altere codigo em src/, public/ ou tests/. Mudancas de codigo ficam com o
+   Copilot: descreva o problema encontrado e o Allan repassa.
+3. Nunca coloque senhas, chaves, URLs de banco ou o conteudo do .env em
+   arquivos do repositorio, commits, prints ou mensagens. Use apenas o .env
+   local (ignorado pelo Git) e as variaveis de ambiente do Render.
+4. Ao concluir, marque a tarefa, anote data e resultado em uma linha
+   ("Resultado: ...") e envie a alteracao deste arquivo em uma branch propria
+   (ex.: codex/t03-lighthouse) com pull request para main.
+5. Se um comando falhar, pare, anote a mensagem de erro principal e o comando
+   usado. Nao tente "consertar" mudando codigo.
+
+----------------------------------------------------------------------
+T01 [ ] ALLAN - Publicar a etapa 17 no Render
+----------------------------------------------------------------------
+Depois do merge do pull request da etapa 17 em main:
+- Se o servico do Render tem deploy automatico, so confirme que o ultimo
+  deploy terminou com sucesso. Caso contrario, use "Manual Deploy" > "Deploy
+  latest commit".
+- Nao e preciso rodar o seed: os produtos ja gravados recebem a ficha tecnica
+  na leitura.
+Como conferir no site publicado:
+- /produto.html?id=demo-013 mostra "Sobre este equipamento" com Estilo,
+  Indicado para (generos clicaveis), Formato, Captacao, Ponte, Timbre e Nivel.
+- /catalogo.html?categoria=Guitarras&generos=Blues+rock mostra 2 guitarras e
+  os filtros Formato, Captacao, Timbre e Nivel.
+Resultado:
+
+----------------------------------------------------------------------
+T02 [ ] ALLAN - Conferir as fichas tecnicas contra as fotos
+----------------------------------------------------------------------
+As fichas dos 22 produtos (src/services/seed-specs.js) foram definidas a
+partir do nome, da descricao e do tipo de cada modelo, sem ver as fotos.
+Confira principalmente:
+- ST Electric Pink: 3 captadores single-coil? ponte com alavanca (Tremolo)?
+- Single Cut Gold: 2 humbuckers? ponte Tune-o-matic?
+- Double Cut Ocean Blue: humbuckers ou P90? estilo SG ou Les Paul Junior?
+- Music Man 212 Combo: valvulado, 65 W, 2 falantes de 12"?
+- Meteoro Vulcano 100: transistor, 100 W, 1 falante de 12"?
+- Behringer Ultra Chorus: analogico?
+- Cabos: comprimentos (MXT 0,15 m; Ernie Ball espiral 7,6 m; Santo Angelo
+  Ninja 3 m; Ernie Ball Instrument 3 m) e conectores (reto ou em L).
+Como corrigir:
+- Liste as correcoes (produto, campo, valor certo) e passe ao Copilot, que
+  atualiza o arquivo de fichas e os testes no proximo pull request.
+- Opcional, para corrigir ja no site: Painel > Produtos > Editar > "Ficha
+  tecnica". Atencao: o que for gravado pelo painel prevalece sobre o arquivo.
+Resultado:
+
+----------------------------------------------------------------------
+T03 [ ] CODEX - Lighthouse do site publicado
+----------------------------------------------------------------------
+Pendente desde a etapa 16. No terminal, na raiz do projeto (precisa de
+internet; o npx baixa a ferramenta sem instala-la no projeto):
+  npx lighthouse https://violet-voltage-ecommerce-1.onrender.com/ --preset=desktop --output=json --output-path=./lighthouse-home-desktop.json --quiet --chrome-flags="--headless"
+  npx lighthouse https://violet-voltage-ecommerce-1.onrender.com/catalogo.html --output=json --output-path=./lighthouse-catalogo-mobile.json --quiet --chrome-flags="--headless"
+Antes, abra o site uma vez no navegador e espere carregar (o plano gratuito do
+Render "dorme" e a primeira visita demora; isso distorce a medicao).
+Anote em "Resultado" as quatro notas (Performance, Accessibility, Best
+Practices, SEO) de cada pagina e os 3 principais itens apontados.
+NAO envie os arquivos .json para o repositorio (apague-os depois).
+Resultado:
+
+----------------------------------------------------------------------
+T04 [ ] ALLAN - Capturas de tela para o README
+----------------------------------------------------------------------
+Pendente desde a etapa 16. Sugestao: home, catalogo com filtros da ficha,
+pagina de produto com ficha, carrinho, painel. Salve em docs/capturas/ com
+nomes simples (ex.: home-desktop.png) e avise o Copilot para referencia-las
+no README. Nao mostre dados pessoais reais nas capturas.
+Resultado:
+
+----------------------------------------------------------------------
+T05 [ ] ALLAN - Fotos dos produtos novos (etapa 18)
+----------------------------------------------------------------------
+Bloqueada ate o Copilot publicar docs/FOTOS-PENDENTES.txt na etapa 18. Cada
+produto novo precisara de um PNG na pasta e com o nome indicados la.
+Resultado:
+
+----------------------------------------------------------------------
+T06 [ ] CODEX - Rodar o seed com as fotos novas (depois da T05)
+----------------------------------------------------------------------
+Bloqueada ate a T05. Passo a passo completo em seed-assets/README.md e
+docs/COLOCAR-NO-AR.md. Resumo:
+- Fotos em seed-assets/produtos-violet-voltage/<subpasta>/<arquivo>.png.
+- .env local com DATABASE_URL, DATABASE_SSL=true e JWT_SECRET (sem mostrar
+  os valores) e DEV_MEMORY_STORAGE=false.
+- npm ci   (so na primeira vez ou se o package-lock.json mudar)
+- npm run seed
+O resumo final deve informar o total de produtos e de imagens igual ao numero
+de itens do manifesto. Se faltar alguma foto, o seed para antes de alterar
+qualquer dado e diz qual arquivo falta.
+Resultado:
+
+----------------------------------------------------------------------
+T07 [ ] ALLAN - Chave gratuita do Gemini (etapa 20, ainda nao necessaria)
+----------------------------------------------------------------------
+So quando o Copilot entregar a etapa 20. Passos em
+docs/FERRAMENTAS-E-BIBLIOTECAS.txt, secao "Google AI Studio".
+Resultado:

@@ -1,4 +1,5 @@
 import { icon } from "../icons.js";
+import { specRows } from "../specs.js";
 import {
   api,
   catalogProducts,
@@ -169,6 +170,17 @@ async function extras(p) {
   carousel(recentSection);
 }
 
+// Ficha técnica: gêneros viram atalhos para o catálogo filtrado.
+function specsHTML(p) {
+  return specRows(p)
+    .map(({ field, text }) =>
+      field.key === "generos" && p.ficha?.generos?.length
+        ? `<div class="spec-genres"><dt>${esc(field.label)}</dt><dd><ul class="genre-links">${p.ficha.generos.map((g) => `<li><a class="chip" href="/catalogo.html?generos=${encodeURIComponent(g)}">${esc(g)}</a></li>`).join("")}</ul></dd></div>`
+        : `<div><dt>${esc(field.label)}</dt><dd>${esc(text)}</dd></div>`,
+    )
+    .join("");
+}
+
 export default async function detail() {
   const container = document.querySelector("#product-detail");
   const id = new URLSearchParams(location.search).get("id") || "";
@@ -191,7 +203,7 @@ ${p.estoque ? `<form id="add-product" class="buy-box"><div class="quantity-field
 <p class="cart-feedback" role="status"></p>
 <ul class="perk-list delivery-list">${Object.entries(delivery).map(([key, d]) => `<li>${icon(key === "retirada" ? "store" : "truck", { size: 18 })}<span><strong>${d.label}</strong><small>${d.prazo}</small></span><span class="option-price">${(key === "padrao" && p.priceCents >= FREE_SHIPPING_CENTS) || !shipping[key] ? "Grátis" : money(shipping[key])}</span></li>`).join("")}<li>${icon("refresh", { size: 18 })}<span><strong>Troca em até 7 dias</strong><small>Após o recebimento</small></span></li></ul><p class="small muted">Frete grátis na entrega padrão para compras a partir de ${money(FREE_SHIPPING_CENTS)}.</p>
 <div class="detail-actions"><button type="button" class="text-button" data-share>${icon("share", { size: 18 })}Compartilhar</button><a class="text-link" href="/catalogo.html?categoria=${encodeURIComponent(p.categoria)}">Mais ${esc(p.categoria.toLowerCase())} ${icon("arrowRight", { size: 16 })}</a></div>
-<section class="product-specs"><h2>Sobre este equipamento</h2><dl><div><dt>Marca</dt><dd>${esc(p.marca)}</dd></div><div><dt>Modelo</dt><dd>${esc(p.modelo)}</dd></div><div><dt>Categoria</dt><dd>${esc(p.categoria)}</dd></div><div><dt>Código</dt><dd>${esc(p.id)}</dd></div></dl></section></section>`;
+<section class="product-specs"><h2>Sobre este equipamento</h2><dl><div><dt>Marca</dt><dd>${esc(p.marca)}</dd></div><div><dt>Modelo</dt><dd>${esc(p.modelo)}</dd></div><div><dt>Categoria</dt><dd>${esc(p.categoria)}</dd></div>${specsHTML(p)}<div><dt>Código</dt><dd>${esc(p.id)}</dd></div></dl></section></section>`;
     pushRecent(p.id);
     structuredData(p, name);
     zoom(container.querySelector(".zoom-frame"), image, name);

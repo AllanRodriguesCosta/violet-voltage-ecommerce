@@ -1,3 +1,40 @@
+# Fase 3, etapa 20 — 12/11/2026
+
+- Testes novos em `tests/help-account.test.js` (3):
+  - A página `ajuda.html` traz cada seção, âncora, pergunta e resposta da fonte
+    única, com valores do checkout.
+  - A busca acha a pergunta certa e não responde a pedidos de compra.
+  - "Trocar a senha" vai para conta, e "trocar o pedal" vai para troca.
+  - Troca de senha: senha atual errada, nova curta ou igual recusadas; cookie
+    novo; sessão antiga recusada; login só com a nova.
+  - Cópia dos dados: arquivo para download, sem cache, sem senha e sem dados
+    de outra pessoa.
+  - Exclusão: senha errada recusada; pedido em andamento bloqueia (409);
+    depois de cancelar, exclui. O cookie é apagado, a sessão e o login são
+    recusados, o cadastro fica anônimo, os avisos são removidos e o pedido é
+    mantido. Outra conta não é afetada; o mesmo e-mail cria conta nova sem
+    herdar pedidos; administrador não se exclui.
+- Avaliação do assistente: 93,8% em 96 frases fora do treino (8 novas de
+  ajuda e conta, das quais 3 inéditas de verdade e 2 com erro, mantidas),
+  46/46 entidades e 2/2 conversas.
+- No navegador (16 verificações):
+  - Seção Segurança e privacidade.
+  - Confirmação diferente e senha atual errada marcam o campo.
+  - Troca confirmada, formulário limpo e sessão mantida.
+  - Download dos dados.
+  - Exclusão: pede a senha, "Manter conta" devolve o foco, confirmação em
+    diálogo, aviso na home, saída da conta e login recusado.
+  - Âncora abre a pergunta exata, 6 seções na ajuda, busca por "senha" e
+    privacidade atualizada.
+  - No assistente (24 verificações), o fundo fica inerte no celular e volta
+    ao fechar.
+- Acessibilidade em claro, escuro, 375 e 1440 px, incluindo o formulário de
+  exclusão aberto, sem problemas. A auditoria passou a tratar painel com
+  `aria-modal="true"` como modal.
+- Regressão completa (13 roteiros, 264 verificações) sem falhas.
+
+---
+
 # Fase 3, etapa 19 — 12/11/2026
 
 - Testes novos em `tests/assistant.test.js` (13):

@@ -303,7 +303,26 @@ pagamento. Decisões:
       `npm run agente:eval` mostra o acerto por intenção (95,5%) e de
       entidades (100%). Detalhes em [ASSISTENTE.md](ASSISTENTE.md).
 
-### 20. Reforço com Gemini gratuito
+### 20. Conta, privacidade e Central de Ajuda (antes do Gemini)
+
+- [x] Minha conta, seção Segurança e privacidade: trocar senha (senha atual,
+      confirmação; sessões abertas antes da troca deixam de valer), baixar os
+      próprios dados (cadastro, endereços, pedidos, avisos e notificações em
+      JSON) e excluir a conta com a senha (dados pessoais, avisos e
+      notificações apagados; pedidos mantidos sem eles; bloqueada com pedido
+      em andamento; o e-mail pode ser cadastrado de novo). Política de
+      privacidade atualizada.
+- [x] Central de Ajuda com fonte única (`src/knowledge/help.js`): 23 perguntas
+      em 6 seções (novas: notificações, endereços, ficha técnica, montador,
+      Avise-me, assistente, troca de senha, cópia dos dados e exclusão), valores
+      vindos das regras do checkout e link direto para cada pergunta; teste
+      garante que a página publicada está em dia.
+- [x] Assistente busca na Central de Ajuda (IDF) antes do "não entendi" e nas
+      dúvidas de conta; "trocar a senha" deixou de virar troca de produto.
+- [x] No celular, o painel do assistente em tela cheia deixa o resto da página
+      inerte para teclado e leitor de tela.
+
+### 21. Reforço com Gemini gratuito
 
 - [ ] Camada opcional com `fetch` nativo, `GEMINI_API_KEY` só no ambiente,
       tempo limite e retorno à PLN local.

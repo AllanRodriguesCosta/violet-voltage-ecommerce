@@ -83,8 +83,19 @@ export function mountAssistant(user) {
     const latest = answers[answers.length - 1];
     log.scrollTop = !busy && latest && state.mensagens.at(-1)?.de === "assistente" ? latest.offsetTop - log.offsetTop - 8 : log.scrollHeight;
   }
+  // No celular o painel ocupa a tela: o resto da página fica inerte (teclado e leitor de tela).
+  const fullScreen = matchMedia("(max-width: 699px)");
+  let inerted = [];
+  function setModal(on) {
+    for (const el of inerted) el.inert = false;
+    inerted = on ? [...document.body.children].filter((el) => el !== panel && !el.inert && el.tagName !== "SCRIPT") : [];
+    for (const el of inerted) el.inert = true;
+    panel.setAttribute("aria-modal", String(on));
+  }
+  fullScreen.addEventListener("change", () => !panel.hidden && setModal(fullScreen.matches));
   function open(show) {
     panel.hidden = !show;
+    setModal(show && fullScreen.matches);
     launcher.setAttribute("aria-expanded", String(show));
     document.body.classList.toggle("assistant-open", show);
     if (show) {

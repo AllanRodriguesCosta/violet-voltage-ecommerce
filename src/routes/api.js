@@ -27,6 +27,7 @@ import {
 import { publicProduct, publicOrder } from "../controllers/serialization.js";
 import { specText } from "../../public/js/specs.js";
 import { reply } from "../assistant/index.js";
+import { changePassword, exportData, deleteAccount } from "../services/account.js";
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024, files: 1 },
@@ -113,7 +114,10 @@ export function apiRouter(storage, config) {
       updatedAt: new Date().toISOString(),
     };
     try {
-      await storage.create("customers", u);
+      // E-mail de conta excluída pelo próprio cliente pode ser cadastrado de novo, do zero.
+      const old = await storage.get("customers", "cliente", normalized);
+      if (old?.excluidaEm && !old.ativo) await storage.save("customers", u, old.etag);
+      else await storage.create("customers", u);
     } catch (e) {
       if (e.statusCode === 409)
         throw new AppError(
@@ -182,6 +186,23 @@ export function apiRouter(storage, config) {
     await storage.save("customers", u, req.user.etag);
     res.json({ data: safeCustomer(u) });
   });
+  // Segurança e privacidade da conta.
+  r.post("/account/password", authenticated, limited, async (req, res) => {
+    const u = await changePassword(storage, req.user, req.body);
+    sign(res, u);
+    res.json({ data: { ok: true } });
+  });
+  r.get("/account/export", authenticated, async (req, res) => {
+    res
+      .set({ "Cache-Control": "no-store", "Content-Disposition": 'attachment; filename="violet-voltage-meus-dados.json"' })
+      .type("application/json")
+      .send(JSON.stringify(await exportData(storage, req.user), null, 2));
+  });
+  r.post("/account/delete", authenticated, limited, async (req, res) => {
+    await deleteAccount(storage, req.user, req.body);
+    res.clearCookie("vv_session", { ...cookie, maxAge: undefined });
+    res.json({ data: { ok: true } });
+  });
   // Endereços de entrega (até 5, um principal), guardados no cadastro do cliente.
   const storeAddresses = async (req, enderecos) => {
     await storage.save("customers", { ...req.user, enderecos, updatedAt: new Date().toISOString() }, req.user.etag);
@@ -224,7 +245,6 @@ export function apiRouter(storage, config) {
     await storage.remove("alerts", req.user.id, alertKey(req.user.id, String(req.params.productId)));
     res.json({ data: { ok: true } });
   });
-  // Notificações da conta: últimas 30 e contagem de não lidas.
   // Assistente de compras (PLN local): só para quem está logado, com limite por usuário.
   const assistantLimit = rateLimit({
     windowMs: 5 * 60 * 1000,
@@ -244,6 +264,7 @@ export function apiRouter(storage, config) {
     const orders = async () => (await storage.listByPartition("orders", req.user.id)).map(publicOrder);
     res.json({ data: await reply({ mensagem, contexto }, { products, orders, user: req.user }) });
   });
+  // Notificações da conta: últimas 30 e contagem de não lidas.
   r.get("/notifications", authenticated, async (req, res) =>
     res.set("Cache-Control", "no-store").json({ data: await listNotifications(storage, req.user.id) }),
   );

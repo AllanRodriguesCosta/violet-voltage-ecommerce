@@ -179,6 +179,10 @@ export const examples = {
     "política de troca",
   ],
   conta: [
+    "trocar a senha",
+    "mudar a senha da conta",
+    "quero apagar minha conta",
+    "baixar meus dados",
     "como altero meus dados",
     "esqueci minha senha",
     "quero mudar meu endereço",

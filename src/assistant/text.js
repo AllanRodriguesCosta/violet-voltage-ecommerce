@@ -38,7 +38,7 @@ export function stem(word) {
       w = w.slice(0, -end.length);
       break;
     }
-  if (w.length > 4 && /[aeio]$/.test(w)) w = w.slice(0, -1);
+  if (w.length >= 4 && /[aeio]$/.test(w)) w = w.slice(0, -1);
   return w;
 }
 

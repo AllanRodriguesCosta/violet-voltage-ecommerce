@@ -183,6 +183,56 @@ const groups = {
   concluidos: (o) => o.status === "Concluído",
   cancelados: (o) => o.status === "Cancelado",
 };
+// Segurança e privacidade: trocar senha, baixar os dados e excluir a conta.
+function security(user) {
+  const passwordForm = document.querySelector("#password-form");
+  bindForm(
+    passwordForm,
+    async (data) => {
+      if (data.nova !== data.confirmacao) throw Object.assign(new Error("As duas senhas novas não são iguais."), { field: "confirmacao" });
+      await send("/account/password", { atual: data.atual, nova: data.nova });
+      passwordForm.reset();
+      toast("Senha trocada. As outras sessões foram encerradas.", { type: "success" });
+    },
+    { messages: { nova: "Use de 10 a 72 caracteres." } },
+  );
+  const open = document.querySelector("#delete-open");
+  const form = document.querySelector("#delete-form");
+  const toggle = (show) => {
+    form.hidden = !show;
+    open.hidden = show;
+    open.setAttribute("aria-expanded", String(show));
+    if (show) form.elements.senha.focus();
+    else open.focus();
+  };
+  if (user.role === "admin") {
+    open.disabled = true;
+    document.querySelector("#delete-help").textContent = "Contas de administrador não podem ser excluídas por aqui.";
+  }
+  open.addEventListener("click", () => toggle(true));
+  document.querySelector("#delete-cancel").addEventListener("click", () => {
+    form.reset();
+    toggle(false);
+  });
+  bindForm(form, async (data) => {
+    const ok = await confirmDialog({
+      title: "Excluir sua conta?",
+      text: "Seus dados pessoais serão apagados e você sairá da loja. Essa ação não pode ser desfeita.",
+      confirm: "Excluir conta",
+      cancel: "Manter conta",
+      danger: true,
+    });
+    if (!ok) return;
+    await send("/account/delete", { senha: data.senha });
+    try {
+      for (const key of ["vv_assistente"]) sessionStorage.removeItem(key);
+    } catch {
+      // Sem armazenamento da aba, não há conversa para apagar.
+    }
+    location.href = "/?conta=excluida";
+  });
+}
+
 export default async function account(session) {
   const user = await session;
   if (!requireUser(user)) return;
@@ -193,6 +243,7 @@ export default async function account(session) {
   addresses(user);
   notifications();
   alerts();
+  security(user);
   bindForm(form, async (data) => {
     await send("/profile", data, "PATCH");
     toast("Dados atualizados.", { type: "success" });

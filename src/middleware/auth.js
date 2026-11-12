@@ -19,7 +19,10 @@ export async function sessionUser(storage, config, token) {
     return null;
   }
   const u = await storage.get("customers", "cliente", payload.email);
-  return u?.ativo && u.id === payload.sub ? u : null;
+  if (!u?.ativo || u.id !== payload.sub) return null;
+  // Sessão aberta antes da última troca de senha não vale mais.
+  if (u.passwordChangedAt && payload.iat < Math.floor(Date.parse(u.passwordChangedAt) / 1000)) return null;
+  return u;
 }
 export function auth(storage, config) {
   return async (req, _res, next) => {

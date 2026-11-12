@@ -8,8 +8,14 @@ export default function help() {
   const empty = document.querySelector("#faq-empty");
   const openFromHash = () => {
     // getElementById aceita qualquer âncora; sem âncora não há grupo para abrir.
-    const group = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
-    if (group?.classList.contains("faq-group")) group.querySelector(".faq-item")?.setAttribute("open", "");
+    const target = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+    // Âncora de grupo abre a primeira pergunta; âncora de pergunta (ex.: #conta-5) abre a própria.
+    if (target?.classList.contains("faq-group")) target.querySelector(".faq-item")?.setAttribute("open", "");
+    else if (target?.classList.contains("faq-item")) {
+      target.setAttribute("open", "");
+      target.scrollIntoView({ block: "start" });
+      target.querySelector("summary")?.focus({ preventScroll: true });
+    }
   };
   input.addEventListener("input", () => {
     const terms = normalize(input.value).split(/\s+/).filter(Boolean);

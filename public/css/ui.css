@@ -595,3 +595,12 @@ body.assistant-open .assistant-launcher { visibility: hidden; }
   .assistant-launcher-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   body.assistant-open { overflow: hidden; }
 }
+
+/* Etapa 20: segurança e privacidade da conta */
+.security-panel h2 { margin-bottom: 16px; }
+.security-panel h3 { font-size: 16px; margin: 0 0 8px; }
+.security-panel .privacy-block { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+.security-panel .privacy-block .form-help { margin: 0 0 10px; }
+.security-panel .danger-zone .row { gap: 8px; flex-wrap: wrap; }
+.security-panel .danger-zone .row button { flex: 1 1 140px; }
+.security-panel > .form-help:last-child { margin: 16px 0 0; }

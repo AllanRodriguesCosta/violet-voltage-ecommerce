@@ -1,7 +1,7 @@
 VIOLET VOLTAGE - PENDENCIAS MANUAIS (ALLAN E CODEX)
 ====================================================
 
-Ultima atualizacao: 12/11/2026 (etapa 19 da Fase 3).
+Ultima atualizacao: 12/11/2026 (etapa 20 da Fase 3).
 
 PARA QUE SERVE
 --------------
@@ -29,9 +29,9 @@ REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
    usado. Nao tente "consertar" mudando codigo.
 
 ----------------------------------------------------------------------
-T01 [ ] ALLAN - Publicar as etapas 17, 18 e 19 no Render
+T01 [ ] ALLAN - Publicar as etapas 17 a 20 no Render
 ----------------------------------------------------------------------
-Depois do merge dos pull requests das etapas 17, 18 e 19 em main:
+Depois do merge dos pull requests das etapas 17 a 20 em main:
 - Se o servico do Render tem deploy automatico, so confirme que o ultimo
   deploy terminou com sucesso. Caso contrario, use "Manual Deploy" > "Deploy
   latest commit".
@@ -48,6 +48,9 @@ Como conferir no site publicado:
 - Logado, aparece o botao "Assistente" no canto da tela. Teste: "quero uma
   guitarra mais vintage", depois "blues rock" (precisa das guitarras no
   banco; com so os 22 produtos originais aparece a ST Electric Pink).
+- Minha conta tem a secao "Seguranca e privacidade" (trocar senha, baixar
+  meus dados, excluir conta). Teste a exclusao com uma conta criada so para
+  isso. /ajuda.html tem 6 secoes e 23 perguntas.
 Os 53 produtos novos so aparecem no site depois da T06 (seed com as fotos).
 Resultado:
 
@@ -124,9 +127,9 @@ Depois, confira no site publicado: /catalogo.html mostra "Mostrando 24 de N".
 Resultado:
 
 ----------------------------------------------------------------------
-T07 [ ] ALLAN - Chave gratuita do Gemini (etapa 20, ainda nao necessaria)
+T07 [ ] ALLAN - Chave gratuita do Gemini (etapa 21, ainda nao necessaria)
 ----------------------------------------------------------------------
-So quando o Copilot entregar a etapa 20. Passos em
+So quando o Copilot entregar a etapa 21. Passos em
 docs/FERRAMENTAS-E-BIBLIOTECAS.txt, secao "Google AI Studio".
 Resultado:
 

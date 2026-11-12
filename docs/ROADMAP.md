@@ -349,13 +349,25 @@ instrumento usado na troca fica de fora.
 
 ### 22. Serviços, guias, filtros do segmento, alerta de preço e perguntas
 
-- [ ] Serviços no checkout: regulagem por luthier, troca de cordas e garantia
-      estendida, calculados pelo servidor.
-- [ ] Guias de compra e glossário (fonte única, também usada pelo assistente).
-- [ ] Filtros do segmento: mão (destro/canhoto), número de cordas, captadores
-      ativos/passivos, trastes e escala.
-- [ ] Aviso de queda de preço nos favoritos.
-- [ ] Perguntas e respostas no produto, respondidas pelo painel (sem notas).
+- [x] Serviços no carrinho (`public/js/services.js`, fonte única): regulagem por
+      luthier e troca de cordas para guitarras, garantia estendida de 12 meses
+      (8% do item, mínimo R$ 29,90) para guitarras, amplificadores e pedais.
+      Validados e cobrados pelo servidor por unidade; o cupom não incide sobre
+      serviços; aparecem no checkout, no pedido e no comprovante.
+- [x] Guias de compra (6) e glossário (48 termos) em `src/knowledge/`, página
+      `/guias.html` gerada a partir deles, com busca no glossário e atalhos para
+      o catálogo filtrado.
+- [x] Filtros do segmento nas guitarras: mão, cordas e captadores (com 3
+      guitarras novas: canhota, 7 cordas e EMG ativos), mais trastes e escala na
+      ficha. Catálogo com 80 produtos.
+- [x] Aviso de queda de preço no produto e para todos os favoritos; notifica
+      uma vez com o preço antigo e o novo; avisos de estoque e de preço juntos em
+      Minha conta.
+- [x] Perguntas e respostas no produto: cliente logado pergunta (10 a 500
+      caracteres, até 5 pendentes), a loja responde ou oculta pela nova aba do
+      painel, só as respondidas são publicadas (nome e inicial) e quem perguntou
+      é notificado. Exclusão da conta apaga as pendentes e anonimiza as
+      respondidas; a cópia dos dados inclui as perguntas.
 
 ### 23. Painel e SEO
 

@@ -18,9 +18,11 @@ import {
 } from "../common.js";
 import { stockState, wishLabel, handleWish, installmentText, productCard, bindCards, carousel, errorState } from "../components.js";
 import { delivery, shipping, FREE_SHIPPING_CENTS, maxInstallments, installmentValue } from "../pricing.js";
-import { alertButtonHTML } from "../alerts.js";
+import { alertButtonHTML, priceAlertButtonHTML } from "../alerts.js";
 import { openCart } from "../drawer.js";
 import { compareButtonHTML } from "../compare.js";
+import { servicesFor } from "../services.js";
+import { mountQuestions } from "../questions.js";
 
 function structuredData(p, name) {
   document.querySelector('script[type="application/ld+json"]')?.remove();
@@ -182,6 +184,13 @@ async function extras(p) {
   carousel(recentSection);
 }
 
+// Serviços disponíveis para o item, em uma linha ("Regulagem, troca de cordas e garantia estendida").
+const serviceLabels = { regulagem: "regulagem por luthier", cordas: "troca de cordas", garantia: "garantia estendida" };
+function serviceSummary(p) {
+  const names = servicesFor(p).map((x) => serviceLabels[x.id]);
+  const text = names.length > 1 ? `${names.slice(0, -1).join(", ")} e ${names.at(-1)}` : names[0];
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
 // Ficha técnica: gêneros viram atalhos para o catálogo filtrado.
 function specsHTML(p) {
   return specRows(p)
@@ -213,8 +222,8 @@ export default async function detail() {
 <section class="detail-info" data-name="${esc(name)}"><span class="eyebrow">${esc(p.categoria)} · ${esc(p.marca)}</span><h1>${esc(p.modelo)}</h1><p class="detail-price">${money(p.priceCents)}</p>${installmentText(p.priceCents) ? `<p class="detail-installments">${installmentText(p.priceCents)}</p>` : ""}${installmentsTable(p.priceCents)}<p class="stock-pill stock-${stock.key}">${icon(stock.key === "out" ? "clock" : "check", { size: 16 })}${stock.key === "out" ? "Produto esgotado" : stock.key === "low" ? `Últimas unidades: ${p.estoque} em estoque` : `${p.estoque} unidades em estoque`}</p><p class="lead">${esc(p.descricao)}</p>
 ${p.estoque ? `<form id="add-product" class="buy-box"><div class="quantity-field"><label for="quantidade">Quantidade</label><div class="stepper stepper-lg" role="group" aria-label="Quantidade"><button type="button" data-qty="-1" aria-label="Diminuir quantidade"${p.estoque ? "" : " disabled"}>${icon("minus", { size: 18 })}</button><input id="quantidade" name="quantidade" type="number" value="1" min="1" max="${max}" inputmode="numeric" required${p.estoque ? "" : " disabled"}><button type="button" data-qty="1" aria-label="Aumentar quantidade"${p.estoque > 1 ? "" : " disabled"}>${icon("plus", { size: 18 })}</button></div></div><div class="buy-actions"><button type="submit"${p.estoque ? "" : " disabled"}>${icon("bag", { size: 18 })}Adicionar ao carrinho</button><button type="button" class="secondary" data-buy-now${p.estoque ? "" : " disabled"}>Comprar agora</button></div></form>` : `<div class="buy-box buy-box-out">${alertButtonHTML(p)}<p class="small muted">Sem estoque agora. Ative o aviso e acompanhe em Minha conta.</p></div>`}
 <p class="cart-feedback" role="status"></p>
-<ul class="perk-list delivery-list">${Object.entries(delivery).map(([key, d]) => `<li>${icon(key === "retirada" ? "store" : "truck", { size: 18 })}<span><strong>${d.label}</strong><small>${d.prazo}</small></span><span class="option-price">${(key === "padrao" && p.priceCents >= FREE_SHIPPING_CENTS) || !shipping[key] ? "Grátis" : money(shipping[key])}</span></li>`).join("")}<li>${icon("refresh", { size: 18 })}<span><strong>Troca em até 7 dias</strong><small>Após o recebimento</small></span></li></ul><p class="small muted">Frete grátis na entrega padrão para compras a partir de ${money(FREE_SHIPPING_CENTS)}.</p>
-<div class="detail-actions"><button type="button" class="text-button" data-share>${icon("share", { size: 18 })}Compartilhar</button>${compareButtonHTML(p, { className: "text-button compare-toggle" })}<a class="text-link" href="/catalogo.html?categoria=${encodeURIComponent(p.categoria)}">Mais ${esc(p.categoria.toLowerCase())} ${icon("arrowRight", { size: 16 })}</a></div>
+<ul class="perk-list delivery-list">${Object.entries(delivery).map(([key, d]) => `<li>${icon(key === "retirada" ? "store" : "truck", { size: 18 })}<span><strong>${d.label}</strong><small>${d.prazo}</small></span><span class="option-price">${(key === "padrao" && p.priceCents >= FREE_SHIPPING_CENTS) || !shipping[key] ? "Grátis" : money(shipping[key])}</span></li>`).join("")}<li>${icon("refresh", { size: 18 })}<span><strong>Troca em até 7 dias</strong><small>Após o recebimento</small></span></li>${servicesFor(p).length ? `<li>${icon("wrench", { size: 18 })}<span><strong>${serviceSummary(p)}</strong><small>A partir de ${money(Math.min(...servicesFor(p).map((x) => x.priceCents)))}, escolha no carrinho</small></span></li>` : ""}</ul><p class="small muted">Frete grátis na entrega padrão para compras a partir de ${money(FREE_SHIPPING_CENTS)}.</p>
+<div class="detail-actions"><button type="button" class="text-button" data-share>${icon("share", { size: 18 })}Compartilhar</button>${compareButtonHTML(p, { className: "text-button compare-toggle" })}${priceAlertButtonHTML(p)}<a class="text-link" href="/catalogo.html?categoria=${encodeURIComponent(p.categoria)}">Mais ${esc(p.categoria.toLowerCase())} ${icon("arrowRight", { size: 16 })}</a></div>
 <section class="product-specs"><h2>Sobre este equipamento</h2><dl><div><dt>Marca</dt><dd>${esc(p.marca)}</dd></div><div><dt>Modelo</dt><dd>${esc(p.modelo)}</dd></div><div><dt>Categoria</dt><dd>${esc(p.categoria)}</dd></div>${specsHTML(p)}<div><dt>Código</dt><dd>${esc(p.id)}</dd></div></dl></section></section>`;
     pushRecent(p.id);
     structuredData(p, name);
@@ -266,7 +275,7 @@ ${p.estoque ? `<form id="add-product" class="buy-box"><div class="quantity-field
       { passive: true },
     );
     syncBar();
-    await extras(p);
+    await Promise.all([extras(p), mountQuestions(p)]);
   } catch (e) {
     container.className = "state-wrap";
     container.removeAttribute("aria-busy");

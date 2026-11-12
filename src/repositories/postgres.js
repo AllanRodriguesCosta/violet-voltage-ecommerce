@@ -8,6 +8,7 @@ const tables = Object.freeze({
   orders: "violet_voltage.orders",
   alerts: "violet_voltage.alerts",
   notifications: "violet_voltage.notifications",
+  questions: "violet_voltage.questions",
 });
 
 export function databaseOptions(config) {

@@ -12,6 +12,7 @@ export class MemoryStorage {
       orders: new Map(),
       alerts: new Map(),
       notifications: new Map(),
+      questions: new Map(),
     };
     this.blobs = new Map();
   }

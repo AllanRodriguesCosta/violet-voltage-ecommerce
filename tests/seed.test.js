@@ -38,7 +38,7 @@ test("catálogo seed: IDs sequenciais únicos, arquivos e modelos únicos, preç
     Cabos: 4,
   });
   assert.deepEqual(count(expansionProducts), {
-    Guitarras: 14,
+    Guitarras: 17,
     Amplificadores: 10,
     Pedais: 15,
     Cabos: 3,

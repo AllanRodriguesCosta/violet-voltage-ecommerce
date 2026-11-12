@@ -702,6 +702,34 @@ const expansion = [
     10,
     "Fonte com 10 saídas isoladas de 9V, que alimenta o pedalboard inteiro sem chiado entre os pedais. Acompanha os cabos.",
   ],
+  // Etapa 22: canhota, 7 cordas e captadores ativos (filtros do segmento).
+  [
+    "guitarras/squier-affinity-telecaster-canhota.png",
+    "Guitarras",
+    "Squier",
+    "Affinity Telecaster Canhota",
+    199900,
+    4,
+    "A Telecaster de entrada da Squier em versão para canhotos: dois single-coils brilhantes, ponte fixa e braço confortável para começar.",
+  ],
+  [
+    "guitarras/ibanez-grg7221.png",
+    "Guitarras",
+    "Ibanez",
+    "GRG7221 7 Cordas",
+    279900,
+    5,
+    "Guitarra de 7 cordas com si grave extra, dois humbuckers e ponte fixa, para afinações baixas e riffs de metal moderno.",
+  ],
+  [
+    "guitarras/esp-ltd-ec-401.png",
+    "Guitarras",
+    "ESP LTD",
+    "EC-401",
+    749900,
+    3,
+    "Single cut com captadores ativos EMG 81 e 60: saída alta, ataque preciso e silêncio total entre os riffs, até com muito ganho.",
+  ],
 ];
 // Lote original (fotos já entregues) seguido da expansão da etapa 18.
 export const ORIGINAL_SEED_COUNT = catalog.length;

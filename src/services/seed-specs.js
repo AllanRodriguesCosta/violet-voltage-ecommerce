@@ -520,6 +520,34 @@ export const seedSpecs = {
     tipo: "Suporte de chão",
     compatibilidade: "Até 3 guitarras, baixos ou violões",
   },
+  // Etapa 22: guitarras para os filtros de mão, cordas e captadores
+  "Affinity Telecaster Canhota": {
+    estilo: "Atemporal",
+    generos: ["Country", "Indie", "Rock clássico", "Pop", "MPB"],
+    formato: "Tele",
+    captacao: "Single-coil",
+    ponte: "Fixa",
+    timbre: ["Brilhante"],
+    nivel: "Iniciante",
+  },
+  "GRG7221 7 Cordas": {
+    estilo: "Moderno",
+    generos: ["Heavy metal", "Hard rock"],
+    formato: "Superstrat",
+    captacao: "Humbucker",
+    ponte: "Fixa",
+    timbre: ["Agressivo", "Encorpado"],
+    nivel: "Intermediário",
+  },
+  "EC-401": {
+    estilo: "Moderno",
+    generos: ["Heavy metal", "Hard rock", "Grunge"],
+    formato: "Single cut",
+    captacao: "Humbucker",
+    ponte: "Tune-o-matic",
+    timbre: ["Agressivo", "Encorpado"],
+    nivel: "Profissional",
+  },
   // Etapa 21: fontes de alimentação para pedais
   "Fonte 9V 1A Pedal Power": {
     estilo: "Atemporal",
@@ -562,4 +590,32 @@ const alimentacao = {
 for (const [modelo, value] of Object.entries(alimentacao)) {
   if (!seedSpecs[modelo]) throw new Error(`Ficha ausente: ${modelo}`);
   seedSpecs[modelo].alimentacao = value;
+}
+
+// Etapa 22: medidas das guitarras (trastes e escala em polegadas), mão, cordas e captadores.
+const guitarras = {
+  "ST Electric Pink": [22, 25.5],
+  "Single Cut Gold": [22, 24.75],
+  "Double Cut Ocean Blue": [22, 24.75],
+  "Vintera II '60s Stratocaster": [21, 25.5],
+  "Classic Vibe '50s Stratocaster": [21, 25.5],
+  "Player II Telecaster": [22, 25.5],
+  "Affinity Telecaster": [21, 25.5],
+  "Les Paul Standard 50s": [22, 24.75],
+  "Les Paul Standard 60s": [22, 24.75],
+  "SG Standard": [22, 24.75],
+  "ES-335": [22, 24.75],
+  "G2420T Streamliner": [22, 24.6],
+  "Classic Vibe '60s Jazzmaster": [21, 25.5],
+  "JS32 Dinky": [24, 25.5],
+  GRG121SP: [24, 25.5],
+  "TG-530": [22, 25.5],
+  "SE Custom 24": [24, 25],
+  "Affinity Telecaster Canhota": [21, 25.5, { mao: "Canhoto" }],
+  "GRG7221 7 Cordas": [24, 25.5, { cordas: "7 cordas" }],
+  "EC-401": [24, 24.75, { captadores: "Ativos" }],
+};
+for (const [modelo, [trastes, escala, extra = {}]] of Object.entries(guitarras)) {
+  if (!seedSpecs[modelo]) throw new Error(`Ficha ausente: ${modelo}`);
+  Object.assign(seedSpecs[modelo], { mao: "Destro", cordas: "6 cordas", captadores: "Passivos", trastes, escala, ...extra });
 }

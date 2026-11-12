@@ -246,7 +246,7 @@ test("PostgreSQL: avisos de estoque e notificações na mesma transação", asyn
   const tables = await database.query(
     "SELECT table_name FROM information_schema.tables WHERE table_schema='violet_voltage' ORDER BY table_name",
   );
-  assert.deepEqual(tables.rows.map((r) => r.table_name), ["alerts", "customers", "images", "notifications", "orders", "products"]);
+  assert.deepEqual(tables.rows.map((r) => r.table_name), ["alerts", "customers", "images", "notifications", "orders", "products", "questions"]);
   await storage.create("products", {
     partitionKey: "pedais", rowKey: "pg-alerta", marca: "PG", modelo: "Reverb", categoria: "Pedais",
     descricao: "Pedal para teste de avisos", priceCents: 15000, estoque: 0, ativo: true,

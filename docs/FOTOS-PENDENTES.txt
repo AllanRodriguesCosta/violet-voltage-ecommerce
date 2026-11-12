@@ -1,8 +1,8 @@
 VIOLET VOLTAGE - FOTOS PENDENTES (ETAPAS 18 E 21)
 =================================================
 
-Ultima atualizacao: 12/11/2026. 55 fotos novas, uma por produto adicionado nas
-etapas 18 e 21 (catalogo passa de 22 para 77 produtos). Os 22 produtos originais
+Ultima atualizacao: 12/11/2026. 58 fotos novas, uma por produto adicionado nas
+etapas 18 e 21 (catalogo passa de 22 para 80 produtos). Os 22 produtos originais
 continuam com as fotos que ja estao na pasta.
 
 O QUE FAZER
@@ -32,7 +32,7 @@ O QUE FAZER
 LEGENDA: [ ] pendente   [x] pronta
 Cada linha: caixa, arquivo, produto (marca e modelo) e codigo do produto.
 
-GUITARRAS (14) - pasta guitarras/
+GUITARRAS (17) - pasta guitarras/
 ---------------------------------
 O que fotografar: guitarra inteira, de frente, na vertical.
 [ ] guitarras/fender-vintera-ii-60s-stratocaster.png  |  Fender Vintera II '60s Stratocaster  |  demo-023
@@ -49,6 +49,9 @@ O que fotografar: guitarra inteira, de frente, na vertical.
 [ ] guitarras/ibanez-grg121sp.png  |  Ibanez GRG121SP  |  demo-034
 [ ] guitarras/tagima-tg-530.png  |  Tagima TG-530  |  demo-035
 [ ] guitarras/prs-se-custom-24.png  |  PRS SE Custom 24  |  demo-036
+[ ] guitarras/squier-affinity-telecaster-canhota.png  |  Squier Affinity Telecaster Canhota  |  demo-078
+[ ] guitarras/ibanez-grg7221.png  |  Ibanez GRG7221 7 Cordas  |  demo-079
+[ ] guitarras/esp-ltd-ec-401.png  |  ESP LTD EC-401  |  demo-080
 
 AMPLIFICADORES (10) - pasta amplificadores/
 -------------------------------------------

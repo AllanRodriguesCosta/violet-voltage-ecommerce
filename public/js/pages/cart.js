@@ -16,6 +16,7 @@ import { emptyState, freeShippingHTML, installmentText, productCard, bindCards, 
 import { maxInstallments, installmentValue } from "../pricing.js";
 import { cartAdvice } from "../compat.js";
 import { kitProgress, kitPrice } from "../kits.js";
+import { servicesFor, servicePrice, SERVICES } from "../services.js";
 
 export async function cartData() {
   const cart = getCart();
@@ -24,6 +25,17 @@ export async function cartData() {
 }
 export const subtotal = (items) =>
   items.reduce((sum, i) => sum + (i.product?.priceCents || 0) * i.quantidade, 0);
+export const servicesTotal = (items) =>
+  items.reduce((sum, i) => sum + (i.servicos || []).reduce((t, id) => t + servicePrice(id, i.product), 0) * i.quantidade, 0);
+// Serviços do item no carrinho: caixas de seleção com preço por unidade.
+function servicesHTML(item) {
+  const options = servicesFor(item.product);
+  if (!options.length) return "";
+  const chosen = new Set(item.servicos || []);
+  return `<details class="item-services"${chosen.size ? " open" : ""}><summary>${icon("wrench", { size: 16 })}Serviços da loja${chosen.size ? ` <span class="chip-count">${chosen.size}</span>` : ""}</summary><ul>${options
+    .map((s) => `<li><label class="check"><input type="checkbox" data-service="${s.id}" data-id="${esc(item.id)}"${chosen.has(s.id) ? " checked" : ""}><span><strong>${esc(s.nome)}</strong> <span class="service-price">+ ${money(s.priceCents)}${item.quantidade > 1 ? " cada" : ""}</span><small>${esc(s.texto)}</small></span></label></li>`)
+    .join("")}</ul></details>`;
+}
 // Preferências do checkout guardadas neste navegador.
 export const prefs = {
   get coupon() {
@@ -40,10 +52,10 @@ export const prefs = {
   },
 };
 export const fetchQuote = (entrega, cupom) =>
-  send("/checkout/quote", { items: getCart().map(({ id, quantidade }) => ({ id, quantidade })), entrega, ...(cupom ? { cupom } : {}) });
+  send("/checkout/quote", { items: getCart(), entrega, ...(cupom ? { cupom } : {}) });
 export function totalsHTML(quote) {
   const count = maxInstallments(quote.totalCents);
-  return `<div class="summary-line"><span>Subtotal</span><span>${money(quote.subtotalCents)}</span></div>${(quote.kits || []).map((k) => `<div class="summary-line discount"><span>Desconto ${esc(k.nome)}${k.quantidade > 1 ? ` (${k.quantidade}x)` : ""}</span><span>− ${money(k.descontoCents)}</span></div>`).join("")}<div class="summary-line"><span>Frete</span><span>${quote.freteCents ? money(quote.freteCents) : '<strong class="free">Grátis</strong>'}</span></div>${quote.descontoCents ? `<div class="summary-line discount"><span>Desconto${quote.cupom ? ` (${esc(quote.cupom.codigo)})` : ""}</span><span>− ${money(quote.descontoCents)}</span></div>` : ""}<div class="summary-line summary-total"><span>Total</span><span>${money(quote.totalCents)}</span></div>${count > 1 ? `<p class="installments-note">ou até ${count}x de ${money(installmentValue(quote.totalCents, count))} sem juros no cartão</p>` : ""}`;
+  return `<div class="summary-line"><span>Subtotal</span><span>${money(quote.subtotalCents)}</span></div>${quote.servicosCents ? `<div class="summary-line"><span>Serviços</span><span>${money(quote.servicosCents)}</span></div>` : ""}${(quote.kits || []).map((k) => `<div class="summary-line discount"><span>Desconto ${esc(k.nome)}${k.quantidade > 1 ? ` (${k.quantidade}x)` : ""}</span><span>− ${money(k.descontoCents)}</span></div>`).join("")}<div class="summary-line"><span>Frete</span><span>${quote.freteCents ? money(quote.freteCents) : '<strong class="free">Grátis</strong>'}</span></div>${quote.descontoCents ? `<div class="summary-line discount"><span>Desconto${quote.cupom ? ` (${esc(quote.cupom.codigo)})` : ""}</span><span>− ${money(quote.descontoCents)}</span></div>` : ""}<div class="summary-line summary-total"><span>Total</span><span>${money(quote.totalCents)}</span></div>${count > 1 ? `<p class="installments-note">ou até ${count}x de ${money(installmentValue(quote.totalCents, count))} sem juros no cartão</p>` : ""}`;
 }
 
 // O que falta para o equipamento funcionar e kits a um ou dois itens de completar.
@@ -91,7 +103,7 @@ export default async function cartPage() {
   async function summary(items) {
     const aside = container.querySelector(".summary-panel");
     const invalid = items.some((i) => !i.product || i.quantidade > i.product.estoque);
-    const base = { subtotalCents: subtotal(items), freteCents: 0, descontoCents: 0, totalCents: subtotal(items) };
+    const base = { subtotalCents: subtotal(items), servicosCents: servicesTotal(items), freteCents: 0, descontoCents: 0, totalCents: subtotal(items) + servicesTotal(items) };
     let quote = null;
     if (!invalid) {
       try {
@@ -177,7 +189,7 @@ export default async function cartPage() {
         const name = p ? `${p.marca} ${p.modelo}` : "Produto removido ou indisponível";
         const max = Math.min(99, p?.estoque || 0);
         const problem = !p ? "Este produto não está mais disponível." : i.quantidade > p.estoque ? `Restam ${p.estoque} em estoque; ajuste a quantidade.` : "";
-        return `<article class="cart-item"><img src="${esc(productImage(p))}" alt="" width="96" height="96"><div class="cart-item-info"><h3>${p ? `<a href="/produto.html?id=${encodeURIComponent(p.id)}">${esc(name)}</a>` : esc(name)}</h3><span class="small muted">${money(p?.priceCents || 0)} cada${p && installmentText(p.priceCents) ? ` · ${installmentText(p.priceCents)}` : ""}</span>${problem ? `<p class="field-error">${problem}</p>` : ""}<div class="cart-actions"><div class="stepper" role="group" aria-label="Quantidade de ${esc(name)}"><button type="button" data-step="-1" data-id="${esc(i.id)}" aria-label="Diminuir quantidade"${i.quantidade <= 1 ? " disabled" : ""}>${icon("minus", { size: 16 })}</button><output aria-live="polite">${i.quantidade}</output><button type="button" data-step="1" data-id="${esc(i.id)}" data-max="${max}" aria-label="Aumentar quantidade"${i.quantidade >= max ? " disabled" : ""}>${icon("plus", { size: 16 })}</button></div>${p ? `<button type="button" class="text-button" data-later="${esc(i.id)}">${icon("heart", { size: 16 })}Salvar para depois</button>` : ""}<button type="button" class="text-button" data-remove-item="${esc(i.id)}">${icon("trash", { size: 16 })}Remover</button></div></div><strong class="price">${money((p?.priceCents || 0) * i.quantidade)}</strong></article>`;
+        return `<article class="cart-item"><img src="${esc(productImage(p))}" alt="" width="96" height="96"><div class="cart-item-info"><h3>${p ? `<a href="/produto.html?id=${encodeURIComponent(p.id)}">${esc(name)}</a>` : esc(name)}</h3><span class="small muted">${money(p?.priceCents || 0)} cada${p && installmentText(p.priceCents) ? ` · ${installmentText(p.priceCents)}` : ""}</span>${problem ? `<p class="field-error">${problem}</p>` : ""}<div class="cart-actions"><div class="stepper" role="group" aria-label="Quantidade de ${esc(name)}"><button type="button" data-step="-1" data-id="${esc(i.id)}" aria-label="Diminuir quantidade"${i.quantidade <= 1 ? " disabled" : ""}>${icon("minus", { size: 16 })}</button><output aria-live="polite">${i.quantidade}</output><button type="button" data-step="1" data-id="${esc(i.id)}" data-max="${max}" aria-label="Aumentar quantidade"${i.quantidade >= max ? " disabled" : ""}>${icon("plus", { size: 16 })}</button></div>${p ? `<button type="button" class="text-button" data-later="${esc(i.id)}">${icon("heart", { size: 16 })}Salvar para depois</button>` : ""}<button type="button" class="text-button" data-remove-item="${esc(i.id)}">${icon("trash", { size: 16 })}Remover</button></div>${p ? servicesHTML(i) : ""}</div><strong class="price">${money((p?.priceCents || 0) * i.quantidade)}</strong></article>`;
       })
       .join("")}</section>${adviceHTML(items, products)}</div><aside class="panel summary-panel" aria-live="polite"><div class="loading" role="status">Calculando…</div></aside></div>${suggestions.length ? `<section class="cart-suggestions" aria-labelledby="suggestions-title"><h2 id="suggestions-title">Complete seu setup</h2><div class="product-grid product-grid-wide">${suggestions.map((p, i) => productCard(p, i)).join("")}</div></section>` : ""}`;
     const grid = container.querySelector(".cart-suggestions .product-grid");
@@ -189,6 +201,25 @@ export default async function cartPage() {
         if (!item) return render();
         item.quantidade = Math.max(1, item.quantidade + Number(b.dataset.step));
         save(cart);
+      }),
+    );
+    container.querySelectorAll("[data-service]").forEach((box) =>
+      box.addEventListener("change", () => {
+        const cart = getCart();
+        const line = cart.find((x) => x.id === box.dataset.id);
+        if (!line) return render();
+        const set = new Set(line.servicos || []);
+        if (box.checked) set.add(box.dataset.service);
+        else set.delete(box.dataset.service);
+        line.servicos = [...set];
+        try {
+          setCart(cart);
+        } catch {
+          toast("Não foi possível salvar o carrinho neste navegador.", { type: "error" });
+          return;
+        }
+        toast(`${SERVICES[box.dataset.service].nome} ${box.checked ? "incluída" : "removida"}.`, { type: "success" });
+        summary(items.map((x) => ({ ...x, servicos: cart.find((c) => c.id === x.id)?.servicos })));
       }),
     );
     container.querySelectorAll("[data-advice-add]").forEach((b) =>

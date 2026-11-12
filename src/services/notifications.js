@@ -44,10 +44,11 @@ export function orderNotice(order, status) {
 }
 
 // "Avise-me": um aviso por cliente e produto; ao voltar ao estoque, vira notificação uma vez.
-export const alertKey = (customerId, productId) => `${customerId}:${productId}`;
+export const alertKey = (customerId, productId, tipo) => `${customerId}:${productId}${tipo === "preco" ? ":preco" : ""}`;
+const isPrice = (a) => a.tipo === "preco";
 export async function restockAlerts(storage, product) {
   if (!product?.ativo || !(product.estoque > 0)) return 0;
-  const pending = (await storage.list("alerts")).filter((a) => a.productId === product.rowKey && !a.notifiedAt);
+  const pending = (await storage.list("alerts")).filter((a) => a.productId === product.rowKey && !a.notifiedAt && !isPrice(a));
   for (const alert of pending) {
     await notify(storage, alert.customerId, {
       tipo: "estoque",
@@ -61,6 +62,29 @@ export async function restockAlerts(storage, product) {
 }
 export async function demandByProduct(storage) {
   const counts = new Map();
-  for (const a of await storage.list("alerts")) if (!a.notifiedAt) counts.set(a.productId, (counts.get(a.productId) || 0) + 1);
+  for (const a of await storage.list("alerts")) if (!a.notifiedAt && !isPrice(a)) counts.set(a.productId, (counts.get(a.productId) || 0) + 1);
+  return counts;
+}
+
+// Aviso de queda de preço: dispara uma vez quando o preço fica abaixo do registrado no pedido do aviso.
+const brl = (cents) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100).replace(/\s/g, " ");
+export async function priceDropAlerts(storage, product) {
+  if (!product?.ativo) return 0;
+  const due = (await storage.list("alerts")).filter((a) => isPrice(a) && a.productId === product.rowKey && !a.notifiedAt && product.priceCents < a.priceCents);
+  for (const alert of due) {
+    const off = Math.round((1 - product.priceCents / alert.priceCents) * 100);
+    await notify(storage, alert.customerId, {
+      tipo: "preco",
+      titulo: `Baixou o preço: ${product.marca} ${product.modelo}`,
+      texto: `De ${brl(alert.priceCents)} por ${brl(product.priceCents)}${off >= 1 ? ` (${off}% a menos)` : ""}.${product.estoque > 0 ? "" : " No momento está esgotado."}`,
+      link: `/produto.html?id=${encodeURIComponent(product.rowKey)}`,
+    });
+    await storage.save("alerts", { ...alert, notifiedAt: new Date().toISOString() }, alert.etag);
+  }
+  return due.length;
+}
+export async function priceWatchers(storage) {
+  const counts = new Map();
+  for (const a of await storage.list("alerts")) if (!a.notifiedAt && isPrice(a)) counts.set(a.productId, (counts.get(a.productId) || 0) + 1);
   return counts;
 }

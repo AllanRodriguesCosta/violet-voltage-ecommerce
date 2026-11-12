@@ -1,0 +1,68 @@
+VIOLET VOLTAGE - FERRAMENTAS, CONTAS E BIBLIOTECAS
+==================================================
+
+Ultima atualizacao: 12/11/2026 (etapa 17 da Fase 3).
+
+Regra do projeto: custo zero. Nenhuma conta com forma de pagamento cadastrada,
+nenhum plano pago, nenhuma biblioteca paga. Tarefas pendentes que usam estas
+ferramentas: docs/PENDENCIAS-MANUAIS.txt.
+
+Legenda: [OK] ja configurado | [MANUAL] precisa de acao do Allan ou do Codex |
+[FUTURO] so quando a etapa indicada for entregue.
+
+1. AMBIENTE LOCAL (computador do Allan / Codex)
+-----------------------------------------------
+[OK]     Node.js 22 ou mais novo (o CI usa Node 24). Conferir: node --version
+[OK]     npm (vem com o Node). Instalar dependencias: npm ci
+[OK]     Git, com acesso ao repositorio AllanRodriguesCosta/violet-voltage-ecommerce
+[MANUAL] Arquivo .env na raiz (ignorado pelo Git). Nomes das variaveis usadas
+         pelo servidor (os valores ficam so no .env e no Render):
+           DATABASE_URL, DATABASE_SSL, DATABASE_CA_CERT (opcional),
+           JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_NAME,
+           DEV_MEMORY_STORAGE, PORT, NODE_ENV
+         [FUTURO etapa 20] GEMINI_API_KEY
+[MANUAL] Lighthouse: nao instalar no projeto; rodar com npx (tarefa T03).
+
+Comandos uteis (na raiz do projeto):
+  npm ci             instala exatamente o que esta no package-lock.json
+  npm test           testes (o teste PostgreSQL usa PGlite, ja nas devDependencies)
+  npm run lint       ESLint
+  npm run seed       carga do catalogo (precisa das fotos; ver T06)
+  npm run db:migrate cria/confere as tabelas
+
+2. CONTAS E SERVICOS GRATUITOS
+------------------------------
+[OK]     GitHub: repositorio e CI (GitHub Actions, workflow quality.yml).
+[OK]     Render (plano gratuito): hospeda o site. As variaveis de ambiente do
+         item 1 ficam em Render > servico > Environment.
+[OK]     Supabase (plano gratuito): banco PostgreSQL. As imagens dos produtos
+         ficam no proprio banco. Nao expor o schema violet_voltage pela Data API.
+[FUTURO etapa 20] Google AI Studio (Gemini, plano gratuito):
+         1. Entrar em https://aistudio.google.com com uma conta Google.
+         2. "Get API key" > criar chave. NAO ativar faturamento (billing) nem
+            cadastrar cartao: sem isso nao ha cobranca, so limites de uso.
+         3. Colocar a chave como GEMINI_API_KEY no .env local e no Render
+            (Environment). Nunca no codigo, em commits ou no chat.
+         4. Lembrete: no plano gratuito o Google pode usar o conteudo enviado
+            para melhorar seus produtos. O assistente so envia a pergunta e
+            dados do catalogo, nunca dados pessoais.
+         Sem a chave o assistente continua funcionando com a PLN local.
+
+3. BIBLIOTECAS (package.json)
+-----------------------------
+[OK] Producao: express, helmet, express-rate-limit, cookie-parser,
+     jsonwebtoken, bcryptjs, multer, pg, dotenv.
+[OK] Desenvolvimento: eslint, globals, prettier, @electric-sql/pglite.
+
+Etapas 17 a 20: NENHUMA biblioteca nova prevista.
+- A PLN local do assistente (normalizacao, intencao, entidades, dialogo) e
+  escrita em JavaScript puro dentro do projeto.
+- O Gemini sera chamado com o fetch nativo do Node, sem SDK.
+
+Se no futuro uma biblioteca for necessaria, o Copilot a registra aqui, porque
+so quem tem internet no computador local consegue regenerar o
+package-lock.json:
+  Formato: [MANUAL] npm install <pacote>@<versao>  - motivo - etapa
+  Depois: rodar npm test, commitar package.json e package-lock.json juntos em
+  uma branch propria e abrir pull request.
+(nenhuma no momento)

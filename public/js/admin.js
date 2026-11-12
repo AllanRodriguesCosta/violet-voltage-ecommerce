@@ -2,9 +2,36 @@ import { icon } from "./icons.js";
 import { api, send, money, productImage, escapeHtml as esc, bindForm, toast, requireUser, normalize, categories } from "./common.js";
 import { orderCardHTML, statuses, statusClass } from "./orders.js";
 import { confirmDialog, emptyState, errorState, loadingHTML } from "./components.js";
+import { specFields } from "./specs.js";
 
 const field = (key, label, value = "", type = "text", attributes = "") =>
   `<div class="field"><label for="edit-${key}">${label}</label><input id="edit-${key}" name="${key}" type="${type}" value="${esc(value)}" ${attributes}></div>`;
+// Ficha técnica no painel: campos gerados pelo esquema da categoria escolhida.
+function specsEditor(categoria, ficha = {}) {
+  const fields = specFields(categoria);
+  return `<fieldset class="admin-specs"><legend>Ficha técnica (opcional)</legend><p class="form-help">Usada nos filtros do catálogo e na página do produto.</p><div class="form-grid">${fields
+    .map((f) => {
+      const id = `spec-${f.key}`;
+      const value = ficha?.[f.key];
+      if (f.type === "multi")
+        return `<fieldset class="field span-two"><legend>${esc(f.label)}</legend><div class="facet-list">${f.values.map((v) => `<label class="facet"><input type="checkbox" name="ficha.${f.key}" value="${esc(v)}"${value?.includes(v) ? " checked" : ""}><span>${esc(v)}</span></label>`).join("")}</div></fieldset>`;
+      if (f.type === "enum")
+        return `<div class="field"><label for="${id}">${esc(f.label)}</label><select id="${id}" name="ficha.${f.key}"><option value="">Não informado</option>${f.values.map((v) => `<option${v === value ? " selected" : ""}>${esc(v)}</option>`).join("")}</select></div>`;
+      if (f.type === "number")
+        return `<div class="field"><label for="${id}">${esc(f.label)}</label><input id="${id}" name="ficha.${f.key}" type="number" min="${f.min}" max="${f.max}" step="any" value="${esc(value ?? "")}"></div>`;
+      return `<div class="field"><label for="${id}">${esc(f.label)}</label><input id="${id}" name="ficha.${f.key}" type="text" maxlength="${f.maxLength}" value="${esc(value ?? "")}"></div>`;
+    })
+    .join("")}</div></fieldset>`;
+}
+function readSpecs(form, categoria) {
+  const ficha = {};
+  for (const f of specFields(categoria)) {
+    const inputs = [...form.querySelectorAll(`[name="ficha.${f.key}"]`)];
+    if (f.type === "multi") ficha[f.key] = inputs.filter((i) => i.checked).map((i) => i.value);
+    else if (inputs[0]?.value !== "") ficha[f.key] = f.type === "number" ? Number(inputs[0].value) : inputs[0].value;
+  }
+  return ficha;
+}
 const shortDate = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
 function chart(days) {
   const width = 560;
@@ -171,14 +198,20 @@ export async function adminPage(user) {
   function edit(item = {}) {
     const editor = document.querySelector("#editor");
     const product = tab === "products";
-    editor.innerHTML = `<form class="admin-form" id="record-form"><h3>${item.id ? "Editar" : "Cadastrar"} ${product ? "produto" : "cliente"}</h3><div class="form-grid">${product ? `${field("marca", "Marca", item.marca, "text", 'required maxlength="200"')}${field("modelo", "Modelo", item.modelo, "text", 'required maxlength="200"')}<div class="field"><label for="edit-categoria">Categoria</label><select id="edit-categoria" name="categoria">${categories.map((c) => `<option${c === item.categoria ? " selected" : ""}>${c}</option>`).join("")}</select></div>${field("preco", "Preço (R$)", item.priceCents ? (item.priceCents / 100).toFixed(2) : "", "number", 'required min="0.01" max="1000000" step="0.01"')}${field("estoque", "Estoque", item.estoque ?? 0, "number", 'required min="0" max="100000" step="1"')}<div class="field span-two"><label for="edit-descricao">Descrição</label><textarea id="edit-descricao" name="descricao" required minlength="10" maxlength="4000">${esc(item.descricao || "")}</textarea></div>` : `${field("nome", "Nome completo", item.nome, "text", 'required minlength="2" maxlength="200"')}${field("email", "E-mail", item.email, "email", item.id ? "readonly" : 'required maxlength="200"')}${field("telefone", "Telefone", item.telefone, "tel", 'maxlength="30"')}${field("endereco", "Endereço", item.endereco, "text", 'maxlength="500"')}${item.id ? "" : field("senha", "Senha inicial (10 a 72 caracteres)", "", "password", 'required minlength="10" maxlength="72" autocomplete="new-password"')}`}</div><div class="row"><button type="submit">Salvar ${product ? "produto" : "cliente"}</button><button type="button" id="cancel-edit" class="secondary">Cancelar</button></div></form>`;
+    editor.innerHTML = `<form class="admin-form" id="record-form"><h3>${item.id ? "Editar" : "Cadastrar"} ${product ? "produto" : "cliente"}</h3><div class="form-grid">${product ? `${field("marca", "Marca", item.marca, "text", 'required maxlength="200"')}${field("modelo", "Modelo", item.modelo, "text", 'required maxlength="200"')}<div class="field"><label for="edit-categoria">Categoria</label><select id="edit-categoria" name="categoria">${categories.map((c) => `<option${c === item.categoria ? " selected" : ""}>${c}</option>`).join("")}</select></div>${field("preco", "Preço (R$)", item.priceCents ? (item.priceCents / 100).toFixed(2) : "", "number", 'required min="0.01" max="1000000" step="0.01"')}${field("estoque", "Estoque", item.estoque ?? 0, "number", 'required min="0" max="100000" step="1"')}<div class="field span-two"><label for="edit-descricao">Descrição</label><textarea id="edit-descricao" name="descricao" required minlength="10" maxlength="4000">${esc(item.descricao || "")}</textarea></div><div class="span-two" id="edit-specs">${specsEditor(item.categoria || categories[0], item.ficha)}</div>` : `${field("nome", "Nome completo", item.nome, "text", 'required minlength="2" maxlength="200"')}${field("email", "E-mail", item.email, "email", item.id ? "readonly" : 'required maxlength="200"')}${field("telefone", "Telefone", item.telefone, "tel", 'maxlength="30"')}${field("endereco", "Endereço", item.endereco, "text", 'maxlength="500"')}${item.id ? "" : field("senha", "Senha inicial (10 a 72 caracteres)", "", "password", 'required minlength="10" maxlength="72" autocomplete="new-password"')}`}</div><div class="row"><button type="submit">Salvar ${product ? "produto" : "cliente"}</button><button type="button" id="cancel-edit" class="secondary">Cancelar</button></div></form>`;
     document.querySelector("#cancel-edit").onclick = () => (editor.innerHTML = "");
     const form = document.querySelector("#record-form");
     form.querySelector("input").focus();
+    // Trocar a categoria troca os campos da ficha (os valores anteriores não se aplicam).
+    form.elements.categoria?.addEventListener("change", (event) => {
+      form.querySelector("#edit-specs").innerHTML = specsEditor(event.target.value, event.target.value === item.categoria ? item.ficha : {});
+    });
     bindForm(form, async (data) => {
       if (product) {
         data.priceCents = Math.round(Number(data.preco) * 100);
         data.estoque = Number(data.estoque);
+        for (const key of Object.keys(data)) if (key.startsWith("ficha.")) delete data[key];
+        data.ficha = readSpecs(form, data.categoria);
       }
       await send(`/admin/${tab}${item.id ? `/${item.id}` : ""}`, data, item.id ? "PATCH" : "POST");
       toast("Registro salvo.", { type: "success" });

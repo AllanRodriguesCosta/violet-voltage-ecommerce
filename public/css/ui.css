@@ -25,6 +25,11 @@
 .product-specs dl div { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
 .product-specs dt { color: var(--muted); }
 .product-specs dd { margin: 0; font-weight: 500; }
+.genre-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.genre-links .chip { text-decoration: none; min-height: 32px; }
+.admin-specs { grid-column: 1 / -1; border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px 16px; margin: 0; }
+.admin-specs legend { font-weight: 600; padding: 0 6px; }
+.admin-specs .facet-list { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 
 /* Carrinho e checkout */
 .cart-layout { display: grid; gap: 20px; align-items: start; }

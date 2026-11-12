@@ -1,5 +1,6 @@
 import { icon } from "./icons.js";
 import { themeSwitchHTML } from "./theme.js";
+import { specText } from "./specs.js";
 
 export const categories = [
   "Guitarras",
@@ -105,7 +106,7 @@ export function searchProducts(products, query) {
   return products
     .map((p) => {
       const title = normalize(`${p.marca} ${p.modelo}`);
-      const facets = normalize(`${title} ${p.categoria}`);
+      const facets = normalize(`${title} ${p.categoria} ${specText(p)}`);
       const all = `${facets} ${normalize(p.descricao)}`;
       if (!terms.every((t) => all.includes(t))) return null;
       let score = 0;
@@ -139,7 +140,7 @@ export function editDistance(a, b) {
 export function correctQuery(products, query) {
   const vocabulary = new Set(categories.map(normalize));
   for (const p of products)
-    for (const word of normalize(`${p.marca} ${p.modelo} ${p.categoria} ${p.descricao || ""}`).split(/[^a-z0-9]+/))
+    for (const word of normalize(`${p.marca} ${p.modelo} ${p.categoria} ${p.descricao || ""} ${specText(p)}`).split(/[^a-z0-9]+/))
       if (word.length >= 3) vocabulary.add(word);
   const words = [...vocabulary];
   let changed = false;

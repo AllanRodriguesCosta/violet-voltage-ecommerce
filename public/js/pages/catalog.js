@@ -1,6 +1,7 @@
 import { icon } from "../icons.js";
 import { catalogProducts, searchProducts, correctQuery, rememberSearch, categories, escapeHtml as esc } from "../common.js";
 import { productCard, skeletonCards, bindCards, categoryInfo, emptyState, errorState } from "../components.js";
+import { specFields, specList, SPEC_FIELDS } from "../specs.js";
 
 const presets = [
   ["Até R$ 100", "", "100"],
@@ -13,6 +14,9 @@ const sorters = {
   "price-desc": (a, b) => b.priceCents - a.priceCents,
   name: (a, b) => `${a.marca} ${a.modelo}`.localeCompare(`${b.marca} ${b.modelo}`, "pt-BR"),
 };
+// Filtros da ficha técnica: sem categoria, só os comuns (estilo e gêneros); com categoria, os dela.
+const commonFilters = SPEC_FIELDS.Guitarras.filter((f) => f.key === "estilo" || f.key === "generos");
+const filterFields = (categoria) => (categoria ? specFields(categoria) : commonFilters).filter((f) => f.filter);
 const reais = (value) => (/^\d{1,7}$/.test(value || "") ? Number(value) : null);
 
 export default async function catalog() {
@@ -32,7 +36,12 @@ export default async function catalog() {
     estoque: initial.get("estoque") === "1",
     sort: sorters[initial.get("sort")] ? initial.get("sort") : "default",
     exato: initial.get("exato") === "1",
+    specs: {},
   };
+  for (const field of filterFields(state.categoria)) {
+    const values = (initial.get(field.key) || "").split(",").filter((v) => field.values.includes(v));
+    if (values.length) state.specs[field.key] = values;
+  }
   // Termo efetivamente usado: o digitado ou a correção ("Você quis dizer") quando ele não acha nada.
   let activeQuery = state.q;
   let corrected = null;
@@ -56,8 +65,24 @@ export default async function catalog() {
         (skip === "marca" || !state.marcas.length || state.marcas.includes(p.marca)) &&
         (!priceOk || min === null || p.priceCents >= min * 100) &&
         (!priceOk || max === null || p.priceCents <= max * 100) &&
-        (!state.estoque || p.estoque > 0),
+        (!state.estoque || p.estoque > 0) &&
+        Object.entries(state.specs).every(([key, values]) => skip === key || !values.length || specList(p, key).some((v) => values.includes(v))),
     );
+  }
+  function specFacets() {
+    $("#facet-specs").innerHTML = filterFields(state.categoria)
+      .map((field) => {
+        const base = filtered(field.key);
+        const chosen = state.specs[field.key] || [];
+        const options = field.values
+          .map((v) => [v, base.filter((p) => specList(p, field.key).includes(v)).length])
+          .filter(([v, n]) => n > 0 || chosen.includes(v));
+        if (!options.length) return "";
+        return `<fieldset><legend>${esc(field.label)}</legend><div class="facet-list">${options
+          .map(([v, n]) => `<label class="facet"><input type="checkbox" name="spec" data-key="${esc(field.key)}" value="${esc(v)}"${chosen.includes(v) ? " checked" : ""}><span>${esc(v)}</span><span class="facet-count">${n}</span></label>`)
+          .join("")}</div></fieldset>`;
+      })
+      .join("");
   }
   function facets() {
     const byCategory = filtered("categoria");
@@ -88,6 +113,7 @@ export default async function catalog() {
     $("#price-presets").innerHTML = presets
       .map(([label, min, max]) => `<button type="button" class="chip${state.min === min && state.max === max ? " active" : ""}" data-min="${min}" data-max="${max}" aria-pressed="${state.min === min && state.max === max}">${label}</button>`)
       .join("");
+    specFacets();
   }
   function applied() {
     const chips = [];
@@ -97,6 +123,7 @@ export default async function catalog() {
     if (state.min || state.max)
       chips.push(["preco", state.min && state.max ? `R$ ${state.min} a R$ ${state.max}` : state.min ? `A partir de R$ ${state.min}` : `Até R$ ${state.max}`]);
     if (state.estoque) chips.push(["estoque", "Em estoque"]);
+    for (const [key, values] of Object.entries(state.specs)) for (const v of values) chips.push([`spec:${key}:${v}`, v]);
     $("#applied-filters").innerHTML = chips.length
       ? chips.map(([key, label]) => `<button type="button" class="chip chip-removable" data-remove="${esc(key)}" aria-label="Remover filtro ${esc(label)}">${esc(label)}${icon("close", { size: 14 })}</button>`).join("") + '<button type="button" class="text-button" data-remove="all">Limpar tudo</button>'
       : "";
@@ -112,6 +139,7 @@ export default async function catalog() {
     if (state.min) params.set("min", state.min);
     if (state.max) params.set("max", state.max);
     if (state.estoque) params.set("estoque", "1");
+    for (const [key, values] of Object.entries(state.specs)) if (values.length) params.set(key, values.join(","));
     if (state.sort !== "default") params.set("sort", state.sort);
     if (state.q && state.exato) params.set("exato", "1");
     history.replaceState(null, "", `${location.pathname}${params.size ? `?${params}` : ""}`);
@@ -151,8 +179,14 @@ export default async function catalog() {
     applied();
     syncUrl();
   }
+  // Trocar de categoria mantém só os filtros de ficha que a nova categoria também tem.
+  function setCategory(categoria) {
+    state.categoria = categoria;
+    const keep = new Set(filterFields(categoria).map((f) => f.key));
+    for (const key of Object.keys(state.specs)) if (!keep.has(key)) delete state.specs[key];
+  }
   function reset() {
-    Object.assign(state, { q: "", categoria: "", marcas: [], min: "", max: "", estoque: false });
+    Object.assign(state, { q: "", categoria: "", marcas: [], min: "", max: "", estoque: false, specs: {} });
     search.value = "";
     form.reset();
     $("#catalog-q-clear").hidden = true;
@@ -161,10 +195,15 @@ export default async function catalog() {
   function removeFilter(key) {
     if (key === "all") return reset();
     if (key === "q") search.value = state.q = "";
-    else if (key === "categoria") state.categoria = "";
+    else if (key === "categoria") setCategory("");
     else if (key === "preco") form.elements.min.value = form.elements.max.value = state.min = state.max = "";
     else if (key === "estoque") form.elements.estoque.checked = state.estoque = false;
     else if (key.startsWith("marca:")) state.marcas = state.marcas.filter((m) => m !== key.slice(6));
+    else if (key.startsWith("spec:")) {
+      const [, field, value] = key.split(":");
+      state.specs[field] = (state.specs[field] || []).filter((v) => v !== value);
+      if (!state.specs[field].length) delete state.specs[field];
+    }
     $("#catalog-q-clear").hidden = !search.value;
     render();
     sort.focus();
@@ -203,7 +242,12 @@ export default async function catalog() {
   });
   form.addEventListener("change", (event) => {
     const t = event.target;
-    if (t.name === "categoria") state.categoria = t.value;
+    if (t.name === "categoria") setCategory(t.value);
+    else if (t.name === "spec") {
+      const values = [...form.querySelectorAll(`input[name=spec][data-key="${t.dataset.key}"]:checked`)].map((i) => i.value);
+      if (values.length) state.specs[t.dataset.key] = values;
+      else delete state.specs[t.dataset.key];
+    }
     else if (t.name === "marca") state.marcas = [...form.querySelectorAll("input[name=marca]:checked")].map((i) => i.value);
     else if (t.name === "estoque") state.estoque = t.checked;
     else if (t.name === "min" || t.name === "max") state[t.name] = t.value.trim();

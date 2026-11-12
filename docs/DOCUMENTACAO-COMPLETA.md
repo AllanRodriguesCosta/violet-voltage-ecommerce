@@ -227,6 +227,10 @@ pedidas no comprovante (`requestExchange` e `answerExchange` em
 `src/services/orders.js`). Frases não entendidas ficam anônimas por 90 dias
 (`src/services/assistant-log.js`, tabela `assistant_log`).
 
+Etapa 25: `src/assistant/gemini.js` chama o Gemini gratuito só para frases não
+entendidas, com dados da loja e retorno à resposta local; entrada por voz pelo
+navegador no chat.
+
 ### Conta e administração
 
 Cadastro, login/logout, perfil e histórico privado. Cadastro público não cria
@@ -342,7 +346,7 @@ da loja, pedidos e setup. Etapas 17 (ficha técnica e base de conhecimento), 18
 [ASSISTENTE.md](ASSISTENTE.md)) e 20 (conta, privacidade e Central de Ajuda)
 prontas. Etapas 21 (comparador, kits, compatibilidade e comprovante), 22
 (serviços, guias, filtros do segmento, aviso de preço e perguntas) 23 (painel
-e SEO) e 24 (assistente que age) prontas; a etapa 25 (Gemini opcional e voz) está no
+e SEO), 24 (assistente que age) e 25 (Gemini opcional e voz) prontas; ver o
 [roadmap](ROADMAP.md). Tarefas manuais ou do Codex: `docs/PENDENCIAS-MANUAIS.txt` e
 `docs/FERRAMENTAS-E-BIBLIOTECAS.txt`.
 

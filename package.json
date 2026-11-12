@@ -14,7 +14,8 @@
     "seed": "node scripts/seed.js",
     "fotos:conferir": "node scripts/check-photos.js",
     "agente:eval": "node scripts/assistant-eval.js",
-    "db:migrate": "node scripts/migrate.js"
+    "db:migrate": "node scripts/migrate.js",
+    "agente:smoke": "node scripts/assistant-smoke.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

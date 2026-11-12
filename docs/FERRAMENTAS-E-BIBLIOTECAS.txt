@@ -1,7 +1,7 @@
 VIOLET VOLTAGE - FERRAMENTAS, CONTAS E BIBLIOTECAS
 ==================================================
 
-Ultima atualizacao: 12/11/2026 (etapa 20 da Fase 3).
+Ultima atualizacao: 12/11/2026 (etapa 25 da Fase 3).
 
 Regra do projeto: custo zero. Nenhuma conta com forma de pagamento cadastrada,
 nenhum plano pago, nenhuma biblioteca paga. Tarefas pendentes que usam estas
@@ -20,7 +20,9 @@ Legenda: [OK] ja configurado | [MANUAL] precisa de acao do Allan ou do Codex |
            DATABASE_URL, DATABASE_SSL, DATABASE_CA_CERT (opcional),
            JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_NAME,
            DEV_MEMORY_STORAGE, PORT, NODE_ENV
-         [FUTURO etapa 21] GEMINI_API_KEY
+         [MANUAL etapa 25] GEMINI_API_KEY (opcional), GEMINI_MODEL (opcional,
+         padrao gemini-flash-latest), GEMINI_TIMEOUT_MS (padrao 6000),
+         GEMINI_PER_MINUTE (padrao 8 chamadas por minuto)
 [MANUAL] Lighthouse: nao instalar no projeto; rodar com npx (tarefa T03).
 [MANUAL] Fotos (T05): qualquer editor que exporte PNG. Para reduzir o peso,
          sem instalar nada e sem custo: https://squoosh.app (OxiPNG) ou
@@ -43,7 +45,7 @@ Comandos uteis (na raiz do projeto):
          item 1 ficam em Render > servico > Environment.
 [OK]     Supabase (plano gratuito): banco PostgreSQL. As imagens dos produtos
          ficam no proprio banco. Nao expor o schema violet_voltage pela Data API.
-[FUTURO etapa 21] Google AI Studio (Gemini, plano gratuito):
+[MANUAL etapa 25] Google AI Studio (Gemini, plano gratuito), tarefa T07:
          1. Entrar em https://aistudio.google.com com uma conta Google.
          2. "Get API key" > criar chave. NAO ativar faturamento (billing) nem
             cadastrar cartao: sem isso nao ha cobranca, so limites de uso.
@@ -60,11 +62,14 @@ Comandos uteis (na raiz do projeto):
      jsonwebtoken, bcryptjs, multer, pg, dotenv.
 [OK] Desenvolvimento: eslint, globals, prettier, @electric-sql/pglite.
 
-Etapas 17 a 21: NENHUMA biblioteca nova prevista.
+Etapas 17 a 25: NENHUMA biblioteca nova.
 - A PLN local do assistente (normalizacao, intencao, entidades, dialogo) e
   escrita em JavaScript puro dentro do projeto (src/assistant/, pronta na
   etapa 19).
-- O Gemini sera chamado com o fetch nativo do Node, sem SDK.
+- O Gemini e chamado com o fetch nativo do Node, sem SDK
+  (src/assistant/gemini.js).
+- A entrada por voz usa a Web Speech API do proprio navegador (Chrome, Edge,
+  Safari); sem biblioteca e sem custo. No Firefox o botao nao aparece.
 
 Se no futuro uma biblioteca for necessaria, o Copilot a registra aqui, porque
 so quem tem internet no computador local consegue regenerar o

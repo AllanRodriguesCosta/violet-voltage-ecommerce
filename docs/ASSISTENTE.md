@@ -1,4 +1,4 @@
-# Assistente de compras (Fase 3, etapas 19, 20 e 24)
+# Assistente de compras (Fase 3, etapas 19, 20, 24 e 25)
 
 Agente conversacional da Violet Voltage, feito com processamento de linguagem
 natural (PLN) local em JavaScript, sem bibliotecas, sem chave de API e sem
@@ -150,5 +150,20 @@ Limitações conhecidas:
 - Frases muito longas e com vários pedidos ao mesmo tempo atendem só ao
   principal.
 
-A etapa 25 acrescenta o Gemini gratuito só para as frases que a PLN local não
-entender, mantendo as respostas presas aos dados da loja.
+## Gemini e voz (etapa 25)
+
+- Com `GEMINI_API_KEY` no ambiente, as frases que a PLN local não entende
+  (`entendeu: false`) vão ao Gemini do plano gratuito, sem e-mail, telefone ou
+  código de pedido, junto com o catálogo resumido (ID, produto, categoria,
+  preço, estoque e ficha) e as regras da Central de Ajuda. O modelo devolve
+  JSON com texto e até 3 IDs; o servidor descarta IDs que não existem ou estão
+  esgotados e remove HTML. Erro, tempo limite (6 s), limite por minuto (8) ou
+  resposta inválida mantêm a resposta local. A conversa mostra "Resposta
+  gerada com o Gemini (Google)".
+- Sem a chave, nada muda: tudo continua local e sem custo.
+- Conferência com a chave real: `npm run agente:smoke` e
+  `npm run agente:eval -- --gemini` (tarefa T07).
+- Microfone: Web Speech API do navegador, em português. A fala preenche o
+  campo e o cliente confere e envia; o primeiro uso explica que o navegador
+  pode usar um serviço de voz externo. Sem suporte (Firefox), o botão não
+  aparece.

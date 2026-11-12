@@ -20,6 +20,7 @@ import { stockState, wishLabel, handleWish, installmentText, productCard, bindCa
 import { delivery, shipping, FREE_SHIPPING_CENTS, maxInstallments, installmentValue } from "../pricing.js";
 import { alertButtonHTML } from "../alerts.js";
 import { openCart } from "../drawer.js";
+import { compareButtonHTML } from "../compare.js";
 
 function structuredData(p, name) {
   document.querySelector('script[type="application/ld+json"]')?.remove();
@@ -213,7 +214,7 @@ export default async function detail() {
 ${p.estoque ? `<form id="add-product" class="buy-box"><div class="quantity-field"><label for="quantidade">Quantidade</label><div class="stepper stepper-lg" role="group" aria-label="Quantidade"><button type="button" data-qty="-1" aria-label="Diminuir quantidade"${p.estoque ? "" : " disabled"}>${icon("minus", { size: 18 })}</button><input id="quantidade" name="quantidade" type="number" value="1" min="1" max="${max}" inputmode="numeric" required${p.estoque ? "" : " disabled"}><button type="button" data-qty="1" aria-label="Aumentar quantidade"${p.estoque > 1 ? "" : " disabled"}>${icon("plus", { size: 18 })}</button></div></div><div class="buy-actions"><button type="submit"${p.estoque ? "" : " disabled"}>${icon("bag", { size: 18 })}Adicionar ao carrinho</button><button type="button" class="secondary" data-buy-now${p.estoque ? "" : " disabled"}>Comprar agora</button></div></form>` : `<div class="buy-box buy-box-out">${alertButtonHTML(p)}<p class="small muted">Sem estoque agora. Ative o aviso e acompanhe em Minha conta.</p></div>`}
 <p class="cart-feedback" role="status"></p>
 <ul class="perk-list delivery-list">${Object.entries(delivery).map(([key, d]) => `<li>${icon(key === "retirada" ? "store" : "truck", { size: 18 })}<span><strong>${d.label}</strong><small>${d.prazo}</small></span><span class="option-price">${(key === "padrao" && p.priceCents >= FREE_SHIPPING_CENTS) || !shipping[key] ? "Grátis" : money(shipping[key])}</span></li>`).join("")}<li>${icon("refresh", { size: 18 })}<span><strong>Troca em até 7 dias</strong><small>Após o recebimento</small></span></li></ul><p class="small muted">Frete grátis na entrega padrão para compras a partir de ${money(FREE_SHIPPING_CENTS)}.</p>
-<div class="detail-actions"><button type="button" class="text-button" data-share>${icon("share", { size: 18 })}Compartilhar</button><a class="text-link" href="/catalogo.html?categoria=${encodeURIComponent(p.categoria)}">Mais ${esc(p.categoria.toLowerCase())} ${icon("arrowRight", { size: 16 })}</a></div>
+<div class="detail-actions"><button type="button" class="text-button" data-share>${icon("share", { size: 18 })}Compartilhar</button>${compareButtonHTML(p, { className: "text-button compare-toggle" })}<a class="text-link" href="/catalogo.html?categoria=${encodeURIComponent(p.categoria)}">Mais ${esc(p.categoria.toLowerCase())} ${icon("arrowRight", { size: 16 })}</a></div>
 <section class="product-specs"><h2>Sobre este equipamento</h2><dl><div><dt>Marca</dt><dd>${esc(p.marca)}</dd></div><div><dt>Modelo</dt><dd>${esc(p.modelo)}</dd></div><div><dt>Categoria</dt><dd>${esc(p.categoria)}</dd></div>${specsHTML(p)}<div><dt>Código</dt><dd>${esc(p.id)}</dd></div></dl></section></section>`;
     pushRecent(p.id);
     structuredData(p, name);

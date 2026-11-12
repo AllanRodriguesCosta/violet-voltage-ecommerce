@@ -520,4 +520,46 @@ export const seedSpecs = {
     tipo: "Suporte de chão",
     compatibilidade: "Até 3 guitarras, baixos ou violões",
   },
+  // Etapa 21: fontes de alimentação para pedais
+  "Fonte 9V 1A Pedal Power": {
+    estilo: "Atemporal",
+    generos: [],
+    tipo: "Fonte",
+    compatibilidade: "1 pedal de 9V (plug centro negativo)",
+  },
+  "JP-02 Fonte Isolada 10 Saídas": {
+    estilo: "Atemporal",
+    generos: [],
+    tipo: "Fonte",
+    compatibilidade: "Até 10 pedais de 9V (plug centro negativo)",
+  },
 };
+
+// Etapa 21: alimentação dos pedais, usada pelo aviso de compatibilidade do carrinho.
+const alimentacao = {
+  "IR Box": "Bateria recarregável",
+  "Ultra Chorus": "Fonte 9V ou bateria",
+  "Kit Pedalboard com Bag": "Não se aplica",
+  "Pedalboard Wood Stage": "Não se aplica",
+  "TONEX MultiFX": "Fonte inclusa",
+  GE100: "Fonte inclusa",
+  "Tube Screamer TS9": "Fonte 9V ou bateria",
+  "BD-2 Blues Driver": "Fonte 9V ou bateria",
+  "DS-1 Distortion": "Fonte 9V ou bateria",
+  "Big Muff Pi": "Fonte 9V ou bateria",
+  "Cry Baby GCB95": "Fonte 9V ou bateria",
+  "Carbon Copy": "Fonte 9V",
+  "DD-8 Digital Delay": "Fonte 9V ou bateria",
+  "Holy Grail Neo": "Fonte 9V",
+  "TU-3 Chromatic Tuner": "Fonte 9V ou bateria",
+  "Dyna Comp": "Fonte 9V ou bateria",
+  "TR-2 Tremolo": "Fonte 9V ou bateria",
+  "RAT 2": "Fonte 9V ou bateria",
+  "MT-2 Metal Zone": "Fonte 9V ou bateria",
+  "HX Stomp": "Fonte inclusa",
+  "Ditto Looper": "Fonte 9V",
+};
+for (const [modelo, value] of Object.entries(alimentacao)) {
+  if (!seedSpecs[modelo]) throw new Error(`Ficha ausente: ${modelo}`);
+  seedSpecs[modelo].alimentacao = value;
+}

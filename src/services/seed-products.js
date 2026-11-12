@@ -683,6 +683,25 @@ const expansion = [
     8,
     "Suporte de chão dobrável para três instrumentos, com apoios emborrachados que protegem o acabamento.",
   ],
+  // Etapa 21: fontes para pedais (o carrinho avisa quando um pedal precisa de fonte).
+  [
+    "acessorios/violet-voltage-fonte-9v.png",
+    "Acessórios",
+    "Violet Voltage",
+    "Fonte 9V 1A Pedal Power",
+    6990,
+    30,
+    "Fonte de 9V e 1A com plug centro negativo, para alimentar um pedal sem depender de bateria.",
+  ],
+  [
+    "acessorios/joyo-jp-02.png",
+    "Acessórios",
+    "Joyo",
+    "JP-02 Fonte Isolada 10 Saídas",
+    44990,
+    10,
+    "Fonte com 10 saídas isoladas de 9V, que alimenta o pedalboard inteiro sem chiado entre os pedais. Acompanha os cabos.",
+  ],
 ];
 // Lote original (fotos já entregues) seguido da expansão da etapa 18.
 export const ORIGINAL_SEED_COUNT = catalog.length;

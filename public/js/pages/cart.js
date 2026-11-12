@@ -9,10 +9,13 @@ import {
   setCart,
   getWishlist,
   setWishlist,
+  addCart,
   toast,
 } from "../common.js";
 import { emptyState, freeShippingHTML, installmentText, productCard, bindCards, errorState } from "../components.js";
 import { maxInstallments, installmentValue } from "../pricing.js";
+import { cartAdvice } from "../compat.js";
+import { kitProgress, kitPrice } from "../kits.js";
 
 export async function cartData() {
   const cart = getCart();
@@ -40,7 +43,26 @@ export const fetchQuote = (entrega, cupom) =>
   send("/checkout/quote", { items: getCart().map(({ id, quantidade }) => ({ id, quantidade })), entrega, ...(cupom ? { cupom } : {}) });
 export function totalsHTML(quote) {
   const count = maxInstallments(quote.totalCents);
-  return `<div class="summary-line"><span>Subtotal</span><span>${money(quote.subtotalCents)}</span></div><div class="summary-line"><span>Frete</span><span>${quote.freteCents ? money(quote.freteCents) : '<strong class="free">Grátis</strong>'}</span></div>${quote.descontoCents ? `<div class="summary-line discount"><span>Desconto${quote.cupom ? ` (${esc(quote.cupom.codigo)})` : ""}</span><span>− ${money(quote.descontoCents)}</span></div>` : ""}<div class="summary-line summary-total"><span>Total</span><span>${money(quote.totalCents)}</span></div>${count > 1 ? `<p class="installments-note">ou até ${count}x de ${money(installmentValue(quote.totalCents, count))} sem juros no cartão</p>` : ""}`;
+  return `<div class="summary-line"><span>Subtotal</span><span>${money(quote.subtotalCents)}</span></div>${(quote.kits || []).map((k) => `<div class="summary-line discount"><span>Desconto ${esc(k.nome)}${k.quantidade > 1 ? ` (${k.quantidade}x)` : ""}</span><span>− ${money(k.descontoCents)}</span></div>`).join("")}<div class="summary-line"><span>Frete</span><span>${quote.freteCents ? money(quote.freteCents) : '<strong class="free">Grátis</strong>'}</span></div>${quote.descontoCents ? `<div class="summary-line discount"><span>Desconto${quote.cupom ? ` (${esc(quote.cupom.codigo)})` : ""}</span><span>− ${money(quote.descontoCents)}</span></div>` : ""}<div class="summary-line summary-total"><span>Total</span><span>${money(quote.totalCents)}</span></div>${count > 1 ? `<p class="installments-note">ou até ${count}x de ${money(installmentValue(quote.totalCents, count))} sem juros no cartão</p>` : ""}`;
+}
+
+// O que falta para o equipamento funcionar e kits a um ou dois itens de completar.
+export function adviceHTML(items, products) {
+  const lines = items.filter((i) => i.product);
+  const advice = cartAdvice(lines, products);
+  const byId = new Map(products.map((p) => [p.id, p]));
+  const progress = kitProgress(lines.map((i) => i.id))
+    .map(({ kit, faltam }) => ({ kit, faltam: faltam.map((id) => byId.get(id)), price: kitPrice(kit, products) }))
+    .filter(({ faltam, price }) => price && faltam.every((p) => p?.estoque > 0));
+  if (!advice.length && !progress.length) return "";
+  const suggestion = (p) =>
+    p ? `<div class="advice-pick"><img src="${esc(productImage(p))}" alt="" width="48" height="48" loading="lazy"><a href="/produto.html?id=${encodeURIComponent(p.id)}">${esc(p.marca)} ${esc(p.modelo)}</a><strong>${money(p.priceCents)}</strong><button type="button" class="secondary small-button" data-advice-add="${esc(p.id)}" aria-label="Adicionar ${esc(p.marca)} ${esc(p.modelo)} ao carrinho">${icon("plus", { size: 16 })}Adicionar</button></div>` : "";
+  const tone = { essencial: "alert", aviso: "info", dica: "sparkle" };
+  return `<section class="panel advice-panel" aria-labelledby="advice-title"><h2 id="advice-title">${icon("plug", { size: 20 })}Antes de fechar o pedido</h2><ul class="advice-list">${progress
+    .map(({ kit, faltam, price }) => `<li class="advice advice-kit"><span class="advice-icon">${icon("gift", { size: 18 })}</span><div><strong>Falta${faltam.length > 1 ? "m" : ""} ${faltam.length} ${faltam.length === 1 ? "item" : "itens"} para completar o ${esc(kit.nome)}</strong><p>Com o kit completo você ganha ${kit.descontoPct}% de desconto (${money(price.descontoCents)}) automaticamente.</p>${faltam.map(suggestion).join("")}</div></li>`)
+    .join("")}${advice
+    .map((a) => `<li class="advice advice-${a.nivel}"><span class="advice-icon">${icon(tone[a.nivel], { size: 18 })}</span><div><strong>${esc(a.titulo)}</strong><p>${esc(a.texto)}</p>${suggestion(byId.get(a.sugestao))}</div></li>`)
+    .join("")}</ul></section>`;
 }
 
 export default async function cartPage() {
@@ -143,11 +165,13 @@ export default async function cartPage() {
     }
     const count = items.reduce((s, i) => s + i.quantidade, 0);
     const categoriesInCart = new Set(items.map((i) => i.product?.categoria));
+    // Itens já sugeridos no painel "Antes de fechar o pedido" não se repetem aqui.
+    const advised = new Set(cartAdvice(items.filter((i) => i.product), products).map((a) => a.sugestao));
     const suggestions = products
-      .filter((p) => p.estoque > 0 && !categoriesInCart.has(p.categoria) && !items.some((i) => i.id === p.id))
+      .filter((p) => p.estoque > 0 && !categoriesInCart.has(p.categoria) && !items.some((i) => i.id === p.id) && !advised.has(p.id))
       .sort((a, b) => a.priceCents - b.priceCents)
       .slice(0, 4);
-    container.innerHTML = `<div class="cart-layout"><div class="cart-main"><div class="panel ship-panel">${freeShippingHTML(subtotal(items))}</div><section class="panel cart-list" aria-label="Itens do carrinho"><h2 class="cart-count">${count} ${count === 1 ? "item" : "itens"}</h2>${items
+    container.innerHTML = `<div class="cart-layout"><div class="cart-main"><div class="panel ship-panel">${freeShippingHTML(subtotal(items))}</div><section class="panel cart-list" aria-label="Itens do carrinho"><h2 class="cart-count" tabindex="-1">${count} ${count === 1 ? "item" : "itens"}</h2>${items
       .map((i) => {
         const p = i.product;
         const name = p ? `${p.marca} ${p.modelo}` : "Produto removido ou indisponível";
@@ -155,7 +179,7 @@ export default async function cartPage() {
         const problem = !p ? "Este produto não está mais disponível." : i.quantidade > p.estoque ? `Restam ${p.estoque} em estoque; ajuste a quantidade.` : "";
         return `<article class="cart-item"><img src="${esc(productImage(p))}" alt="" width="96" height="96"><div class="cart-item-info"><h3>${p ? `<a href="/produto.html?id=${encodeURIComponent(p.id)}">${esc(name)}</a>` : esc(name)}</h3><span class="small muted">${money(p?.priceCents || 0)} cada${p && installmentText(p.priceCents) ? ` · ${installmentText(p.priceCents)}` : ""}</span>${problem ? `<p class="field-error">${problem}</p>` : ""}<div class="cart-actions"><div class="stepper" role="group" aria-label="Quantidade de ${esc(name)}"><button type="button" data-step="-1" data-id="${esc(i.id)}" aria-label="Diminuir quantidade"${i.quantidade <= 1 ? " disabled" : ""}>${icon("minus", { size: 16 })}</button><output aria-live="polite">${i.quantidade}</output><button type="button" data-step="1" data-id="${esc(i.id)}" data-max="${max}" aria-label="Aumentar quantidade"${i.quantidade >= max ? " disabled" : ""}>${icon("plus", { size: 16 })}</button></div>${p ? `<button type="button" class="text-button" data-later="${esc(i.id)}">${icon("heart", { size: 16 })}Salvar para depois</button>` : ""}<button type="button" class="text-button" data-remove-item="${esc(i.id)}">${icon("trash", { size: 16 })}Remover</button></div></div><strong class="price">${money((p?.priceCents || 0) * i.quantidade)}</strong></article>`;
       })
-      .join("")}</section></div><aside class="panel summary-panel" aria-live="polite"><div class="loading" role="status">Calculando…</div></aside></div>${suggestions.length ? `<section class="cart-suggestions" aria-labelledby="suggestions-title"><h2 id="suggestions-title">Complete seu setup</h2><div class="product-grid product-grid-wide">${suggestions.map((p, i) => productCard(p, i)).join("")}</div></section>` : ""}`;
+      .join("")}</section>${adviceHTML(items, products)}</div><aside class="panel summary-panel" aria-live="polite"><div class="loading" role="status">Calculando…</div></aside></div>${suggestions.length ? `<section class="cart-suggestions" aria-labelledby="suggestions-title"><h2 id="suggestions-title">Complete seu setup</h2><div class="product-grid product-grid-wide">${suggestions.map((p, i) => productCard(p, i)).join("")}</div></section>` : ""}`;
     const grid = container.querySelector(".cart-suggestions .product-grid");
     if (grid) bindCards(grid, () => products);
     container.querySelectorAll("[data-step]").forEach((b) =>
@@ -165,6 +189,14 @@ export default async function cartPage() {
         if (!item) return render();
         item.quantidade = Math.max(1, item.quantidade + Number(b.dataset.step));
         save(cart);
+      }),
+    );
+    container.querySelectorAll("[data-advice-add]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const product = products.find((p) => p.id === b.dataset.adviceAdd);
+        if (!product || !addCart(product, 1, { notify: false })) return;
+        toast(`${product.marca} ${product.modelo} adicionado ao carrinho.`, { type: "success" });
+        render().then(() => container.querySelector(".cart-count")?.focus());
       }),
     );
     container.querySelectorAll("[data-remove-item]").forEach((b) =>

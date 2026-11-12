@@ -38,8 +38,8 @@ export function orderNotice(order, status) {
   return {
     tipo: "pedido",
     titulo: pickup && status === "Enviado" ? `Pedido #${shortId(order.rowKey)} liberado para retirada` : `Pedido #${shortId(order.rowKey)} ${label}`,
-    texto: pickup && status === "Enviado" ? "Retire na loja com um documento com foto e o número do pedido." : texto,
-    link: "/minha-conta.html#pedidos",
+    texto: pickup && status === "Enviado" ? "Retire na loja com um documento com foto e o número do pedido." : order.rastreio && status === "Enviado" ? `${texto} Código de rastreio: ${order.rastreio}.` : texto,
+    link: status === "Cancelado" ? "/minha-conta.html#pedidos" : `/pedido.html?id=${encodeURIComponent(order.rowKey)}`,
   };
 }
 

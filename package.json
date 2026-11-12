@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "seed": "node scripts/seed.js",
     "fotos:conferir": "node scripts/check-photos.js",
+    "agente:eval": "node scripts/assistant-eval.js",
     "db:migrate": "node scripts/migrate.js"
   },
   "dependencies": {

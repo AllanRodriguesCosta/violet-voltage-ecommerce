@@ -33,7 +33,10 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/services/bootstrap.js` | Criação/atualização privada do administrador |
 | `src/services/seed*.js` | Manifesto, fichas técnicas e carga dos 75 produtos/imagens (modo parcial para fotos em andamento) |
 | `scripts/check-photos.js` | `npm run fotos:conferir`: confere as fotos locais sem alterar nada |
-| `src/knowledge/genres.js` | Base de conhecimento musical por gênero (para o assistente da Fase 3) |
+| `src/knowledge/genres.js` | Base de conhecimento musical por gênero, usada pelo assistente |
+| `src/assistant/` | Assistente de compras: pré-processamento, classificador Naive Bayes, entidades, recomendação, setup, dúvidas, contexto e avaliação ([ASSISTENTE.md](ASSISTENTE.md)) |
+| `public/js/assistant.js` | Painel do assistente (só para quem está logado) |
+| `scripts/assistant-eval.js` | `npm run agente:eval`: acerto por intenção em frases fora do treino |
 | `src/repositories/factory.js`, `postgres.js` | Seleção de backend e persistência PostgreSQL |
 | `src/repositories/memory.js` | Armazenamento volátil de desenvolvimento e testes |
 | `src/http/static.js` | Compressão Brotli/gzip de arquivos e JSON e cache HTTP por tipo de arquivo |
@@ -301,9 +304,10 @@ Apresentação: [demonstração](DEMONSTRACAO.md). Evidências: [validação](..
 Fase 3 (assistente de compras), decidida em 12/11/2026: sem custo, motor
 híbrido (PLN local sempre ativa e Gemini gratuito opcional, com retorno à PLN
 local), só para usuários logados, um agente unificado para recomendação, dúvidas
-da loja, pedidos e setup. A etapa 17 (ficha técnica e base de conhecimento) está
-pronta; as etapas 18 a 20 estão no [roadmap](ROADMAP.md). Nenhum agente está
-instalado ainda. Tarefas manuais ou do Codex: `docs/PENDENCIAS-MANUAIS.txt` e
+da loja, pedidos e setup. Etapas 17 (ficha técnica e base de conhecimento), 18
+(catálogo ampliado) e 19 (assistente com PLN local, ver
+[ASSISTENTE.md](ASSISTENTE.md)) prontas; a etapa 20 (Gemini opcional) está no
+[roadmap](ROADMAP.md). Tarefas manuais ou do Codex: `docs/PENDENCIAS-MANUAIS.txt` e
 `docs/FERRAMENTAS-E-BIBLIOTECAS.txt`.
 
 Fase 2 do [roadmap](ROADMAP.md), em andamento: amplia o antigo Roadmap 2

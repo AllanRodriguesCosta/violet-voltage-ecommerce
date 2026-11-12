@@ -1,7 +1,7 @@
 VIOLET VOLTAGE - PENDENCIAS MANUAIS (ALLAN E CODEX)
 ====================================================
 
-Ultima atualizacao: 12/11/2026 (etapa 24 da Fase 3).
+Ultima atualizacao: 12/11/2026 (etapa 25 da Fase 3).
 
 PARA QUE SERVE
 --------------
@@ -29,9 +29,9 @@ REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
    usado. Nao tente "consertar" mudando codigo.
 
 ----------------------------------------------------------------------
-T01 [ ] ALLAN - Publicar as etapas 17 a 24 no Render
+T01 [ ] ALLAN - Publicar as etapas 17 a 25 no Render
 ----------------------------------------------------------------------
-Depois do merge dos pull requests das etapas 17 a 24 em main:
+Depois do merge dos pull requests das etapas 17 a 25 em main:
 - As etapas 22 e 24 criam as tabelas violet_voltage.questions e
   violet_voltage.assistant_log. O
   servidor cria sozinho ao iniciar; se preferir, rode antes "npm run db:migrate"
@@ -74,6 +74,8 @@ Como conferir no site publicado:
   carrinho com so uma guitarra, o botao do assistente mostra um numero (dicas).
   Num pedido concluido, o comprovante tem "Troca ou devolucao"; o painel
   responde em Pedidos e mostra as frases nao entendidas em Assistente.
+- Etapa 25: no Chrome ou no Edge, o assistente tem o botao de microfone; no
+  primeiro uso aparece o aviso de privacidade. O Gemini so liga com a T07.
 Os 58 produtos novos so aparecem no site depois da T06 (seed com as fotos).
 Resultado:
 
@@ -153,16 +155,36 @@ Depois, confira no site publicado: /catalogo.html mostra "Mostrando 24 de N".
 Resultado:
 
 ----------------------------------------------------------------------
-T07 [ ] ALLAN - Chave gratuita do Gemini (etapa 21, ainda nao necessaria)
+T07 [ ] ALLAN/CODEX - Ligar o Gemini gratuito (etapa 25, opcional)
 ----------------------------------------------------------------------
-So quando o Copilot entregar a etapa 21. Passos em
-docs/FERRAMENTAS-E-BIBLIOTECAS.txt, secao "Google AI Studio".
+Sem a chave, o assistente funciona so com a PLN local (como hoje).
+1. ALLAN: criar a chave no Google AI Studio sem faturamento (passos em
+   docs/FERRAMENTAS-E-BIBLIOTECAS.txt, secao "Google AI Studio").
+2. Colocar GEMINI_API_KEY no .env local (nunca em arquivo do repositorio).
+3. CODEX, na raiz do projeto:
+     npm run agente:smoke           (3 perguntas; deve terminar com
+                                     "Gemini respondendo.")
+     npm run agente:eval -- --gemini (mostra as respostas do Gemini para as
+                                     frases que a PLN local nao entendeu)
+   Anote em "Resultado" quantas responderam e se alguma resposta inventou
+   produto, preco ou regra (isso nao deveria acontecer; se acontecer, copie a
+   frase e a resposta). Nao mostre a chave em nenhum print.
+4. Se o modelo padrao (gemini-flash-latest) nao existir na sua conta, escolha
+   outro gratuito em aistudio.google.com e coloque em GEMINI_MODEL no .env.
+5. ALLAN: no Render > Environment, criar GEMINI_API_KEY (e GEMINI_MODEL, se
+   usou) e fazer o deploy. Conferir em /api/health: "assistente" deve
+   mostrar "pln-local+gemini". No site, logado, mande ao assistente uma
+   frase fora do comum (ex.: "quero o som de surf dos anos 60"): se o Gemini
+   responder, aparece o aviso "Resposta gerada com o Gemini (Google)".
+6. Lembrete do plano gratuito: o Google pode usar o conteudo enviado para
+   melhorar os produtos dele. A loja envia so a frase (sem e-mail, telefone
+   ou codigo de pedido) e o catalogo. A pagina de privacidade ja avisa.
 Resultado:
 
 ----------------------------------------------------------------------
 T08 [ ] ALLAN - Revisar os produtos novos (opcional)
 ----------------------------------------------------------------------
-Os 53 produtos novos usam modelos reais. Fichas, descricoes e precos foram
+Os 58 produtos novos usam modelos reais. Fichas, descricoes e precos foram
 escritos a partir de especificacoes conhecidas dos fabricantes e de precos
 aproximados, sem consulta a lojas (precos academicos). Se algo nao bater com
 o produto da foto escolhida (ex.: outra versao do modelo, cor, potencia,

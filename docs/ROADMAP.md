@@ -404,11 +404,17 @@ instrumento usado na troca fica de fora.
 
 ### 25. Reforço com Gemini gratuito e voz
 
-- [ ] Camada opcional com `fetch` nativo, `GEMINI_API_KEY` só no ambiente,
-      tempo limite e retorno à PLN local.
-- [ ] Scripts `npm run agente:smoke` e `npm run agente:eval` para o Codex rodar
-      com a chave real.
-- [ ] Entrada por voz no chat (recurso do navegador), com aviso de privacidade.
+- [x] Camada opcional (`src/assistant/gemini.js`) com `fetch` nativo,
+      `GEMINI_API_KEY` só no ambiente (no cabeçalho, nunca na URL), tempo
+      limite, limite próprio por minuto e retorno à resposta local em qualquer
+      falha. Só recebe frases que a PLN local não entendeu, anonimizadas, com o
+      catálogo e as regras da Central de Ajuda; produtos sugeridos são
+      conferidos no catálogo e a resposta aparece marcada na conversa.
+- [x] Scripts `npm run agente:smoke` e `npm run agente:eval -- --gemini` para o
+      Codex rodar com a chave real (tarefa T07).
+- [x] Entrada por voz no chat (Web Speech API do navegador), com aviso de
+      privacidade no primeiro uso; a fala preenche o campo e o envio continua
+      sendo do cliente. Privacidade e ajuda atualizadas.
 
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

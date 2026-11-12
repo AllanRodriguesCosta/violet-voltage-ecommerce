@@ -1,3 +1,24 @@
+# Fase 3, etapa 25 — 12/11/2026
+
+- Testes novos em `tests/stage25.test.js` (3), com Gemini falso (sem chave nem
+  internet): configuração só pelo ambiente e limites; limite por minuto;
+  resposta validada (texto sem HTML, IDs inexistentes ou esgotados
+  descartados, bloco de código removido), chave no cabeçalho e não na URL,
+  frase anonimizada, catálogo e regras no contexto; erro 429, JSON inválido,
+  texto vazio, tempo limite e ausência de chave caem para a resposta local;
+  na API, frase entendida não chama o Gemini, frase não entendida volta com
+  `fonte: "gemini"` e acima do limite fica a resposta local.
+- No navegador (9 verificações, Gemini falso e reconhecimento de voz
+  simulado): resposta marcada como do Gemini, cartões do catálogo, botão de
+  microfone, aviso de privacidade no primeiro uso, fala vira texto sem envio
+  automático, resposta à mensagem falada, segundo uso sem aviso e navegador sem
+  reconhecimento de voz sem o botão.
+- O Gemini real não foi chamado aqui (sem chave): fica para a T07.
+- Acessibilidade em claro, escuro, 375 e 1440 px e regressão dos roteiros do
+  assistente sem problemas.
+
+---
+
 # Fase 3, etapa 24 — 12/11/2026
 
 - Testes novos em `tests/stage24.test.js` (6): página, carrinho e favoritos

@@ -1,0 +1,189 @@
+VIOLET VOLTAGE - CONTEXTO PARA O CODEX (O QUE MUDOU EM 12/11/2026)
+=================================================================
+
+Ultima atualizacao: 12/11/2026, depois do PR #20 (main 62dcdc2, CI verde).
+
+LEIA PRIMEIRO
+-------------
+- Este arquivo resume tudo o que o Copilot entregou em 12/11/2026 (etapas 17
+  a 25, PRs #12 a #20), para o Codex entender o projeto antes de executar as
+  tarefas de docs/PENDENCIAS-MANUAIS.txt.
+- Divisao de trabalho: o Copilot escreve o codigo e os testes direto no
+  GitHub (uma branch e um PR por etapa, merge so com CI verde). O Codex
+  executa no computador do Allan o que precisa de maquina local: fotos, seed,
+  chave do Gemini, deploy, Lighthouse e testes com o site no ar.
+- Regras para o Codex: nao alterar src/, public/ nem tests/ (descreva o
+  problema e o Allan repassa ao Copilot); nunca mostrar ou commitar .env,
+  chaves ou URLs de banco; marcar o resultado de cada tarefa em
+  PENDENCIAS-MANUAIS.txt numa branch propria com PR.
+- Regras do projeto que o codigo segue: custo zero; precos em centavos;
+  sem notas, estrelas ou avaliacoes; nenhum arquivo de public/ pode conter as
+  palavras proibidas checadas por teste (a loja deve parecer real, so
+  "Projeto academico" no rodape); CSP sem scripts inline; nenhuma biblioteca
+  nova foi adicionada hoje.
+
+LINHA DO TEMPO DE HOJE
+----------------------
+PR  Etapa  Conteudo
+#12  17    Ficha tecnica por categoria, filtros da ficha, base de generos
+#13  18    Catalogo ampliado para 75 produtos, paginas de 24, generos na home
+#14  19    Assistente com PLN local (sem chave, sem custo)
+#15  20    Conta: trocar senha, baixar dados, excluir conta; Central de Ajuda
+           com fonte unica
+#16  21    Comparador, kits com desconto, compatibilidade no carrinho,
+           comprovante do pedido com rastreio
+#17  22    Servicos (regulagem, cordas, garantia), guias e glossario, filtros
+           de mao/cordas/captadores, aviso de queda de preco, perguntas e
+           respostas nos produtos
+#18  23    Indicadores do painel e SEO no servidor
+#19  24    Assistente que age, troca/devolucao pelo comprovante, registro
+           anonimo das frases nao entendidas
+#20  25    Gemini gratuito opcional e entrada por voz no assistente
+Decisoes do Allan (12/11): sem ferramentas musicais (afinador, metronomo,
+acordes) nesta loja, porque serao um site de estudos separado no futuro; sem
+avaliacao de instrumento usado na troca.
+
+O QUE MUDOU POR AREA (ETAPAS 21 A 25)
+-------------------------------------
+Catalogo (src/services/seed-products.js e seed-specs.js)
+- 80 produtos. IDs estaveis: demo-076 e demo-077 sao fontes de pedal (etapa
+  21); demo-078 a demo-080 sao guitarras canhota, 7 cordas e EMG ativos
+  (etapa 22). Os IDs antigos nao mudaram.
+- Ficha nova: pedais tem "alimentacao"; guitarras tem mao, cordas,
+  captadores, trastes e escala. Acessorios aceitam o tipo "Fonte".
+- Fotos pendentes: 58 (docs/FOTOS-PENDENTES.txt).
+
+Carrinho, checkout e pedido
+- Kits: public/js/kits.js e a fonte unica (vitrine e servidor). Desconto
+  automatico com o kit completo; o cupom vale sobre o resto. O pedido guarda
+  descontoKitsCents e kits.
+- Compatibilidade: public/js/compat.js (cabo, amplificador, fonte 9V, patch,
+  pedalboard, correia, cordas, kit quase completo).
+- Servicos: public/js/services.js. Item do carrinho pode ter
+  servicos: ["regulagem", "cordas", "garantia"]; o servidor valida a
+  categoria e cobra por unidade; o cupom nao incide sobre servicos. O pedido
+  guarda servicosCents e os servicos em cada item.
+- Pedido: previsao de entrega em dias uteis, codigo de rastreio
+  VV#########BR ao marcar "Enviado", comprovante em /pedido.html.
+- Troca ou devolucao: pedida no comprovante ate 7 dias depois de
+  "Concluido", uma por vez; a loja aprova ou recusa na aba Pedidos do
+  painel; o cliente recebe notificacoes. Fica no pedido, campo "trocas".
+
+Paginas novas
+- /comparar.html (comparador), /kits.html, /pedido.html (comprovante),
+  /guias.html (6 guias e glossario de 48 termos, gerados de
+  src/knowledge/guides.js e glossary.js).
+
+Conta, avisos e perguntas
+- Avisos agora tem "tipo": "estoque" (padrao) ou "preco" (queda de preco,
+  dispara uma vez quando o painel baixa o preco).
+- Perguntas e respostas nos produtos (src/services/questions.js): cliente
+  logado pergunta, a loja responde ou oculta na aba Perguntas do painel, so
+  as respondidas aparecem. Excluir a conta apaga as pendentes e deixa as
+  respondidas como "Cliente".
+- A copia dos dados inclui avisos de preco e perguntas.
+
+Painel (admin.html)
+- Novos indicadores: vendas por categoria, mais vendidos, servicos e kits,
+  cancelamentos, interesse em preco, perguntas aguardando.
+- Novas abas: Perguntas e Assistente (frases nao entendidas, anonimas, 90
+  dias, com botao para limpar).
+
+SEO (src/http/seo.js)
+- /produto.html?id=..., /catalogo.html?categoria=... e a home saem do
+  servidor com titulo, descricao, Open Graph, canonico e JSON-LD (Product com
+  a ficha, BreadcrumbList, OnlineStore e SearchAction). robots.txt bloqueia
+  comprovante e carrinho.
+
+Assistente (detalhes em docs/ASSISTENTE.md)
+- src/assistant/actions.js: ficha do produto aberto ("quantos trastes tem
+  essa?"), comparacao, adicionar e cupom com botao de confirmacao, "o que
+  falta no meu carrinho?", kit no orcamento, historico de compras, preco dos
+  favoritos, glossario, caminho da troca, filtros de mao/cordas/ativos/
+  trastes.
+- O navegador envia pagina (tipo e id), carrinho (ids e quantidades) e
+  favoritos (ids); o servidor confere tudo no catalogo.
+- Frases nao entendidas: src/services/assistant-log.js (e-mail, codigo de
+  pedido e telefone viram marcadores; apagadas depois de 90 dias).
+- Gemini (src/assistant/gemini.js): so com GEMINI_API_KEY; so para frases
+  nao entendidas; resposta presa ao catalogo e as regras; erro, demora ou
+  limite mantem a resposta local; a conversa mostra "Resposta gerada com o
+  Gemini (Google)". /api/health mostra "assistente": "pln-local" ou
+  "pln-local+gemini".
+- Voz: botao de microfone (Web Speech API do navegador) com aviso de
+  privacidade no primeiro uso; nao envia sozinho. No Firefox nao aparece.
+- Avaliacao: npm run agente:eval -> 94,8% em 116 frases, 48/48 entidades,
+  3/3 conversas.
+
+BANCO DE DADOS
+--------------
+- migrations/001-postgres.sql ganhou duas tabelas (CREATE IF NOT EXISTS, nao
+  apaga nada): violet_voltage.questions e violet_voltage.assistant_log.
+- O servidor cria as tabelas sozinho ao iniciar (storage.init). Para
+  conferir antes, "npm run db:migrate" com o .env de producao.
+- Nenhuma coluna existente mudou: os campos novos (trocas, kits, servicos,
+  rastreio, tipo do aviso) ficam dentro do JSON dos registros.
+
+VARIAVEIS DE AMBIENTE NOVAS (TODAS OPCIONAIS)
+---------------------------------------------
+GEMINI_API_KEY      chave gratuita do Google AI Studio (sem faturamento)
+GEMINI_MODEL        padrao gemini-flash-latest
+GEMINI_TIMEOUT_MS   padrao 6000
+GEMINI_PER_MINUTE   padrao 8
+Sem elas o site funciona igual, so com a PLN local.
+
+ROTAS NOVAS DA API (lista completa no README)
+---------------------------------------------
+GET  /api/orders/:id                 comprovante (so o dono)
+POST /api/orders/:id/troca           pedir troca ou devolucao
+GET/POST /api/products/:id/questions perguntas (publicas so as respondidas)
+PATCH /api/admin/questions/:id       responder ou ocultar
+PATCH /api/admin/orders/:id/troca    aprovar ou recusar troca
+GET/DELETE /api/admin/assistente     frases nao entendidas
+POST /api/alerts com tipo "preco"; DELETE /api/alerts/:id?tipo=preco
+POST /api/assistente aceita pagina, carrinho e favoritos
+
+COMANDOS UTEIS (NA RAIZ DO PROJETO)
+-----------------------------------
+npm ci                          dependencias (nenhuma nova hoje)
+npm test                        testes (112; o postgres.test.js precisa do
+                                PGlite das devDependencies)
+npm run lint                    lint
+npm run agente:eval             acerto do assistente
+npm run agente:eval -- --gemini idem, mais as respostas do Gemini (com chave)
+npm run agente:smoke            3 perguntas ao Gemini com a chave real
+npm run fotos:conferir          fotos prontas e faltando
+npm run seed -- --parcial       carrega so os produtos que ja tem foto
+npm run db:migrate              confere/cria as tabelas no PostgreSQL
+
+COMO O COPILOT VALIDOU (E O QUE NAO VALIDOU)
+--------------------------------------------
+- Validado: testes automaticos, lint, avaliacao do assistente, roteiros no
+  navegador (Playwright, servidor em memoria com o catalogo do manifesto) e
+  auditoria de acessibilidade em tema claro e escuro, 375 e 1440 px. Detalhes
+  por etapa em VALIDACAO.md (na raiz).
+- NAO validado: o site publicado no Render depois das etapas 17 a 25 (T01),
+  o seed com as fotos novas (T05/T06), o Gemini com chave real (T07),
+  Lighthouse do site publicado (T03) e o microfone num navegador real (no
+  teste o reconhecimento de voz foi simulado).
+
+ORDEM SUGERIDA PARA O CODEX
+---------------------------
+1. T01 deploy das etapas 17 a 25 e conferencia de /api/health.
+2. T05/T06 quando chegarem fotos (modo parcial ja serve).
+3. T07 se o Allan quiser ligar o Gemini.
+4. T03, T04 e T09 (Lighthouse, capturas, frases reais no assistente).
+Mais detalhes de cada tarefa: docs/PENDENCIAS-MANUAIS.txt.
+
+ONDE ESTA CADA COISA
+--------------------
+docs/ROADMAP.md                    etapas e o que cada uma entregou
+docs/ASSISTENTE.md                 arquitetura e avaliacao do assistente
+docs/DOCUMENTACAO-COMPLETA.md      descricao tecnica completa
+docs/PENDENCIAS-MANUAIS.txt        tarefas do Allan e do Codex (T01-T09)
+docs/FERRAMENTAS-E-BIBLIOTECAS.txt contas, variaveis e bibliotecas
+docs/FOTOS-PENDENTES.txt           as 58 fotos que faltam
+docs/COLOCAR-NO-AR.md              banco, seed e Render
+docs/DEMONSTRACAO.md               roteiro para apresentar o projeto
+VALIDACAO.md (raiz)                evidencias de cada etapa
+README.md (raiz)                   funcionalidades, API e variaveis

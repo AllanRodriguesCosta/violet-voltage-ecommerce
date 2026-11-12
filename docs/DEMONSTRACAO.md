@@ -19,6 +19,24 @@ arquivos de ambiente, painel de credenciais ou senhas em uma gravação.
    transação PostgreSQL e identificação de pedidos para evitar duplicação.
 8. **Limites:** mostre que o projeto possui testes e documenta o que não oferece.
 
+### Recursos das etapas 17 a 25 (escolha 3 ou 4 conforme o tempo)
+
+- **Ficha e filtros:** catálogo de guitarras filtrado por captação, mão ou
+  número de cordas; ficha com trastes e escala.
+- **Comparador:** "Comparar" em 2 ou 3 guitarras e a tabela com as diferenças.
+- **Kits e compatibilidade:** adicione uma guitarra sozinha e mostre o aviso
+  "Falta o cabo da guitarra"; depois adicione um kit e o desconto no resumo.
+- **Serviços:** regulagem ou garantia estendida no item do carrinho.
+- **Pedido:** comprovante com previsão de entrega e, depois de concluído,
+  "Troca ou devolução".
+- **Guias:** `/guias.html` e a busca no glossário.
+- **Assistente (logado):** na página de um produto, "quantos trastes tem
+  essa?", "compara com a Jackson JS32" e "adiciona a segunda no carrinho"
+  (com botão de confirmação); no carrinho, "o que falta no meu carrinho?".
+  Explique que roda com PLN local, sem custo, e que o Gemini é opcional.
+- **Painel:** indicadores por categoria e mais vendidos, aba Perguntas e aba
+  Assistente (frases não entendidas, anônimas).
+
 Não conclua pedidos repetidamente no catálogo público só para gravar vídeos:
 isso altera estoque e histórico. Use a demonstração local para esse roteiro.
 
@@ -52,10 +70,12 @@ evidência de verificação visual concluída.
 ## Texto-base para apresentar o projeto
 
 “Violet Voltage é um projeto de portfólio full stack com JavaScript, Express e
-PostgreSQL. Desenvolvi catálogo, autenticação, administração e um fluxo de pedido
-demonstrativo com cálculo e controle de estoque no servidor. A evolução inclui
-migração do armazenamento, testes automatizados e melhorias de experiência.”
+PostgreSQL. Desenvolvi catálogo com ficha técnica e filtros, comparador, kits,
+carrinho que confere compatibilidade, checkout com cálculo e estoque no
+servidor, comprovante, trocas, perguntas e respostas e um painel com
+indicadores. O assistente de compras usa processamento de linguagem natural
+feito no próprio projeto, sem custo, e pode ser reforçado pelo Gemini gratuito.
+Tudo com testes automatizados, CI e verificação de acessibilidade.”
 
-Adapte o texto ao que estiver efetivamente publicado. Não anuncie agentes,
-avaliação formal de acessibilidade ou CI aprovado antes de implementá-los e
-verificá-los.
+Adapte o texto ao que estiver efetivamente publicado: só cite o Gemini se a
+chave estiver configurada (T07) e as fotos novas depois do seed (T05/T06).

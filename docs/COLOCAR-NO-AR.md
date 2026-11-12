@@ -30,6 +30,8 @@ Copie `.env.example` para `.env` pelo editor. Se o arquivo já existir, atualize
 | `ADMIN_EMAIL` | E-mail administrativo escolhido |
 | `ADMIN_PASSWORD` | Senha privada de 12 a 72 caracteres, até 72 bytes UTF-8 |
 | `ADMIN_NAME` | Nome do administrador |
+| `GEMINI_API_KEY` | Opcional (etapa 25): chave gratuita do Google AI Studio, sem faturamento. Vazio = assistente só com PLN local |
+| `GEMINI_MODEL` | Opcional: padrão `gemini-flash-latest` |
 
 `DATABASE_CA_CERT` pode ficar vazio se a cadeia do certificado já for confiável. Se a conexão apresentar erro de certificado, obtenha a CA oficial no painel de configurações do banco e configure o PEM completo nessa variável, entre aspas no `.env`. Ela aceita `\n` entre linhas. Não desative a validação TLS. [Documentação de SSL](https://supabase.com/docs/guides/platform/ssl-enforcement).
 
@@ -44,9 +46,9 @@ npm run seed
 npm start
 ```
 
-Pare se algum comando falhar. Variáveis já definidas no terminal têm prioridade sobre `.env`. A migração confirma a estrutura; o seed deve informar 75 produtos e 75 imagens (com `npm run seed -- --parcial`, só os que já têm foto, e a lista dos que faltam). Repetir o seed restaura os estoques e preços do manifesto.
+Pare se algum comando falhar. Variáveis já definidas no terminal têm prioridade sobre `.env`. A migração confirma a estrutura (inclusive as tabelas `questions` e `assistant_log`, criadas nas etapas 22 e 24 sem apagar nada); o seed deve informar 80 produtos e 80 imagens (com `npm run seed -- --parcial`, só os que já têm foto, e a lista dos que faltam). Repetir o seed restaura os estoques e preços do manifesto.
 
-Abra `http://localhost:3000/api/health`: deve conter `data.storage: "postgresql"`. Confira home, imagens e login. Ctrl+C para parar; os dados permanecem no banco.
+Abra `http://localhost:3000/api/health`: deve conter `data.storage: "postgresql"` e `data.assistente` (`pln-local`, ou `pln-local+gemini` com a chave). Confira home, imagens e login. Ctrl+C para parar; os dados permanecem no banco.
 
 ## 3. Atualizar o Render
 
@@ -54,11 +56,11 @@ Abra `http://localhost:3000/api/health`: deve conter `data.storage: "postgresql"
 2. Abra o **Web Service** existente no Render.
 3. Configure **Build Command** `npm ci`, **Start Command** `npm start`, Node 24 e **Health Check Path** `/api/health`.
 4. Em **Environment**, defina `NODE_ENV=production`, `DEV_MEMORY_STORAGE=false`, `DATABASE_SSL=true` e `NODE_VERSION=24`.
-5. Configure privadamente `DATABASE_URL`, `JWT_SECRET` e as três `ADMIN_*`. Use o mesmo banco que recebeu o seed. Se necessário, inclua o PEM completo em `DATABASE_CA_CERT`.
+5. Configure privadamente `DATABASE_URL`, `JWT_SECRET` e as três `ADMIN_*`. Se for usar o Gemini (opcional), inclua `GEMINI_API_KEY`. Use o mesmo banco que recebeu o seed. Se necessário, inclua o PEM completo em `DATABASE_CA_CERT`.
 6. Remova `AZURE_STORAGE_CONNECTION_STRING`, agora sem uso. Deixe o Render fornecer `PORT`.
 7. Salve e publique a versão nova. `render.yaml` foi atualizado, mas serviços configurados manualmente precisam das mudanças no painel.
 8. Na URL HTTPS publicada, abra `/api/health` e confirme `status: "ok"` e `storage: "postgresql"` dentro de `data`.
-9. Confira catálogo, imagens, login, checkout demonstrativo e histórico. Reinicie o serviço e confirme a persistência.
+9. Confira catálogo, imagens, login, checkout demonstrativo e histórico. Das etapas 21 a 25: `/kits.html`, `/comparar.html`, `/guias.html`, comprovante em Minha conta, serviços no carrinho, perguntas no produto, abas Perguntas e Assistente no painel e o assistente logado (roteiro em `docs/PENDENCIAS-MANUAIS.txt`, T01). Reinicie o serviço e confirme a persistência.
 
 As imagens estão no PostgreSQL e não dependem do disco do Render. Não coloque o seed em Build Command ou Start Command.
 
@@ -70,6 +72,7 @@ O Render gratuito adormece por inatividade e pode demorar no primeiro acesso. Co
 - Erro TLS: confira host e CA oficial. Não use `rejectUnauthorized: false` ou `NODE_TLS_REJECT_UNAUTHORIZED=0`.
 - Catálogo vazio: seed não executado nesse banco ou modo memória ainda ativo.
 - Seed não encontra imagem: confira subpastas, nomes e acentos do manifesto.
+- Assistente sem Gemini com a chave configurada: rode `npm run agente:smoke` localmente; confira modelo (`GEMINI_MODEL`) e limites em aistudio.google.com/rate-limit. A resposta local continua funcionando.
 - Login administrativo falha: configure as três `ADMIN_*` e reinicie; bootstrap reaplica os dados.
 
 Compartilhe apenas mensagens sanitizadas ao pedir ajuda, sem capturas de variáveis ou URI de conexão.

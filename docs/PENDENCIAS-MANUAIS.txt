@@ -9,6 +9,7 @@ O codigo e os testes unitarios sao feitos pelo Copilot, direto no repositorio
 do GitHub (uma branch e um pull request por etapa, merge so com o CI verde).
 Este arquivo lista o que o Copilot NAO consegue fazer a partir do GitHub e que
 precisa ser feito no computador do Allan, por ele ou pelo Codex.
+Resumo de tudo que mudou em 12/11/2026 (leia antes): docs/CONTEXTO-CODEX.txt.
 Ferramentas, contas e bibliotecas: docs/FERRAMENTAS-E-BIBLIOTECAS.txt.
 Fotos de produtos novos: docs/FOTOS-PENDENTES.txt (58 fotos, etapas 18, 21 e 22).
 

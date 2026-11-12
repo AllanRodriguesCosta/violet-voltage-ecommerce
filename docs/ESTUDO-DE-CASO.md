@@ -91,10 +91,21 @@ Resultados históricos e limites estão em [VALIDACAO.md](../VALIDACAO.md).
 O [roteiro de demonstração](DEMONSTRACAO.md) orienta uma apresentação com dados
 fictícios, incluindo o painel sem divulgar acesso administrativo.
 
+## Fase 3 (12/11/2026)
+
+Em um dia, nove etapas (17 a 25, PRs #12 a #20), todas com CI verde:
+ficha técnica e catálogo de 80 produtos, assistente de compras com PLN local,
+conta com privacidade, comparador, kits, compatibilidade no carrinho,
+serviços, guias, aviso de preço, perguntas e respostas, SEO no servidor,
+indicadores do painel, trocas pelo comprovante, assistente que age com
+confirmação e reforço opcional com o Gemini gratuito. Decisão de custo zero:
+nenhuma biblioteca nova e nenhum serviço pago. Resumo para quem continua o
+trabalho: [CONTEXTO-CODEX.txt](CONTEXTO-CODEX.txt).
+
 ## Próximos marcos
 
-Executar a Fase 2 do [roadmap](ROADMAP.md): sistema visual, descoberta,
-produto, regras de preço no servidor e ciclo de vida dos pedidos, com uma
-entrega revisada e com CI verde por pull request. Agentes serão uma
-etapa posterior, com função, permissões, custo e avaliações definidos antes da
-implementação. Não fazem parte das capacidades atuais do site.
+Publicar as etapas 17 a 25 no Render, carregar as 58 fotos novas, ligar o
+Gemini se desejado e medir o site publicado (Lighthouse e capturas), conforme
+[PENDENCIAS-MANUAIS.txt](PENDENCIAS-MANUAIS.txt). Ferramentas de estudo
+(afinador, metrônomo, tablaturas) ficam para um site separado, ligado à loja
+depois.

@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { randomBytes } from "node:crypto";
+import { geminiConfig } from "../assistant/gemini.js";
 // Mensagens de configuração nunca incluem valores das variáveis.
 export class ConfigError extends Error {}
 export function configuration(env = process.env) {
@@ -33,5 +34,7 @@ export function configuration(env = process.env) {
     databaseSsl: env.DATABASE_SSL !== "false",
     databaseCa: env.DATABASE_CA_CERT,
     secret: env.JWT_SECRET || randomBytes(48).toString("hex"),
+    // Reforço opcional do assistente; sem GEMINI_API_KEY fica desligado.
+    gemini: geminiConfig(env),
   };
 }

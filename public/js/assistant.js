@@ -31,6 +31,10 @@ function startChips() {
 }
 const safeHref = (href) => (typeof href === "string" && /^\/(?!\/)/.test(href) ? href : "/");
 
+// Entrada por voz (Web Speech API do navegador). No Chrome e no Edge o áudio é
+// transcrito pelo serviço de voz do navegador; o aviso aparece no primeiro uso.
+const Recognition = globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition;
+const VOICE_OK = "vv_voz_ok";
 function load(userId) {
   try {
     const saved = JSON.parse(sessionStorage.getItem(KEY) || "null");
@@ -70,7 +74,8 @@ function messageHTML(m, last) {
         .join("")}</div>`
     : "";
   const chips = last && m.sugestoes?.length ? `<div class="assistant-chips">${m.sugestoes.map((s) => `<button type="button" class="chip" data-assistant-say="${esc(s)}">${esc(s)}</button>`).join("")}</div>` : "";
-  return `<div class="msg msg-bot${m.erro ? " msg-error" : ""}">${text}${cards}${actions}</div>${chips}`;
+  const source = m.fonte === "gemini" ? `<p class="msg-source">${icon("sparkle", { size: 12 })}Resposta gerada com o Gemini (Google) a partir do catálogo da loja. Confira preço e estoque na página do produto.</p>` : "";
+  return `<div class="msg msg-bot${m.erro ? " msg-error" : ""}">${text}${cards}${actions}${source}</div>${chips}`;
 }
 
 export function mountAssistant(user) {
@@ -83,7 +88,7 @@ export function mountAssistant(user) {
 <section class="assistant-panel" id="assistant-panel" role="dialog" aria-modal="false" aria-labelledby="assistant-title" hidden>
   <header class="assistant-head"><span class="assistant-avatar">${icon("sparkle", { size: 18 })}</span><div><h2 id="assistant-title">Assistente Violet</h2><p>Indica equipamentos e tira dúvidas da loja</p></div><button type="button" class="icon-button" data-assistant-reset aria-label="Começar nova conversa">${icon("refresh", { size: 18 })}</button><button type="button" class="icon-button" data-assistant-close aria-label="Fechar assistente">${icon("close", { size: 18 })}</button></header>
   <div class="assistant-log" role="log" aria-live="polite" aria-label="Conversa com o assistente" tabindex="0"></div>
-  <form class="assistant-form"><label class="sr-only" for="assistant-input">Mensagem para o assistente</label><input id="assistant-input" name="mensagem" type="text" maxlength="500" autocomplete="off" enterkeyhint="send" placeholder="Ex.: guitarra vintage para blues até 5 mil"><button type="submit" class="icon-button assistant-send" aria-label="Enviar mensagem">${icon("send", { size: 18 })}</button></form>
+  <form class="assistant-form"><label class="sr-only" for="assistant-input">Mensagem para o assistente</label><input id="assistant-input" name="mensagem" type="text" maxlength="500" autocomplete="off" enterkeyhint="send" placeholder="Ex.: guitarra vintage para blues até 5 mil">${Recognition ? `<button type="button" class="icon-button assistant-mic" data-assistant-mic aria-pressed="false" aria-label="Falar a mensagem">${icon("mic", { size: 18 })}</button>` : ""}<button type="submit" class="icon-button assistant-send" aria-label="Enviar mensagem">${icon("send", { size: 18 })}</button></form><p class="assistant-voice" role="status" aria-live="polite"></p>
   <p class="assistant-note">Respostas automáticas com o catálogo e as regras da loja. Nada é comprado sem você clicar.</p>
 </section>`,
   );
@@ -118,6 +123,7 @@ export function mountAssistant(user) {
   }
   fullScreen.addEventListener("change", () => !panel.hidden && setModal(fullScreen.matches));
   function open(show) {
+    if (!show) listening?.stop();
     panel.hidden = !show;
     setModal(show && fullScreen.matches);
     launcher.setAttribute("aria-expanded", String(show));
@@ -145,7 +151,7 @@ export function mountAssistant(user) {
         favoritos: getWishlist().slice(0, 100),
       });
       state.contexto = r.contexto;
-      state.mensagens.push({ de: "assistente", texto: r.texto, cards: r.cards, acoes: r.acoes, sugestoes: r.sugestoes });
+      state.mensagens.push({ de: "assistente", texto: r.texto, cards: r.cards, acoes: r.acoes, sugestoes: r.sugestoes, fonte: r.fonte });
     } catch (error) {
       state.mensagens.push({ de: "assistente", erro: true, texto: `Não consegui responder agora. ${error.message || "Tente de novo em instantes."}`, sugestoes: [mensagem] });
     }
@@ -157,6 +163,66 @@ export function mountAssistant(user) {
   const cardOf = (id) => state.mensagens.flatMap((m) => m.cards || []).findLast((c) => c.id === id);
 
   launcher.addEventListener("click", () => open(panel.hidden));
+  // Voz: preenche o campo enquanto você fala; enviar continua sendo um toque seu.
+  const mic = panel.querySelector("[data-assistant-mic]");
+  const voiceStatus = panel.querySelector(".assistant-voice");
+  let listening = null;
+  const stopVoice = () => {
+    listening?.stop();
+  };
+  mic?.addEventListener("click", async () => {
+    if (listening) return stopVoice();
+    let agreed = false;
+    try {
+      agreed = localStorage.getItem(VOICE_OK) === "1";
+    } catch {
+      agreed = false;
+    }
+    if (!agreed) {
+      const { confirmDialog } = await import("./components.js");
+      const ok = await confirmDialog({
+        title: "Usar o microfone?",
+        text: "O navegador transcreve a sua fala em texto. No Chrome e no Edge, o áudio é processado pelo serviço de reconhecimento de voz do navegador (Google ou Microsoft). A loja recebe só o texto, como se você tivesse digitado.",
+        confirm: "Usar o microfone",
+        cancel: "Agora não",
+      });
+      if (!ok) return mic.focus();
+      try {
+        localStorage.setItem(VOICE_OK, "1");
+      } catch {
+        /* pergunta de novo na próxima vez */
+      }
+    }
+    const rec = new Recognition();
+    rec.lang = "pt-BR";
+    rec.interimResults = true;
+    rec.maxAlternatives = 1;
+    listening = rec;
+    mic.setAttribute("aria-pressed", "true");
+    mic.setAttribute("aria-label", "Parar de ouvir");
+    mic.classList.add("is-listening");
+    voiceStatus.textContent = "Ouvindo… fale a sua pergunta.";
+    rec.onresult = (event) => {
+      input.value = [...event.results].map((r) => r[0].transcript).join(" ").trim().slice(0, 500);
+    };
+    rec.onerror = (event) => {
+      voiceStatus.textContent = event.error === "not-allowed" || event.error === "service-not-allowed" ? "O microfone foi bloqueado. Libere o acesso nas configurações do navegador." : event.error === "no-speech" ? "Não ouvi nada. Toque no microfone e tente de novo." : "Não foi possível usar a voz agora. Digite a mensagem.";
+    };
+    rec.onend = () => {
+      listening = null;
+      mic.setAttribute("aria-pressed", "false");
+      mic.setAttribute("aria-label", "Falar a mensagem");
+      mic.classList.remove("is-listening");
+      if (input.value.trim() && /Ouvindo/.test(voiceStatus.textContent)) voiceStatus.textContent = "Pronto. Confira o texto e toque em enviar.";
+      input.focus();
+    };
+    try {
+      rec.start();
+    } catch {
+      rec.onend();
+      voiceStatus.textContent = "Não foi possível usar a voz agora. Digite a mensagem.";
+    }
+  });
   // No carrinho, o botão avisa quando falta algo essencial (cabo, amplificador, fonte...).
   if (location.pathname === "/carrinho.html") {
     const hint = async () => {
@@ -176,6 +242,8 @@ export function mountAssistant(user) {
   }
   form.addEventListener("submit", (event) => {
     event.preventDefault();
+    listening?.stop();
+    voiceStatus.textContent = "";
     ask(input.value);
   });
   panel.addEventListener("keydown", (event) => {

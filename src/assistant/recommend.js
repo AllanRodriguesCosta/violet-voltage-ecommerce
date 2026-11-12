@@ -22,6 +22,10 @@ export function matches(p, f) {
   if (f.captacao && fi.captacao !== f.captacao) return false;
   if (f.tecnologia && !techMatches(fi.tecnologia, f.tecnologia)) return false;
   if (f.voicing && fi.voicing !== f.voicing) return false;
+  if (f.mao && (fi.mao || "Destro") !== f.mao) return false;
+  if (f.cordas && (fi.cordas || "6 cordas") !== f.cordas) return false;
+  if (f.captadores && (fi.captadores || "Passivos") !== f.captadores) return false;
+  if (f.trastes && fi.trastes !== f.trastes) return false;
   return true;
 }
 

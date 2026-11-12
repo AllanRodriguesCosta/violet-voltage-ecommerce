@@ -14,7 +14,7 @@ import {
 } from "../utils/validation.js";
 import { placeOrder, exclusive, calculate, itemIds } from "../services/checkout.js";
 import { quote, deliveryOptions } from "../services/pricing.js";
-import { updateOrderStatus, summary } from "../services/orders.js";
+import { updateOrderStatus, summary, requestExchange, answerExchange, exchangeWindow } from "../services/orders.js";
 import { addressInput, saveAddress, removeAddress } from "../services/addresses.js";
 import {
   listNotifications,
@@ -30,6 +30,7 @@ import { publicProduct, publicOrder } from "../controllers/serialization.js";
 import { specText } from "../../public/js/specs.js";
 import { reply } from "../assistant/index.js";
 import { changePassword, exportData, deleteAccount } from "../services/account.js";
+import { logMiss, missSummary, clearMisses } from "../services/assistant-log.js";
 import { answeredQuestions, askQuestion, moderateQuestion, publicQuestion, adminQuestion } from "../services/questions.js";
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -276,9 +277,15 @@ export function apiRouter(storage, config) {
     const contexto = req.body?.contexto;
     if (contexto !== undefined && JSON.stringify(contexto).length > 4000)
       throw new AppError(400, "Contexto da conversa muito grande.", "contexto");
+    // Página atual, carrinho e favoritos vêm do navegador (só IDs); o assistente revalida tudo.
+    const { pagina, carrinho, favoritos } = req.body || {};
+    if (JSON.stringify({ pagina, carrinho, favoritos }).length > 8000) throw new AppError(400, "Dados da página muito grandes.");
     const products = (await storage.list("products")).filter((p) => p.ativo).map(publicProduct);
     const orders = async () => (await storage.listByPartition("orders", req.user.id)).map(publicOrder);
-    res.json({ data: await reply({ mensagem, contexto }, { products, orders, user: req.user }) });
+    const alerts = async () => storage.listByPartition("alerts", req.user.id);
+    const answer = await reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders, alerts, user: req.user });
+    if (!answer.entendeu) await logMiss(storage, mensagem).catch(() => {});
+    res.json({ data: answer });
   });
   // Notificações da conta: últimas 30 e contagem de não lidas.
   r.get("/notifications", authenticated, async (req, res) =>
@@ -372,8 +379,12 @@ export function apiRouter(storage, config) {
   r.get("/orders/:id", authenticated, async (req, res) => {
     const order = await storage.getByRowKey("orders", String(req.params.id));
     if (!order || order.partitionKey !== req.user.id) throw new AppError(404, "Pedido não encontrado.");
-    res.set("Cache-Control", "no-store").json({ data: publicOrder(order) });
+    res.set("Cache-Control", "no-store").json({ data: { ...publicOrder(order), prazoTroca: exchangeWindow(order) } });
   });
+  // Troca ou devolução pedida pelo cliente no comprovante.
+  r.post("/orders/:id/troca", authenticated, limited, async (req, res) =>
+    res.status(201).json({ data: publicOrder(await requestExchange(storage, req.user, req.params.id, req.body)) }),
+  );
   r.post("/orders", authenticated, async (req, res) =>
     res.status(201).json({
       data: publicOrder(await placeOrder(storage, req.user, req.body)),
@@ -550,8 +561,16 @@ export function apiRouter(storage, config) {
     const p = found && (await storage.getByRowKey("products", found.productId));
     res.json({ data: adminQuestion(await moderateQuestion(storage, req.params.id, req.body, p), p) });
   });
+  r.get("/admin/assistente", async (_req, res) => res.json({ data: await missSummary(storage) }));
+  r.delete("/admin/assistente", async (_req, res) => {
+    await clearMisses(storage);
+    res.json({ data: { ok: true } });
+  });
   r.get("/admin/orders", async (_req, res) =>
     res.json({ data: (await storage.list("orders")).map(publicOrder) }),
+  );
+  r.patch("/admin/orders/:id/troca", async (req, res) =>
+    res.json({ data: publicOrder(await answerExchange(storage, req.params.id, req.body)) }),
   );
   r.patch("/admin/orders/:id", async (req, res) =>
     res.json({

@@ -121,3 +121,60 @@ export function summary(products, customers, orders, now = new Date()) {
     vendasPorDia: days.map((d) => sales[d]),
   };
 }
+
+// Troca ou devolução: até 7 dias depois da conclusão, pelo próprio cliente, uma por vez.
+export const EXCHANGE_DAYS = 7;
+export function exchangeWindow(order, now = new Date()) {
+  if (order.status !== "Concluído") return { aberta: false, motivo: "O pedido precisa estar concluído (entregue ou retirado)." };
+  const done = history(order).findLast((h) => h.status === "Concluído")?.at || order.createdAt;
+  const ate = new Date(new Date(done).getTime() + EXCHANGE_DAYS * 86400000);
+  return now <= ate ? { aberta: true, ate: ate.toISOString() } : { aberta: false, ate: ate.toISOString(), motivo: "O prazo de 7 dias depois do recebimento terminou." };
+}
+export async function requestExchange(storage, user, orderId, body = {}, now = new Date()) {
+  const found = await storage.getByRowKey("orders", String(orderId));
+  if (!found || found.partitionKey !== user.id) throw new AppError(404, "Pedido não encontrado.");
+  const win = exchangeWindow(found, now);
+  if (!win.aberta) throw new AppError(409, win.motivo);
+  if ((found.trocas || []).some((t) => t.status === "Aberta")) throw new AppError(409, "Já existe uma solicitação em análise para este pedido.");
+  const tipo = body.tipo === "devolucao" ? "devolucao" : "troca";
+  const itens = JSON.parse(found.itens);
+  const wanted = Array.isArray(body.itens) ? [...new Set(body.itens.filter((id) => typeof id === "string"))] : [];
+  if (!wanted.length || wanted.some((id) => !itens.some((i) => i.id === id))) throw new AppError(400, "Escolha os itens do pedido que você quer trocar ou devolver.", "itens");
+  const motivo = String(body.motivo ?? "").trim();
+  if (motivo.length < 10 || motivo.length > 500) throw new AppError(400, "Conte o motivo em 10 a 500 caracteres.", "motivo");
+  const solicitacao = { id: randomInt(100000, 999999).toString(), tipo, itens: wanted, motivo, status: "Aberta", at: now.toISOString() };
+  const next = { ...found, trocas: [...(found.trocas || []), solicitacao] };
+  const apply = async (scoped) => {
+    await scoped.save("orders", next, found.etag);
+    await notify(scoped, user.id, {
+      tipo: "pedido",
+      titulo: `${tipo === "troca" ? "Troca" : "Devolução"} solicitada: pedido #${found.rowKey.slice(0, 8).toUpperCase()}`,
+      texto: "Recebemos sua solicitação. A loja analisa em até 2 dias úteis e responde por aqui.",
+      link: `/pedido.html?id=${encodeURIComponent(found.rowKey)}#troca`,
+    });
+  };
+  await (storage.transaction && !storage.inTransaction ? storage.transaction(apply) : apply(storage));
+  return next;
+}
+// Resposta da loja à solicitação aberta (aprovada ou recusada), com aviso ao cliente.
+export async function answerExchange(storage, orderId, body = {}) {
+  const found = await storage.getByRowKey("orders", String(orderId));
+  if (!found) throw new AppError(404, "Pedido não encontrado.");
+  const open = (found.trocas || []).find((t) => t.status === "Aberta");
+  if (!open) throw new AppError(409, "Não há solicitação aberta neste pedido.");
+  if (!["Aprovada", "Recusada"].includes(body.status)) throw new AppError(400, "Use Aprovada ou Recusada.", "status");
+  const resposta = String(body.resposta ?? "").trim().slice(0, 500);
+  const done = { ...open, status: body.status, resposta, respondidaEm: new Date().toISOString() };
+  const next = { ...found, trocas: found.trocas.map((t) => (t === open ? done : t)) };
+  const apply = async (scoped) => {
+    await scoped.save("orders", next, found.etag);
+    await notify(scoped, found.partitionKey, {
+      tipo: "pedido",
+      titulo: `${open.tipo === "troca" ? "Troca" : "Devolução"} ${body.status === "Aprovada" ? "aprovada" : "recusada"}: pedido #${found.rowKey.slice(0, 8).toUpperCase()}`,
+      texto: resposta || (body.status === "Aprovada" ? "Enviamos as instruções de postagem no comprovante do pedido." : "Veja o motivo no comprovante do pedido."),
+      link: `/pedido.html?id=${encodeURIComponent(found.rowKey)}#troca`,
+    });
+  };
+  await (storage.transaction && !storage.inTransaction ? storage.transaction(apply) : apply(storage));
+  return next;
+}

@@ -1,3 +1,28 @@
+# Fase 3, etapa 24 — 12/11/2026
+
+- Testes novos em `tests/stage24.test.js` (6): página, carrinho e favoritos
+  revalidados; entidades de mão, cordas, captadores e trastes; glossário,
+  ficha pela página, fonte dos pedais, comparação (com o produto aberto),
+  "adiciona a segunda" e produto esgotado sem botão; carrinho, cupom, kit no
+  orçamento, histórico, troca e favoritos; anonimização e retenção de 90 dias
+  do registro; API do assistente com página e carrinho, limite de tamanho,
+  registro no painel (só administrador), troca (não concluído, outro cliente,
+  item inválido, motivo curto, uma por vez, resposta da loja, notificações e
+  prazo vencido).
+- Avaliação do assistente: 94,8% em 116 frases fora do treino, 48/48 entidades
+  e 3/3 conversas.
+- No navegador (20 verificações): sugestões e respostas pela página do
+  produto, comparação, confirmação e carrinho, glossário, cupom, dica no botão
+  do assistente no carrinho, sugestões adicionadas, kit no orçamento, troca no
+  comprovante (validação, envio, aprovação no painel, resposta ao cliente), aba
+  Assistente e celular.
+- Acessibilidade em claro, escuro, 375 e 1440 px com 3 telas novas (assistente
+  na página do produto, assistente no carrinho e aba Assistente), sem
+  problemas.
+- Regressão completa (17 roteiros) sem falhas.
+
+---
+
 # Fase 3, etapa 23 — 12/11/2026
 
 - Testes novos em `tests/stage23.test.js` (3): indicadores do painel (vendas

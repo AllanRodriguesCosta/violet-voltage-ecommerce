@@ -10,6 +10,24 @@ import { searchHelp, strongHelp } from "./help-search.js";
 import { sanitizeContext } from "./context.js";
 import { genreQuestion } from "../knowledge/genres.js";
 import { maxInstallments, delivery, FREE_SHIPPING_CENTS } from "../services/pricing.js";
+import {
+  sanitizePage,
+  targets,
+  GLOSSARY_Q,
+  findTerms,
+  glossaryAnswer,
+  compareAnswer,
+  SPEC_WORDS,
+  PRONOUN,
+  specAnswer,
+  addAnswer,
+  couponAnswer,
+  cartAnswer,
+  kitsWithin,
+  historyAnswer,
+  favoritesAnswer,
+  exchangeAnswer,
+} from "./actions.js";
 
 export const model = train(examples);
 export const THRESHOLD = 0.45;
@@ -27,8 +45,8 @@ const INFO = {
 const CONVERSATION = ["saudacao", "ajuda", "agradecimento", "despedida", "setup", "fora_escopo"];
 const SETUP_WORDS = /setup|complet|comec|tudo|equipamento|mont|junt|kit para|kit de guitarra/;
 const SKIP = /\b(tanto faz|qualquer( um| uma)?|nao sei|sem preferencia|nao importa|pular|sem limite|sem orcamento)\b/;
-const FILTERS = ["categoria", "tipo", "genero", "estilo", "formato", "captacao", "tecnologia", "voicing", "uso", "nivel", "marca", "min", "max"];
-const SPECIFIC = ["formato", "captacao", "tecnologia", "voicing", "tipo", "marca", "min", "max"];
+const FILTERS = ["categoria", "tipo", "genero", "estilo", "formato", "captacao", "tecnologia", "voicing", "uso", "nivel", "marca", "min", "max", "mao", "cordas", "captadores", "trastes"];
+const SPECIFIC = ["formato", "captacao", "tecnologia", "voicing", "tipo", "marca", "min", "max", "mao", "cordas", "captadores", "trastes"];
 const START = ["Quero uma guitarra vintage", "Montar um setup de rock", "Onde está meu pedido?", "Como funciona o frete?"];
 const GENRE_CHIPS = {
   Vintage: ["Blues", "Blues rock", "Rock clássico", "Surf", "Jazz", "Tanto faz"],
@@ -57,7 +75,8 @@ function describe(f) {
   const noun = f.tipo ? (f.categoria === "Pedais" ? `pedais de ${f.tipo.toLowerCase()}` : f.tipo.toLowerCase()) : f.categoria ? f.categoria.toLowerCase() : "equipamentos";
   const price = f.min && f.max ? ` entre ${brl(f.min)} e ${brl(f.max)}` : f.max ? ` até ${brl(f.max)}` : f.min ? ` a partir de ${brl(f.min)}` : "";
   const genre = f.genero && (!f.categoria || GROUP[f.categoria]) ? ` para ${f.genero.toLowerCase()}` : "";
-  return `${noun}${f.marca ? ` da ${f.marca}` : ""}${f.estilo ? ` de estilo ${f.estilo.toLowerCase()}` : ""}${genre}${price}`;
+  const traits = [f.mao === "Canhoto" ? "para canhotos" : "", f.cordas && f.cordas !== "6 cordas" ? `de ${f.cordas}` : "", f.captadores === "Ativos" ? "com captadores ativos" : "", f.trastes ? `com ${f.trastes} trastes` : ""].filter(Boolean).join(" ");
+  return `${noun}${traits ? ` ${traits}` : ""}${f.marca ? ` da ${f.marca}` : ""}${f.estilo ? ` de estilo ${f.estilo.toLowerCase()}` : ""}${genre}${price}`;
 }
 export function catalogLink(f) {
   const params = new URLSearchParams();
@@ -67,7 +86,7 @@ export function catalogLink(f) {
   if (f.marca) params.set("marca", f.marca);
   if (f.min) params.set("min", String(Math.floor(f.min / 100)));
   if (f.max) params.set("max", String(Math.ceil(f.max / 100)));
-  if (f.categoria === "Guitarras") for (const k of ["formato", "captacao"]) if (f[k]) params.set(k, f[k]);
+  if (f.categoria === "Guitarras") for (const k of ["formato", "captacao", "mao", "cordas", "captadores"]) if (f[k]) params.set(k, f[k]);
   if (f.categoria === "Amplificadores") {
     if (f.tecnologia) params.set("tecnologia", f.tecnologia === "Digital" ? "Modelagem digital" : f.tecnologia);
     if (f.voicing) params.set("voicing", f.voicing);
@@ -248,12 +267,15 @@ function handleSetup(e, ctx, products, override = {}, titulo) {
     ...lines,
     `Total: ${brl(total)}${parcels(total)}.${total >= FREE_SHIPPING_CENTS ? " A entrega padrão sai grátis." : ""}${dentro ? "" : " Passou do orçamento: é o setup mais acessível que consegui com essas peças."}`,
   ].join("\n");
+  // Kit pronto que cabe no orçamento: alternativa com desconto.
+  const kit = f.max ? kitsWithin(products, f.max, f.genero)[0] : null;
   return {
-    texto,
+    texto: kit ? `${texto}\nOu comece pelo ${kit.kit.nome}: ${brl(kit.price.precoCents)} com ${kit.kit.descontoPct}% de desconto (${kit.kit.itens.length} itens).` : texto,
     cards: items.map((x) => card(x.produto, f.genero, x.rotulo)),
     sugestoes: ["Mais barato", "Mais completo", "Como funciona o frete?"],
     acoes: [
       { tipo: "carrinho", rotulo: "Adicionar tudo ao carrinho", itens: ids },
+      ...(kit ? [{ tipo: "carrinho", rotulo: `Adicionar o ${kit.kit.nome}`, itens: kit.kit.itens }] : []),
       link("Ajustar no Monte seu setup", `/setup.html?itens=${ids.join(",")}${f.genero ? `&genero=${encodeURIComponent(f.genero)}` : ""}`),
     ],
     contexto,
@@ -299,14 +321,61 @@ async function handleOrders(intent, text, loadOrders) {
   };
 }
 
-export async function reply({ mensagem, contexto }, { products, orders = async () => [], user } = {}) {
+// Pedidos de ação e perguntas sobre produtos específicos, antes da classificação geral.
+const ADD = /\b(adiciona|adicione|adicionar|coloca|coloque|colocar|poe|ponha|bota|joga|inclui|incluir|manda)\b.*\b(carrinho|sacola)\b|^(adiciona|adicione|coloca|coloque|quero comprar|vou levar|compra|comprar) /;
+const ADD_ALL = /\b(tudo|todos|todas|o setup|esses itens|essas opcoes|os tres|as tres)\b/;
+const COMPARE = /compar|diferenca|\bvs\b|versus|qual (e |eh )?(a |o )?melhor|melhor (a|o) /;
+const CART_Q = /(o que|oque) (mais )?(falta|esta faltando)|(falta|faltando) (algo|alguma coisa|algum|no meu carrinho)|esqueci (algo|alguma)|(meu|no|do) carrinho.*(falta|precis|complet|compat|funciona)|(confere|revisa|olha|checa) (o |meu )?carrinho/;
+const HISTORY = /(com base|baseado|pelo que|de acordo com).*(compr|pedido)|parecid\w* com (o que|oq) (eu )?compr|combina com (o que|oq) (eu )?compr|(minhas|meus) (compras|pedidos) (anteriores|passad)/;
+const FAVORITES = /favorit|lista de desejos/;
+const COUPON_APPLY = /(aplica|aplique|aplicar|usa|usar|use|ativa|ativar|coloca|colocar) (o |um )?cupom|cupom (voltage10|primeiroacorde|fretevolt)/;
+const BUDGET_START = /(do zero|comecar a tocar|comecando agora|primeiro setup|tudo (o )?que (eu )?preciso)/;
+function special(text, e, ctx, page, products) {
+  if (GLOSSARY_Q.test(text) || /diferenca entre/.test(text)) {
+    const terms = findTerms(text);
+    if (terms.length && !e.produtos.length) return { intent: "glossario", out: glossaryAnswer(terms[0], /diferenca|\bou\b|\be\b/.test(text) ? terms[1] : null) };
+  }
+  if (COUPON_APPLY.test(text)) {
+    const out = couponAnswer(text);
+    if (out) return { intent: "cupom_aplicar", out };
+  }
+  const found = () => targets(text, e, ctx, page, products);
+  if (ADD.test(text)) {
+    const byId = new Map(products.map((p) => [p.id, p]));
+    const items = ADD_ALL.test(text) && ctx.mostrados.length ? ctx.mostrados.map((id) => byId.get(id)).filter(Boolean).slice(0, 8) : found().slice(0, 4);
+    return { intent: "adicionar", out: addAnswer(items) };
+  }
+  if (CART_Q.test(text)) return { intent: "carrinho", out: cartAnswer(page, products) };
+  const referenced = e.produtos.length > 0 || PRONOUN.test(text) || /\b(primeir|segund|terceir|as duas|os dois)/.test(text);
+  if (COMPARE.test(text) && referenced) {
+    let items = found();
+    if (items.length === 1 && page.produto && page.produto.id !== items[0].id) items = [page.produto, items[0]];
+    if (items.length === 1) {
+      const other = ctx.mostrados.map((id) => products.find((p) => p.id === id)).find((p) => p && p.id !== items[0].id && p.categoria === items[0].categoria);
+      if (other) items = [items[0], other];
+    }
+    if (items.length >= 2) return { intent: "comparar", out: compareAnswer(items) };
+  }
+  if (HISTORY.test(text)) return { intent: "historico" };
+  if (FAVORITES.test(text) && /preco|baix|promo|desconto|barat|valor/.test(text)) return { intent: "favoritos" };
+  const browsing = e.categoria && !PRONOUN.test(text) && /^(tem|quero|procuro|preciso|busco|voces (tem|vendem)|vende|gostaria|me (indica|mostra))\b/.test(text);
+  if (SPEC_WORDS.test(text) && !browsing && (e.produtos.length || PRONOUN.test(text) || (page.produto && !e.categoria && !e.tipo))) {
+    const [p] = found();
+    if (p) return { intent: "ficha", out: specAnswer(p, text) };
+  }
+  if (BUDGET_START.test(text) && (e.max || e.min)) return { intent: "setup" };
+  return null;
+}
+
+export async function reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders = async () => [], alerts = async () => [], user } = {}) {
   const brands = [...new Set(products.map((p) => p.marca))];
   let ctx = sanitizeContext(contexto, brands);
+  const page = sanitizePage({ pagina, carrinho, favoritos }, products);
   const text = normalize(mensagem);
   const ranking = classify(model, mensagem);
   const top = ranking[0];
   const e = extract(mensagem, products);
-  const shopping = Boolean(e.categoria || e.tipo || e.genero || e.estilo || e.formato || e.captacao || e.tecnologia || e.voicing || e.marca || e.produtos.length);
+  const shopping = Boolean(e.categoria || e.tipo || e.genero || e.estilo || e.formato || e.captacao || e.tecnologia || e.voicing || e.marca || e.mao || e.cordas || e.captadores || e.trastes || e.produtos.length);
   const slotAnswer = shopping || e.min || e.max || e.estilo || e.uso || e.nivel || SKIP.test(text);
   const confirmed = (intent) => INFO[intent]?.test(text);
   const help = searchHelp(mensagem);
@@ -315,7 +384,10 @@ export async function reply({ mensagem, contexto }, { products, orders = async (
 
   const accepted = top.p >= THRESHOLD && top.coverage >= (top.intent === "fora_escopo" ? 0.2 : 0.34) && !INFO[top.intent] && top.intent !== "refinar";
   let intent;
+  const action = ctx.aguardando && slotAnswer ? null : special(text, e, ctx, page, products);
   if (ctx.aguardando && slotAnswer && !(confirmed(top.intent) && top.p >= 0.5)) intent = ctx.intent || "recomendar";
+  else if (action) intent = action.intent;
+  else if (GLOSSARY_Q.test(text) && strongHelp(help)) intent = "central_ajuda";
   else if (informative) intent = informative.intent;
   else if (top.intent === "setup" && top.p >= 0.35 && SETUP_WORDS.test(text)) intent = "setup";
   else if (top.intent === "refinar" && top.p >= 0.35 && !shopping) intent = ctx.intent ? "refinar" : "recomendar";
@@ -328,7 +400,15 @@ export async function reply({ mensagem, contexto }, { products, orders = async (
   const keep = { ...ctx, aguardando: null };
   const first = String(user?.nome || "").split(" ")[0];
   let out;
-  if (intent === "recomendar") out = handleRecommend(e, ctx, products);
+  if (action?.out) {
+    // Produtos mostrados pela ação viram referência para "a primeira", "essa" e "adiciona tudo".
+    const shown = (action.out.cards || []).map((c) => c.id);
+    const replaces = ["comparar", "carrinho"].includes(intent);
+    out = { ...action.out, contexto: replaces && shown.length ? { ...keep, intent: null, mostrados: shown } : keep };
+  } else if (intent === "historico") out = { ...historyAnswer(await orders(), products), contexto: keep };
+  else if (intent === "favoritos") out = { ...favoritesAnswer(page, await alerts()), contexto: keep };
+  else if (intent === "troca" && !/senha/.test(text) && exchangeAnswer(await orders())) out = { ...exchangeAnswer(await orders()), contexto: keep };
+  else if (intent === "recomendar") out = handleRecommend(e, ctx, products);
   else if (intent === "refinar") {
     if (ctx.intent === "setup") {
       const total = ctx.mostrados.map((id) => products.find((p) => p.id === id)?.priceCents || 0).reduce((a, b) => a + b, 0);

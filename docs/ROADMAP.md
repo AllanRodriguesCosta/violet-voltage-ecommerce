@@ -383,11 +383,24 @@ instrumento usado na troca fica de fora.
 
 ### 24. Assistente que age
 
-- [ ] Adicionar ao carrinho e montar setup pelo chat (sempre com confirmação),
-      comparar produtos, responder sobre a ficha, entender "essa" pela página
-      atual, compatibilidade, kit dentro do orçamento, sugestões pelo
-      histórico, glossário, pedido de troca, aviso proativo no carrinho e
-      registro anônimo das frases não entendidas para revisão no painel.
+- [x] Página atual, carrinho e favoritos enviados pelo navegador (só IDs) e
+      revalidados: "essa" é o produto aberto; sugestões iniciais conforme a
+      página.
+- [x] Perguntas sobre a ficha (trastes, escala, ponte, captação, fonte,
+      potência, comprimento, estoque, "serve para metal?").
+- [x] Comparação de produtos citados, do produto aberto e da lista anterior.
+- [x] Adicionar ao carrinho e aplicar cupom com botão de confirmação.
+- [x] "O que falta no meu carrinho?" com as regras de compatibilidade e dica no
+      botão do assistente quando o carrinho tem algo essencial faltando.
+- [x] Setup no orçamento com o kit que cabe nele; filtros de mão, cordas,
+      captadores ativos e trastes.
+- [x] Sugestões pelo histórico de compras e preço dos favoritos.
+- [x] Glossário no chat ("o que é...", "diferença entre...").
+- [x] Troca ou devolução: solicitação no comprovante (até 7 dias depois da
+      conclusão, uma por vez), resposta da loja no painel e notificações; o
+      assistente leva até ela.
+- [x] Registro anônimo das frases não entendidas (90 dias) na aba Assistente
+      do painel. Privacidade atualizada.
 
 ### 25. Reforço com Gemini gratuito e voz
 

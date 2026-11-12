@@ -112,6 +112,27 @@ export const evalSet = [
   ["qual a previsão para amanhã", "fora_escopo"],
   ["quem descobriu o brasil", "fora_escopo"],
   ["me ajuda com uma receita de lasanha", "fora_escopo"],
+  // Etapa 24: ações e perguntas sobre produtos (com página atual ou carrinho quando preciso)
+  ["o que significa humbucker?", "glossario"],
+  ["pra que serve um compressor?", "glossario"],
+  ["qual a diferença entre fuzz e overdrive", "glossario"],
+  ["o que é true bypass", "glossario"],
+  ["compara a sg standard com a les paul standard 50s", "comparar"],
+  ["qual a diferença entre o boss ds-1 e o rat 2?", "comparar"],
+  ["essa guitarra tem quantos trastes?", "ficha", null, { pagina: { tipo: "produto", id: "demo-036" } }],
+  ["ela serve pra jazz?", "ficha", null, { pagina: { tipo: "produto", id: "demo-030" } }],
+  ["o carbon copy precisa de fonte?", "ficha"],
+  ["qual a potência do blues junior?", "ficha"],
+  ["esse cabo tem quantos metros?", "ficha", null, { pagina: { tipo: "produto", id: "demo-063" } }],
+  ["coloca essa no carrinho", "adicionar", null, { pagina: { tipo: "produto", id: "demo-047" } }],
+  ["adiciona o ditto looper ao carrinho", "adicionar"],
+  ["usa o cupom primeiroacorde", "cupom_aplicar"],
+  ["tá faltando alguma coisa no meu carrinho?", "carrinho", null, { carrinho: [{ id: "demo-033", quantidade: 1 }] }],
+  ["confere meu carrinho", "carrinho"],
+  ["me indica algo baseado no que eu comprei", "historico"],
+  ["algum favorito baixou de preço?", "favoritos"],
+  ["tem guitarra para canhoto?", "recomendar", { mao: "Canhoto" }],
+  ["quero uma guitarra de sete cordas", "recomendar", { cordas: "7 cordas" }],
 ];
 
 // Conversas com várias mensagens: cada passo traz a intenção e um trecho esperado na resposta.
@@ -129,6 +150,14 @@ export const dialogs = [
       ["quero montar um setup", "setup", /estilo musical/i],
       ["rock clássico", "setup", /orçamento/i],
       ["até 5 mil", "setup", /Total:/],
+    ],
+  },
+  {
+    nome: "na página do produto: ficha, comparação e carrinho",
+    passos: [
+      ["quantos trastes tem essa?", "ficha", /Trastes: 24/, { pagina: { tipo: "produto", id: "demo-036" } }],
+      ["compara com a jackson js32", "comparar", /lado a lado/, { pagina: { tipo: "produto", id: "demo-036" } }],
+      ["adiciona a segunda no carrinho", "adicionar", /Confirma\? Jackson JS32 Dinky/, { pagina: { tipo: "produto", id: "demo-036" } }],
     ],
   },
 ];

@@ -15,6 +15,9 @@ const ALLOWED = {
   tecnologia: [...values("tecnologia"), "Digital"],
   voicing: values("voicing"),
   tipo: [...values("efeito"), ...values("tipo")],
+  mao: values("mao"),
+  cordas: values("cordas"),
+  captadores: values("captadores"),
 };
 export const SLOTS = ["categoria", "genero", "orcamento"];
 const cents = (v) => (Number.isSafeInteger(v) && v > 0 && v <= 100_000_000 ? v : undefined);
@@ -27,6 +30,7 @@ export function sanitizeContext(input, brands = []) {
   for (const [key, allowed] of Object.entries(ALLOWED)) if (allowed.includes(source[key])) filtros[key] = source[key];
   if (brands.includes(source.marca)) filtros.marca = source.marca;
   for (const key of ["min", "max"]) if (cents(source[key])) filtros[key] = source[key];
+  if (Number.isInteger(source.trastes) && source.trastes >= 18 && source.trastes <= 30) filtros.trastes = source.trastes;
   return {
     intent: ["recomendar", "setup"].includes(input.intent) ? input.intent : null,
     filtros,

@@ -13,6 +13,7 @@ export class MemoryStorage {
       alerts: new Map(),
       notifications: new Map(),
       questions: new Map(),
+      assistantLog: new Map(),
     };
     this.blobs = new Map();
   }

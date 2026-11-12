@@ -768,3 +768,23 @@ body.assistant-open .assistant-launcher { visibility: hidden; }
 .rank-list li > .badge { display: inline-flex; width: fit-content; color: inherit; margin-top: 2px; }
 @media (min-width: 900px) { .dash-insights { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 1200px) { .dash-insights { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+/* Etapa 24: troca ou devolução. */
+.exchange-panel { margin-top: 16px; }
+.exchange-panel h2 { font-size: 18px; margin: 0 0 12px; }
+.exchange-list { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 10px; }
+.exchange-item { display: grid; gap: 4px; padding: 12px; border-radius: var(--radius); background: var(--surface-2); font-size: 14px; }
+.exchange-item .badge { justify-self: start; }
+.exchange-item small { color: var(--muted); }
+.exchange-answer { margin: 4px 0 0; }
+.exchange-form fieldset { border: 0; padding: 0; margin: 0 0 12px; display: grid; gap: 6px; }
+.exchange-form legend { font-weight: 600; margin-bottom: 4px; }
+.exchange-form textarea { width: 100%; }
+.exchange-note { margin-top: 10px; padding: 10px 12px; border-radius: var(--radius); background: var(--surface-2); font-size: 14px; }
+.exchange-note.is-open { background: var(--warning-soft); }
+.exchange-note p { margin: 0; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.exchange-admin { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.exchange-admin input { flex: 1 1 220px; }
+/* Etapa 24: dica do assistente no carrinho e convivência com a barra de comparação. */
+.assistant-hint { position: absolute; top: -6px; right: -4px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: var(--volt); color: var(--night); font-size: 12px; font-weight: 800; display: grid; place-items: center; box-shadow: 0 0 0 2px var(--surface); }
+.has-compare-tray .assistant-launcher { bottom: calc(var(--bottom-nav-h) + 76px + env(safe-area-inset-bottom)); }
+@media (min-width: 900px) { .has-compare-tray .assistant-launcher { bottom: 84px; } }

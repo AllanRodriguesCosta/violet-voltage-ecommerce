@@ -114,7 +114,7 @@ const GENRE_SYNONYMS = genres
 
 // Preço em centavos. Só conta número com marca de dinheiro (R$, mil, k, reais) ou
 // precedido de expressão de preço; "10x", "15 W" e "3 m" ficam de fora.
-const MAX_WORDS = /(ate|no maximo|maximo|max|menos de|abaixo de|nao passar de|orcamento de|orcamento|gastar|teto de|limite de)\s*(de\s*)?(r\$\s*)?$/;
+const MAX_WORDS = /(ate|no maximo|maximo|max|menos de|abaixo de|nao passar de|orcamento de|orcamento|gastar|teto de|limite de|tenho|so tenho|disponho de|tenho so|posso gastar|da pra gastar)\s*(de\s*)?(r\$\s*)?$/;
 const MIN_WORDS = /(acima de|a partir de|mais de|no minimo|minimo de|pelo menos|partir de)\s*(r\$\s*)?$/;
 const ABOUT_WORDS = /(uns|umas|cerca de|por volta de|em torno de|aproximadamente|perto de|na faixa de|faixa de)\s*(r\$\s*)?$/;
 const NUMBER = /(r\$\s*)?(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?\s*(mil|k)?(?![a-z0-9])\s*(reais|conto|contos|pila)?/g;
@@ -191,14 +191,21 @@ export function extract(message, products = []) {
       rest = rest.replace(re, " ");
       break;
     }
+  // "7 cordas" é característica da guitarra, não encordoamento.
+  const cordas = /\b(7|sete) cordas\b/.test(rest) ? "7 cordas" : /\b(8|oito) cordas\b/.test(rest) ? "8 cordas" : undefined;
+  if (cordas) rest = rest.replace(/\b(7|sete|8|oito) cordas\b/, " ");
   const tipo = findTipo(rest);
   const formato = findFormato(rest);
   rest = rest.replace(/(single|double)[\s-]+cut/g, " ");
   const captacao = findCaptacao(rest);
   const tecnologia = findTecnologia(rest);
   const voicing = findVoicing(rest);
+  // Etapa 24: mão, número de cordas, captadores ativos e trastes (ficha das guitarras).
+  const mao = /\bcanhot[oa]s?\b|mao esquerda/.test(rest) ? "Canhoto" : undefined;
+  const captadores = /captador(es)? ativos?|\bativos?\b.*captador|\bemg\b/.test(rest) ? "Ativos" : undefined;
+  const trastes = Number(rest.match(/\b(2[0-9])\s*trastes\b/)?.[1]) || undefined;
   let categoria = findCategoria(rest);
-  if (!categoria && (formato || captacao)) categoria = "Guitarras";
+  if (!categoria && (formato || captacao || mao || cordas || captadores || trastes)) categoria = "Guitarras";
   if (!categoria && tipo) categoria = tipo in TIPO_CATEGORIA ? TIPO_CATEGORIA[tipo] || undefined : "Pedais";
   if (!categoria && (voicing || ["Valvulado", "Transistor", "Modelagem digital"].includes(tecnologia))) categoria = "Amplificadores";
   const brands = [...new Set(products.map((p) => p.marca))];
@@ -220,6 +227,10 @@ export function extract(message, products = []) {
     voicing,
     uso: findUso(rest),
     nivel: findNivel(rest),
+    mao,
+    cordas,
+    captadores,
+    trastes,
     marca,
     ordem,
     ...extractPrice(text),

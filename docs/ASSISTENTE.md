@@ -1,4 +1,4 @@
-# Assistente de compras (Fase 3, etapa 19)
+# Assistente de compras (Fase 3, etapas 19, 20 e 24)
 
 Agente conversacional da Violet Voltage, feito com processamento de linguagem
 natural (PLN) local em JavaScript, sem bibliotecas, sem chave de API e sem
@@ -18,6 +18,15 @@ carrinho" dependem de um clique.
 | Dúvidas da loja | frete, prazos, retirada, pagamento, parcelas, cupons, trocas, conta | Texto gerado das mesmas regras do checkout (`src/services/pricing.js`) |
 | Central de Ajuda | "o preço muda no carrinho?", "como excluo minha conta?", "vocês avisam quando voltar ao estoque?" | A resposta da pergunta mais parecida da Central de Ajuda, com link para ela (etapa 20) |
 | Conversa | saudação, ajuda, agradecimento, despedida, assunto fora da loja | Respostas curtas, com sugestões de próxima pergunta |
+| Ficha do produto (etapa 24) | "quantos trastes tem essa?", "o TS9 precisa de fonte?", "ela serve pra metal?" | Dados da ficha do produto citado, da página aberta ou da lista anterior |
+| Comparação (etapa 24) | "compara a DS-1 com o RAT 2", "compara com a JS32" (na página de outro produto), "compara as duas primeiras" | Diferenças da ficha, estilos e preço, com link para a tabela do comparador |
+| Ações com confirmação (etapa 24) | "adiciona essa ao carrinho", "adiciona a segunda", "aplica o cupom VOLTAGE10" | Botão para o cliente confirmar; nada muda sem o clique |
+| Carrinho (etapa 24) | "o que falta no meu carrinho?" | As regras de compatibilidade do carrinho (cabo, amplificador, fonte, patch, kit), com botão para adicionar as sugestões; no carrinho, o botão do assistente mostra quantas dicas há |
+| Orçamento e kits (etapa 24) | "tenho 3 mil para começar do zero" | Setup dentro do orçamento e o kit com desconto que cabe nele |
+| Histórico e favoritos (etapa 24) | "algo com base no que eu comprei", "meus favoritos baixaram de preço?" | O que completa as compras e itens do mesmo estilo; preço de hoje contra o do aviso |
+| Glossário (etapa 24) | "o que é humbucker?", "diferença entre fuzz e overdrive" | Definição do glossário com link para o termo e para o guia |
+| Troca (etapa 24) | "quero trocar o pedal que comprei" | Se há pedido no prazo, o caminho para "Solicitar troca" no comprovante |
+| Filtros novos (etapa 24) | "guitarra canhota", "de 7 cordas", "com captador ativo", "com 24 trastes" | Recomendação com esses filtros e link para o catálogo filtrado |
 
 Disponível só para quem está logado (botão "Assistente" no canto da tela).
 
@@ -54,7 +63,7 @@ contexto da conversa (vem do navegador, revalidado) ─────────�
    - Frase com entidade de compra vira recomendação.
    - Confiança abaixo de 0,45 ou cobertura baixa viram "não entendi", com
      exemplos de pergunta. Essas frases ficam marcadas (`entendeu: false`) para
-     a camada opcional do Gemini (etapa 21).
+     a camada opcional do Gemini (etapa 25).
 5. **Central de Ajuda** (`help-search.js`, etapa 20): busca nas perguntas de
    `src/knowledge/help.js` (a mesma fonte da página `ajuda.html`) por palavras
    em comum, com peso maior para as raras (IDF); a pergunta e os termos valem
@@ -73,7 +82,15 @@ contexto da conversa (vem do navegador, revalidado) ─────────�
    "Mais barato" mostra só itens mais baratos que os já exibidos. O setup
    divide o orçamento por peça e troca a peça mais cara por uma alternativa
    quando estoura; se sobra orçamento, melhora a guitarra e o amplificador.
-7. **Contexto**: a conversa guarda filtros, a pergunta pendente, as perguntas
+7. **Ações e página atual** (`actions.js`, etapa 24): antes da classificação
+   geral, regras reconhecem glossário, cupom, "adicionar", carrinho,
+   comparação, histórico, favoritos e perguntas de ficha. O navegador envia a
+   página aberta (tipo e ID do produto), o carrinho (IDs e quantidades) e os
+   favoritos (IDs); o servidor confere tudo contra o catálogo. "Essa", "ela" e
+   "o produto" apontam para o produto da página; "a primeira" e "a segunda",
+   para a última lista mostrada. Produtos citados em partes diferentes da
+   frase ("a SG com a Les Paul") são reconhecidos separadamente.
+8. **Contexto**: a conversa guarda filtros, a pergunta pendente, as perguntas
    já feitas e os produtos já mostrados. O objeto vai e volta pelo navegador
    (o servidor não guarda estado). Tudo que chega é revalidado
    (`context.js`): só chaves conhecidas, valores das listas do esquema e
@@ -89,6 +106,12 @@ contexto da conversa (vem do navegador, revalidado) ─────────�
 - Respostas com produtos reais e preço do servidor; o carrinho continua sendo
   recalculado no checkout.
 - O histórico fica no `sessionStorage` da aba e some ao fechar o navegador.
+- Frases que o assistente não entende são guardadas sem identificar o cliente
+  (e-mails, códigos de pedido e telefones são trocados por marcadores), por até
+  90 dias, e aparecem no painel em "Assistente", agrupadas e contadas, para
+  virar frases de treino ou perguntas da Central de Ajuda.
+- Adicionar ao carrinho, aplicar cupom e pedir troca sempre dependem do clique
+  do cliente; produto esgotado não vira botão de compra.
 
 ## Avaliação
 
@@ -98,19 +121,22 @@ delas também verifica as entidades. Também roda duas conversas de várias
 mensagens. O teste `tests/assistant.test.js` garante que nenhuma frase de
 avaliação esteja no treino e que a acurácia fique acima de 90%.
 
-Resultado em 12/11/2026, depois da etapa 20 (Central de Ajuda e conta):
+Resultado em 12/11/2026, depois da etapa 24 (assistente que age):
 
 | Medida | Resultado |
 | --- | --- |
-| Intenção (96 frases fora do treino) | 93,8% |
-| Entidades (46 campos) | 100% |
-| Conversas de várias mensagens | 2 de 2 |
+| Intenção (116 frases fora do treino) | 94,8% |
+| Entidades (48 campos) | 100% |
+| Conversas de várias mensagens | 3 de 3 |
 
-Na etapa 20 entraram 8 frases de ajuda e conta; as cinco primeiras foram
-examinadas enquanto a busca era ajustada, então só as três últimas são
-inéditas de verdade. Duas delas falharam ("o chat salva o que eu escrevo?" e
-"quero uma cópia de tudo que vocês têm sobre mim") e ficaram como estão, para
-a medida não ser viciada. Na etapa 19 o resultado era 95,5% em 88 frases.
+Na etapa 24 entraram 20 frases de ações (glossário, comparação, ficha, adicionar,
+cupom, carrinho, histórico, favoritos e filtros novos), algumas com a página do
+produto ou o carrinho informados, e uma conversa na página do produto (ficha,
+comparação com o produto aberto e "adiciona a segunda"). As novas foram usadas
+para ajustar as regras, então medem a cobertura e não a generalização.
+
+Histórico: etapa 19, 95,5% em 88 frases; etapa 20, 93,8% em 96 (8 frases de
+ajuda e conta, duas falhas mantidas para a medida não ser viciada).
 
 Erros restantes:
 - "eae" e "boa, até amanhã" ficaram abaixo da confiança mínima.
@@ -124,5 +150,5 @@ Limitações conhecidas:
 - Frases muito longas e com vários pedidos ao mesmo tempo atendem só ao
   principal.
 
-A etapa 21 acrescenta o Gemini gratuito só para as frases que a PLN local não
+A etapa 25 acrescenta o Gemini gratuito só para as frases que a PLN local não
 entender, mantendo as respostas presas aos dados da loja.

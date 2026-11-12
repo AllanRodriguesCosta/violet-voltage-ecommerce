@@ -146,6 +146,22 @@ export async function adminPage(user) {
   }
   async function load() {
     panel.innerHTML = loadingHTML();
+    if (tab === "assistant") {
+      items = await api("/admin/assistente");
+      panel.innerHTML = `${toolbar("Frases que o assistente não entendeu", items.length ? `<button type="button" class="secondary" id="clear-misses">${icon("trash", { size: 18 })}Limpar lista</button>` : "")}<p class="form-help">Guardadas sem identificar o cliente (sem conta, e-mail, códigos de pedido ou telefones), por até 90 dias. Use para ensinar novas frases ao assistente em <code>src/assistant/intents.js</code> ou na Central de Ajuda.</p>${
+        items.length
+          ? `<div class="table-wrap"><table><thead><tr><th>Frase</th><th>Vezes</th><th>Última</th></tr></thead><tbody>${items.map((x) => `<tr data-search="${esc(normalize(x.texto))}"><td>${esc(x.texto)}</td><td>${x.vezes}</td><td>${new Date(x.ultima).toLocaleDateString("pt-BR")}</td></tr>`).join("")}</tbody></table></div><p id="no-results" class="muted" hidden>Nenhuma frase encontrada.</p>`
+          : emptyState({ symbol: "chat", title: "Nenhuma frase pendente.", text: "Quando o assistente não entender uma mensagem, ela aparece aqui.", level: 3 })
+      }`;
+      panel.querySelector("#clear-misses")?.addEventListener("click", async () => {
+        if (!(await confirmDialog({ title: "Limpar a lista?", text: "As frases guardadas serão apagadas.", confirm: "Limpar", cancel: "Voltar", danger: true }))) return;
+        await send("/admin/assistente", {}, "DELETE");
+        toast("Lista limpa.", { type: "success" });
+        await load();
+      });
+      wireSearch(filterRows);
+      return;
+    }
     if (tab === "questions") {
       items = await api("/admin/questions");
       const pending = items.filter((x) => x.status === "pendente").length;
@@ -211,6 +227,20 @@ export async function adminPage(user) {
         } catch (e) {
           toast(e.message, { type: "error" });
           await load();
+        }
+      });
+      panel.querySelector("#order-list").addEventListener("submit", async (event) => {
+        const form = event.target.closest("[data-exchange]");
+        if (!form) return;
+        event.preventDefault();
+        const status = event.submitter?.value;
+        try {
+          const updated = await send(`/admin/orders/${form.dataset.exchange}/troca`, { status, resposta: form.elements.resposta.value }, "PATCH");
+          items = items.map((o) => (o.id === updated.id ? updated : o));
+          renderOrders();
+          toast(`Solicitação ${status === "Aprovada" ? "aprovada" : "recusada"}; o cliente foi avisado.`, { type: "success" });
+        } catch (e) {
+          toast(e.message, { type: "error" });
         }
       });
       wireSearch(renderOrders);

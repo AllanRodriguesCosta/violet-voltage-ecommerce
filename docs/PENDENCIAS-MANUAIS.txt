@@ -1,7 +1,7 @@
 VIOLET VOLTAGE - PENDENCIAS MANUAIS (ALLAN E CODEX)
 ====================================================
 
-Ultima atualizacao: 12/11/2026 (etapa 23 da Fase 3).
+Ultima atualizacao: 12/11/2026 (etapa 24 da Fase 3).
 
 PARA QUE SERVE
 --------------
@@ -29,10 +29,11 @@ REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
    usado. Nao tente "consertar" mudando codigo.
 
 ----------------------------------------------------------------------
-T01 [ ] ALLAN - Publicar as etapas 17 a 23 no Render
+T01 [ ] ALLAN - Publicar as etapas 17 a 24 no Render
 ----------------------------------------------------------------------
-Depois do merge dos pull requests das etapas 17 a 23 em main:
-- A etapa 22 cria a tabela de perguntas (violet_voltage.questions). O
+Depois do merge dos pull requests das etapas 17 a 24 em main:
+- As etapas 22 e 24 criam as tabelas violet_voltage.questions e
+  violet_voltage.assistant_log. O
   servidor cria sozinho ao iniciar; se preferir, rode antes "npm run db:migrate"
   com o .env de producao (nao apaga nada).
 - Se o servico do Render tem deploy automatico, so confirme que o ultimo
@@ -68,6 +69,11 @@ Como conferir no site publicado:
   kits e Interesse dos clientes. Para ver a previa de link, cole o endereco
   de um produto no WhatsApp ou em https://www.opengraph.xyz (gratuito): deve
   aparecer o nome, o preco e a imagem do produto.
+- Etapa 24: logado, abra um produto e use o assistente: "quantos trastes tem
+  essa?", "compara com a Jackson JS32", "adiciona a segunda no carrinho". No
+  carrinho com so uma guitarra, o botao do assistente mostra um numero (dicas).
+  Num pedido concluido, o comprovante tem "Troca ou devolucao"; o painel
+  responde em Pedidos e mostra as frases nao entendidas em Assistente.
 Os 58 produtos novos so aparecem no site depois da T06 (seed com as fotos).
 Resultado:
 
@@ -171,7 +177,8 @@ Na raiz do projeto (nao precisa de banco nem de internet):
 Anote em "Resultado" a linha "Intencao: X% de acerto" e a de entidades.
 Depois, com o site no ar e logado, mande ao assistente 10 a 20 perguntas que
 um cliente faria de verdade (de preferencia escritas por outra pessoa) e anote
-as que ele errou ou nao entendeu, com a resposta recebida. Passe a lista ao
+as que ele errou ou nao entendeu, com a resposta recebida (as nao entendidas
+tambem aparecem no painel, aba Assistente). Passe a lista ao
 Copilot: ela vira novas frases de treino e de avaliacao. Nao altere os
 arquivos de src/assistant/.
 Resultado:

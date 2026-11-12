@@ -6,7 +6,7 @@ import { createApp } from "../../src/app.js";
 import { bootstrapAdmin } from "../../src/services/bootstrap.js";
 import { seedProducts } from "../../src/services/seed-products.js";
 
-export async function storeFixture(t, { overrides = {} } = {}) {
+export async function storeFixture(t, { overrides = {}, config = {} } = {}) {
   const storage = new MemoryStorage();
   const now = new Date().toISOString();
   for (const source of seedProducts) {
@@ -24,7 +24,7 @@ export async function storeFixture(t, { overrides = {} } = {}) {
   }
   const adminPassword = randomBytes(16).toString("hex");
   await bootstrapAdmin(storage, { ADMIN_EMAIL: "admin@loja.test", ADMIN_PASSWORD: adminPassword, ADMIN_NAME: "Admin Loja" });
-  const app = createApp(storage, { memory: true, production: false, secret: randomBytes(48).toString("hex") });
+  const app = createApp(storage, { memory: true, production: false, secret: randomBytes(48).toString("hex"), ...config });
   const http = app.listen(0, "127.0.0.1");
   await once(http, "listening");
   t.after(() => new Promise((resolve) => http.close(resolve)));

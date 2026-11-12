@@ -29,6 +29,8 @@ import {
 import { publicProduct, publicOrder } from "../controllers/serialization.js";
 import { specText } from "../../public/js/specs.js";
 import { reply } from "../assistant/index.js";
+import { askGemini, limiter } from "../assistant/gemini.js";
+import { card as assistantCard } from "../assistant/actions.js";
 import { changePassword, exportData, deleteAccount } from "../services/account.js";
 import { logMiss, missSummary, clearMisses } from "../services/assistant-log.js";
 import { answeredQuestions, askQuestion, moderateQuestion, publicQuestion, adminQuestion } from "../services/questions.js";
@@ -145,6 +147,7 @@ export function apiRouter(storage, config) {
       data: {
         status: "ok",
         storage: config.memory ? "memory-development" : "postgresql",
+        assistente: config.gemini ? "pln-local+gemini" : "pln-local",
       },
     });
   });
@@ -272,6 +275,7 @@ export function apiRouter(storage, config) {
     handler: (_req, res) =>
       res.status(429).json({ error: { message: "Muitas mensagens seguidas. Aguarde alguns minutos e tente de novo." } }),
   });
+  const geminiSlot = config.gemini ? limiter(config.gemini.perMinute) : () => false;
   r.post("/assistente", authenticated, assistantLimit, async (req, res) => {
     const mensagem = text(req.body?.mensagem, "mensagem", 1, 500);
     const contexto = req.body?.contexto;
@@ -283,8 +287,21 @@ export function apiRouter(storage, config) {
     const products = (await storage.list("products")).filter((p) => p.ativo).map(publicProduct);
     const orders = async () => (await storage.listByPartition("orders", req.user.id)).map(publicOrder);
     const alerts = async () => storage.listByPartition("alerts", req.user.id);
-    const answer = await reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders, alerts, user: req.user });
-    if (!answer.entendeu) await logMiss(storage, mensagem).catch(() => {});
+    let answer = await reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders, alerts, user: req.user });
+    if (!answer.entendeu) {
+      await logMiss(storage, mensagem).catch(() => {});
+      // Só o que a PLN local não entendeu vai ao Gemini (sem nome, e-mail ou pedido).
+      const extra = config.gemini && geminiSlot() ? await askGemini(mensagem, products, config.gemini, { fetchImpl: config.geminiFetch }) : null;
+      if (extra)
+        answer = {
+          ...answer,
+          texto: extra.texto,
+          cards: extra.produtos.map((id) => assistantCard(products.find((p) => p.id === id))),
+          intencao: "gemini",
+          entendeu: true,
+          fonte: "gemini",
+        };
+    }
     res.json({ data: answer });
   });
   // Notificações da conta: últimas 30 e contagem de não lidas.

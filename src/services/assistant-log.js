@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 export const RETENTION_DAYS = 90;
 export function anonymize(message) {
   return String(message || "")
-    .replace(/\S+@\S+/g, "[e-mail]")
+    .replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, "[e-mail]")
     .replace(/\b[0-9a-f]{8}-[0-9a-f-]{27,}\b/gi, "[código]")
     .replace(/#?\b[0-9a-f]{6,8}\b/gi, (m) => (/\d/.test(m) ? "[código]" : m))
     .replace(/\(?\d[\d\s().-]{7,}\d/g, "[número]")

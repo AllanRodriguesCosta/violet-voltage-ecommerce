@@ -9,8 +9,8 @@ export async function evaluate(products = seedProducts.map((p) => ({ ...p, id: p
   const perIntent = {};
   const errors = [];
   const entityErrors = [];
-  for (const [mensagem, expected, entities] of evalSet) {
-    const r = await reply({ mensagem }, { products, user: { nome: "Avaliação" } });
+  for (const [mensagem, expected, entities, extra = {}] of evalSet) {
+    const r = await reply({ mensagem, ...extra }, { products, user: { nome: "Avaliação" } });
     const stats = (perIntent[expected] ||= { total: 0, ok: 0 });
     stats.total++;
     if (r.intencao === expected) stats.ok++;
@@ -24,8 +24,8 @@ export async function evaluate(products = seedProducts.map((p) => ({ ...p, id: p
   const dialogErrors = [];
   for (const d of dialogs) {
     let contexto;
-    for (const [mensagem, intent, pattern] of d.passos) {
-      const r = await reply({ mensagem, contexto }, { products, user: { nome: "Avaliação" } });
+    for (const [mensagem, intent, pattern, extra = {}] of d.passos) {
+      const r = await reply({ mensagem, contexto, ...extra }, { products, user: { nome: "Avaliação" } });
       contexto = r.contexto;
       if (r.intencao !== intent || !pattern.test(r.texto)) dialogErrors.push({ conversa: d.nome, mensagem, intencao: r.intencao, texto: r.texto.slice(0, 120) });
     }

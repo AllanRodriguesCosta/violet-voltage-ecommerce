@@ -46,6 +46,7 @@ const routes = {
   "/comparar.html": "compare",
   "/kits.html": "kits",
   "/pedido.html": "order",
+  "/guias.html": "guides",
 };
 try {
   if (location.pathname === "/admin.html") {

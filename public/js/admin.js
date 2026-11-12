@@ -72,6 +72,7 @@ export async function adminPage(user) {
       ["tag", "Ticket médio", money(s.ticketMedioCents)],
       ["user", "Clientes ativos", s.clientes],
       ["grid", "Produtos ativos", s.produtos],
+      ["question", "Perguntas aguardando", s.perguntasPendentes || 0],
     ]
       .map(([symbol, label, value]) => `<div class="stat">${icon(symbol, { size: 20 })}<span>${label}</span><strong>${value}</strong></div>`)
       .join("")}</div><div class="dash-grid"><section class="panel chart-panel"><h2>Vendas nos últimos 14 dias</h2>${chart(s.vendasPorDia)}</section><section class="panel"><h2>Pedidos por status</h2><ul class="status-bars">${statuses
@@ -114,8 +115,62 @@ export async function adminPage(user) {
       ? list.map((o) => orderCardHTML(o, { admin: true, customer: names.get(o.partitionKey) || "Cliente" })).join("")
       : emptyState({ symbol: "package", title: "Nenhum pedido encontrado.", level: 3 });
   }
+  // Perguntas dos clientes: pendentes primeiro; responder notifica quem perguntou.
+  function renderQuestions() {
+    const q = normalize(query);
+    const list = items.filter((x) => !q || normalize(`${x.produto} ${x.pergunta} ${x.autor}`).includes(q));
+    const label = { pendente: "Aguardando resposta", respondida: "Respondida", oculta: "Oculta" };
+    panel.querySelector("#question-list").innerHTML = list.length
+      ? list
+          .map(
+            (x) => `<article class="panel question-admin" data-question="${esc(x.id)}"><header><span class="badge ${x.status === "pendente" ? "badge-low" : x.status === "oculta" ? "badge-out" : "badge-in"}">${label[x.status]}</span><a href="/produto.html?id=${encodeURIComponent(x.productId)}#perguntas">${esc(x.produto)}</a><small class="muted">${esc(x.autor)} · ${new Date(x.createdAt).toLocaleDateString("pt-BR")}</small></header><p class="question-text">${esc(x.pergunta)}</p>${
+              x.status === "oculta"
+                ? ""
+                : `<form class="question-form" data-answer="${esc(x.id)}"><label for="answer-${esc(x.id)}">${x.resposta ? "Editar resposta" : "Resposta da loja"}</label><textarea id="answer-${esc(x.id)}" name="resposta" rows="3" minlength="2" maxlength="1000" required>${esc(x.resposta || "")}</textarea><div class="row"><button type="submit">${x.resposta ? "Salvar resposta" : "Responder"}</button>${x.status === "pendente" ? `<button type="button" class="text-button danger-text" data-hide="${esc(x.id)}">Ocultar pergunta</button>` : ""}</div></form>`
+            }</article>`,
+          )
+          .join("")
+      : emptyState({ symbol: "question", title: query ? "Nenhuma pergunta encontrada." : "Nenhuma pergunta ainda.", level: 3 });
+  }
   async function load() {
     panel.innerHTML = loadingHTML();
+    if (tab === "questions") {
+      items = await api("/admin/questions");
+      const pending = items.filter((x) => x.status === "pendente").length;
+      panel.innerHTML = `${toolbar(`Perguntas ${pending ? `<span class="chip-count">${pending} aguardando</span>` : ""}`, "")}<p class="form-help">Só as perguntas respondidas aparecem na página do produto. Quem perguntou recebe a resposta nas notificações.</p><div class="question-list" id="question-list"></div>`;
+      const list = panel.querySelector("#question-list");
+      list.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.target.closest("[data-answer]");
+        const resposta = form.elements.resposta.value.trim();
+        if (resposta.length < 2) return toast("Escreva a resposta antes de enviar.", { type: "error" });
+        form.querySelector("[type=submit]").disabled = true;
+        try {
+          const updated = await send(`/admin/questions/${form.dataset.answer}`, { resposta }, "PATCH");
+          items = items.map((x) => (x.id === updated.id ? updated : x));
+          toast("Resposta publicada na página do produto.", { type: "success" });
+          renderQuestions();
+          await stats();
+        } catch (e) {
+          toast(e.message, { type: "error" });
+          form.querySelector("[type=submit]").disabled = false;
+        }
+      });
+      list.addEventListener("click", async (event) => {
+        const hide = event.target.closest("[data-hide]");
+        if (!hide || !(await confirmDialog({ title: "Ocultar esta pergunta?", text: "Ela não será publicada nem respondida.", confirm: "Ocultar", cancel: "Voltar", danger: true }))) return;
+        try {
+          const updated = await send(`/admin/questions/${hide.dataset.hide}`, { ocultar: true }, "PATCH");
+          items = items.map((x) => (x.id === updated.id ? updated : x));
+          renderQuestions();
+          await stats();
+        } catch (e) {
+          toast(e.message, { type: "error" });
+        }
+      });
+      wireSearch(renderQuestions);
+      return;
+    }
     if (tab === "orders") {
       [items, customers] = await Promise.all([api("/admin/orders"), api("/admin/customers")]);
       panel.innerHTML = `${toolbar("Pedidos", "")}<p class="form-help">Status avançam no fluxo; o cancelamento, permitido até a preparação, devolve os itens ao estoque.</p><div class="chip-row" id="order-chips"></div><div class="order-list" id="order-list"></div>`;

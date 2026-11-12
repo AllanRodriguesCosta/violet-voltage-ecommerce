@@ -709,3 +709,51 @@ body.assistant-open .assistant-launcher { visibility: hidden; }
 }
 /* Alvos de toque com pelo menos 24px de altura em listas de links. */
 .promo .text-link, .low-stock a, .cart-item-info h3 a { display: inline-block; padding-block: 3px; }
+
+/* Etapa 22: serviços no carrinho. */
+.item-services { margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 8px; font-size: 14px; }
+.item-services summary { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; cursor: pointer; color: var(--violet); font-weight: 600; list-style: none; }
+.item-services summary::-webkit-details-marker { display: none; }
+.item-services ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 8px; }
+.item-services .check { align-items: flex-start; font-weight: 400; }
+.item-services .check input { margin-top: 3px; }
+.item-services small { display: block; color: var(--muted); font-size: 13px; }
+.service-price { color: var(--violet-strong); font-weight: 600; white-space: nowrap; }
+.summary-service, .order-service { display: block; color: var(--muted); font-size: 12.5px; }
+/* Perguntas e respostas e painel de perguntas. */
+.qa-layout { display: grid; gap: 16px; }
+.qa-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.qa-item { padding: 14px 16px; border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--line); }
+.qa-question { display: flex; gap: 10px; margin: 0; font-weight: 600; }
+.qa-question .icon { flex: none; color: var(--violet); margin-top: 2px; }
+.qa-question small, .qa-answer small { display: block; margin-top: 2px; font-weight: 400; color: var(--muted); font-size: 12.5px; }
+.qa-answer { margin: 10px 0 0 28px; padding: 10px 12px; border-radius: var(--radius); background: var(--surface-2); font-size: 14.5px; line-height: 1.55; }
+.qa-answer strong { display: block; font-size: 12.5px; color: var(--violet-strong); margin-bottom: 2px; }
+.qa-ask textarea { width: 100%; resize: vertical; }
+.qa-ask label { font-weight: 600; }
+.qa-sent { color: var(--success); font-weight: 600; margin: 10px 0 0; }
+.qa-sent:empty { display: none; }
+.question-list { display: grid; gap: 12px; }
+.question-admin header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.question-admin header a { font-weight: 600; display: inline-block; padding-block: 3px; }
+.question-text { margin: 10px 0; font-size: 15px; }
+.question-form textarea { width: 100%; }
+@media (min-width: 900px) { .qa-layout { grid-template-columns: 1.6fr 1fr; align-items: start; } .qa-ask { position: sticky; top: calc(var(--header-h) + 16px); } }
+/* Guias de compra e glossário. */
+.guide-toc { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.guide-toc a { display: inline-flex; align-items: center; min-height: 40px; padding: 6px 14px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line-strong); color: var(--ink); font-size: 14px; font-weight: 600; text-decoration: none; }
+.guide-toc a:hover { border-color: var(--violet); color: var(--violet); }
+.guide-list { display: grid; gap: 16px; margin-top: 20px; }
+.guide h2 { font-size: 24px; margin: 4px 0 0; }
+.guide h3 { font-size: 16px; margin: 18px 0 4px; }
+.guide p { margin: 0; line-height: 1.65; max-width: 72ch; }
+.guide .lead { margin-bottom: 4px; }
+.guide-links { margin-top: 16px; }
+.guide, .glossary .term { scroll-margin-top: calc(var(--header-h) + 16px); }
+.glossary { margin-top: 20px; }
+.glossary-list { display: grid; gap: 0; margin: 12px 0 0; }
+.glossary-list .term { padding: 12px 0; border-top: 1px solid var(--line); }
+.glossary-list dt { font-weight: 700; }
+.glossary-list dd { margin: 4px 0 0; color: var(--ink-2); line-height: 1.6; }
+.glossary-list .term.is-target { background: var(--violet-soft); border-radius: var(--radius); padding-inline: 12px; }
+@media (min-width: 900px) { .guide-list { grid-template-columns: 1fr 1fr; } .glossary-list { grid-template-columns: 1fr 1fr; column-gap: 32px; } }

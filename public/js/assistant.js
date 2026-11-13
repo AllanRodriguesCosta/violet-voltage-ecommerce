@@ -93,7 +93,12 @@ function messageHTML(m, last) {
         .join("")}</div>`
     : "";
   const chips = last && m.sugestoes?.length ? `<div class="assistant-chips">${m.sugestoes.map((s) => `<button type="button" class="chip" data-assistant-say="${esc(s)}">${esc(s)}</button>`).join("")}</div>` : "";
-  const source = m.fonte === "gemini" ? `<p class="msg-source">${icon("sparkle", { size: 12 })}Resposta gerada com o Gemini (Google) a partir do catálogo da loja. Confira preço e estoque na página do produto.</p>` : "";
+  const source =
+    m.fonte === "gemini"
+      ? `<p class="msg-source">${icon("sparkle", { size: 12 })}Resposta gerada com o Gemini (Google) a partir do catálogo da loja. Confira preço e estoque na página do produto.</p>`
+      : m.fonte === "gemini-interpretou"
+        ? `<p class="msg-source">${icon("sparkle", { size: 12 })}Entendi como “${esc(m.interpretado || "")}” (interpretação com o Gemini; produtos, preços e estoque vêm da loja).</p>`
+        : "";
   return `<div class="msg msg-bot${m.erro ? " msg-error" : ""}">${text}${cards}${actions}${source}</div>${chips}`;
 }
 
@@ -171,7 +176,7 @@ export function mountAssistant(user) {
         favoritos: getWishlist().slice(0, 100),
       });
       state.contexto = r.contexto;
-      state.mensagens.push({ de: "assistente", texto: r.texto, cards: r.cards, acoes: r.acoes, sugestoes: r.sugestoes, fonte: r.fonte });
+      state.mensagens.push({ de: "assistente", texto: r.texto, cards: r.cards, acoes: r.acoes, sugestoes: r.sugestoes, fonte: r.fonte, interpretado: r.interpretado });
     } catch (error) {
       state.mensagens.push({ de: "assistente", erro: true, texto: `Não consegui responder agora. ${error.message || "Tente de novo em instantes."}`, sugestoes: [mensagem] });
     }

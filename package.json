@@ -16,6 +16,7 @@
     "agente:eval": "node scripts/assistant-eval.js",
     "db:migrate": "node scripts/migrate.js",
     "agente:smoke": "node scripts/assistant-smoke.js",
+    "agente:validar-gemini": "node scripts/gemini-validate.js",
     "azure:lb-check": "node scripts/lb-check.js",
     "lb:local": "node scripts/lb-local.js",
     "lb:docker": "docker compose -f infra/local/docker-compose.yml up --build -d",

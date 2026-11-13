@@ -233,7 +233,7 @@ BANCO DE DADOS
 VARIAVEIS DE AMBIENTE NOVAS (TODAS OPCIONAIS)
 ---------------------------------------------
 GEMINI_API_KEY      chave gratuita do Google AI Studio (sem faturamento)
-GEMINI_MODEL        padrao gemini-flash-latest
+GEMINI_MODEL        padrao gemini-3.5-flash-lite (etapa 38)
 GEMINI_TIMEOUT_MS   padrao 6000
 GEMINI_PER_MINUTE   padrao 8
 Sem elas o site funciona igual, so com a PLN local.

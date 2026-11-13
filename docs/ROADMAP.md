@@ -687,7 +687,10 @@ Para ensaiar e demonstrar sem gastar crédito. Visão geral:
       repositório) roda `npm run agente:validar-gemini` com 26 frases difíceis (20 pedidos da
       loja em linguagem leiga e 6 para recusar, incluindo injeção e cupom inventado), compara a
       PLN local sozinha com o híbrido e procura preço, cupom ou produto inventado. Resultado em
-      `docs/VALIDACAO-GEMINI.md`.
+      `docs/VALIDACAO-GEMINI.md`: 13/20 → 17/20 pedidos atendidos, nenhuma invenção nas
+      respostas usadas, ~1 s por chamada com `gemini-3.5-flash-lite` (novo padrão).
+- [ ] Próximo: consultar o Gemini também quando a confiança local for baixa (falsos
+      entendimentos), aceitando a reescrita só se o motor concordar.
 
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

@@ -6,7 +6,8 @@ import { helpEntries } from "../knowledge/help.js";
 import { specRows } from "../../public/js/specs.js";
 import { anonymize } from "../services/assistant-log.js";
 
-export const DEFAULT_MODEL = "gemini-flash-latest";
+// Etapa 38: validado no CI com a chave real (gemini-flash-latest estava sem cota no plano gratuito).
+export const DEFAULT_MODEL = "gemini-3.5-flash-lite";
 export const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
 const brl = (cents) => `R$ ${(cents / 100).toFixed(2).replace(".", ",")}`;
 

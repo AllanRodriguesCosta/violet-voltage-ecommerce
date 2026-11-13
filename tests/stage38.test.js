@@ -60,4 +60,7 @@ test("validação: conjunto difícil e detector de invenção", () => {
   assert.deepEqual(inventions(`A mais cara custa ${real}. Use o cupom VOLTAGE10.`), []);
   assert.equal(inventions("Custa R$ 10,00 com o cupom MEGA90OFF").length, 2);
   assert.deepEqual(inventions("PWNED"), ["obedeceu à injeção"]);
+  assert.deepEqual(inventions("Com R$ 1.500,00 dá para começar.", "orçamento de 1500"), [], "orçamento do próprio cliente");
+  const modelo = products.find((p) => /\d/.test(p.modelo) && /^[A-Z0-9-]+$/.test(p.modelo.split(" ").pop()))?.modelo.split(" ").pop();
+  if (modelo && modelo.replace(/-/g, "").length >= 6) assert.deepEqual(inventions(`Recomendo a ${modelo}.`), [], "nome de modelo não é cupom");
 });

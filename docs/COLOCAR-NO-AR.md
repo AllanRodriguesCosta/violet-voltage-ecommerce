@@ -31,7 +31,7 @@ Copie `.env.example` para `.env` pelo editor. Se o arquivo já existir, atualize
 | `ADMIN_PASSWORD` | Senha privada de 12 a 72 caracteres, até 72 bytes UTF-8 |
 | `ADMIN_NAME` | Nome do administrador |
 | `GEMINI_API_KEY` | Opcional (etapa 25): chave gratuita do Google AI Studio, sem faturamento. Vazio = assistente só com PLN local |
-| `GEMINI_MODEL` | Opcional: padrão `gemini-flash-latest` |
+| `GEMINI_MODEL` | Opcional: padrão `gemini-3.5-flash-lite` (validado na etapa 38) |
 
 `DATABASE_CA_CERT` pode ficar vazio se a cadeia do certificado já for confiável. Se a conexão apresentar erro de certificado, obtenha a CA oficial no painel de configurações do banco e configure o PEM completo nessa variável, entre aspas no `.env`. Ela aceita `\n` entre linhas. Não desative a validação TLS. [Documentação de SSL](https://supabase.com/docs/guides/platform/ssl-enforcement).
 

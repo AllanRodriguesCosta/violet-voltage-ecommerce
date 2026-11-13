@@ -1,5 +1,5 @@
 import { icon } from "../icons.js";
-import { catalogProducts, searchProducts, correctQuery, rememberSearch, categories, escapeHtml as esc } from "../common.js";
+import { catalogProducts, searchProducts, correctQuery, rememberSearch, categories, escapeHtml as esc, send } from "../common.js";
 import { productCard, skeletonCards, bindCards, categoryInfo, emptyState, errorState } from "../components.js";
 import { specFields, specList, SPEC_FIELDS } from "../specs.js";
 
@@ -21,6 +21,19 @@ const filterFields = (categoria) => (categoria ? specFields(categoria) : commonF
 const PAGE = 24;
 const reais = (value) => (/^\d{1,7}$/.test(value || "") ? Number(value) : null);
 
+// Etapa 35: termo buscado e quantos produtos apareceram, sem identificar quem buscou (o painel
+// mostra o que mais procuram e o que falta no catálogo). Espera a digitação parar.
+let searchTimer = null;
+let lastLogged = "";
+function logSearch(q, count, corrected) {
+  clearTimeout(searchTimer);
+  const term = String(q || "").trim();
+  if (term.length < 2 || term === lastLogged) return;
+  searchTimer = setTimeout(() => {
+    lastLogged = term;
+    send("/buscas", { termo: term, resultados: count, ...(corrected ? { corrigido: corrected } : {}) }).catch(() => {});
+  }, 1200);
+}
 export default async function catalog() {
   const $ = (s) => document.querySelector(s);
   const form = $("#filters");
@@ -169,6 +182,7 @@ export default async function catalog() {
     form.elements.max.setAttribute("aria-invalid", String(invalid));
     const list = filtered();
     if (state.sort !== "default") list.sort(sorters[state.sort]);
+    logSearch(state.q, list.length, corrected);
     $("#catalog-count").textContent = `${list.length} ${list.length === 1 ? "equipamento encontrado" : "equipamentos encontrados"}${activeQuery ? ` para “${activeQuery}”` : ""}`;
     $("#filters-apply").textContent = `Ver ${list.length} ${list.length === 1 ? "resultado" : "resultados"}`;
     const shown = list.slice(0, limit);

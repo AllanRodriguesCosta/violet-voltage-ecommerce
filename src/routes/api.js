@@ -16,7 +16,8 @@ import {
 import { placeOrder, exclusive, calculate, itemIds } from "../services/checkout.js";
 import { quote, deliveryOptions } from "../services/pricing.js";
 import { activeRules, activeList, allCoupons, createCoupon, updateCoupon, publicCoupon, checkCustomerUse } from "../services/coupons.js";
-import { getSavedCart, saveCart, remindAbandoned } from "../services/carts.js";
+import { getSavedCart, saveCart, remindAbandoned, abandonedStats } from "../services/carts.js";
+import { logSearch, searchSummary, clearSearches } from "../services/searches.js";
 import { cepDigits } from "../../public/js/regions.js";
 import { updateOrderStatus, summary, requestExchange, answerExchange, exchangeWindow } from "../services/orders.js";
 import { addressInput, saveAddress, removeAddress } from "../services/addresses.js";
@@ -367,6 +368,16 @@ export function apiRouter(storage, config) {
       products = products.filter((p) => p.priceCents <= Number(req.query.max));
     res.json({ data: products });
   });
+  // Etapa 35: buscas do catálogo para o painel (sem identificar quem buscou).
+  const searchLimit = rateLimit({
+    windowMs: 60 * 1000,
+    limit: 30,
+    keyGenerator: (req) => `ip:${ipKeyGenerator(req.ip || "")}`,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    handler: (_req, res) => res.status(429).json({ error: { message: "Muitas buscas seguidas." } }),
+  });
+  r.post("/buscas", searchLimit, async (req, res) => res.status(202).json({ data: { registrada: await logSearch(storage, req.body || {}) } }));
   r.get("/products/:id", async (req, res) =>
     res.json({ data: publicProduct(await product(req.params.id)) }),
   );
@@ -499,7 +510,10 @@ export function apiRouter(storage, config) {
     const perguntasPendentes = (await storage.list("questions")).filter((q) => q.status === "pendente").length;
     const encomendasAbertas = (await storage.list("requests")).filter((x) => ["Recebida", "Em análise"].includes(x.status)).length;
     const parceriasNovas = (await storage.list("partners")).filter((x) => x.status === "Nova").length;
-    res.json({ data: { ...summary(p, c, o), procura, precoAvisos, perguntasPendentes, encomendasAbertas, parceriasNovas } });
+    // Etapa 35: buscas, carrinhos esquecidos e frases que o assistente não entendeu.
+    const [buscas, carrinhos, faltas] = await Promise.all([searchSummary(storage, 8), abandonedStats(storage), missSummary(storage)]);
+    const assistente = { frasesNaoEntendidas: faltas.reduce((s, x) => s + x.vezes, 0), exemplos: faltas.slice(0, 5) };
+    res.json({ data: { ...summary(p, c, o), procura, precoAvisos, perguntasPendentes, encomendasAbertas, parceriasNovas, buscas, carrinhos, assistente } });
   });
   r.post("/admin/products", async (req, res) => {
     const input = productInput(req.body);
@@ -647,6 +661,11 @@ export function apiRouter(storage, config) {
     res.json({ data: (await storage.list("requests")).sort((a, b) => order(a) - order(b) || b.createdAt.localeCompare(a.createdAt)).map(adminRequest) });
   });
   r.patch("/admin/encomendas/:id", async (req, res) => res.json({ data: adminRequest(await answerRequest(storage, req.params.id, req.body)) }));
+  r.get("/admin/buscas", async (_req, res) => res.json({ data: await searchSummary(storage, 50) }));
+  r.delete("/admin/buscas", async (_req, res) => {
+    await clearSearches(storage);
+    res.json({ data: { ok: true } });
+  });
   r.get("/admin/cupons", async (_req, res) => res.json({ data: (await allCoupons(storage)).map(publicCoupon) }));
   r.post("/admin/cupons", async (req, res) => res.status(201).json({ data: publicCoupon(await createCoupon(storage, req.body || {})) }));
   r.patch("/admin/cupons/:code", async (req, res) => res.json({ data: publicCoupon(await updateCoupon(storage, req.params.code, req.body || {})) }));

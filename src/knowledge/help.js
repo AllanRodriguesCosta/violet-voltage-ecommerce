@@ -5,6 +5,7 @@ import { shipping, delivery, FREE_SHIPPING_CENTS, MAX_INSTALLMENTS, MIN_INSTALLM
 
 const brl = (cents) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100).replace(/\s/g, " ");
 const conta = { rotulo: "Ir para Minha conta", href: "/minha-conta.html" };
+const dados = { rotulo: "Abrir Dados e segurança", href: "/minha-conta.html#dados" };
 
 export const helpGroups = [
   {
@@ -72,12 +73,13 @@ export const helpGroups = [
     titulo: "Conta e privacidade",
     chip: "Conta",
     itens: [
-      { pergunta: "Como altero meus dados?", resposta: "Em Minha conta, na seção Meus dados, você muda nome e telefone. O e-mail de acesso não pode ser alterado.", link: conta, termos: "alterar dados nome telefone cadastro email" },
-      { pergunta: "Como troco minha senha?", resposta: "Em Minha conta, na seção Segurança e privacidade, informe a senha atual e a nova (de 10 a 72 caracteres). Por segurança, as sessões abertas em outros aparelhos são encerradas.", link: conta, termos: "trocar mudar alterar senha nova" },
+      { pergunta: "Como altero meus dados?", resposta: "Em Minha conta, na seção Dados e segurança (menu “Olá, …” no topo da página), você muda nome e telefone. O e-mail de acesso não pode ser alterado.", link: dados, termos: "alterar dados nome telefone cadastro email" },
+      { pergunta: "Como troco minha senha?", resposta: "Em Minha conta, na seção Dados e segurança, informe a senha atual e a nova (de 10 a 72 caracteres). Por segurança, as sessões abertas em outros aparelhos são encerradas.", link: dados, termos: "trocar mudar alterar senha nova" },
       { pergunta: "Esqueci minha senha. E agora?", resposta: "A loja ainda não envia e-mail de recuperação de senha. Se perdeu o acesso, crie uma conta com outro e-mail.", termos: "esqueci recuperar senha perdi acesso" },
-      { pergunta: "Como baixo uma cópia dos meus dados?", resposta: "Em Minha conta, na seção Segurança e privacidade, use “Baixar meus dados”: você recebe um arquivo com seu cadastro, endereços, pedidos, avisos de estoque e de preço, perguntas sobre produtos e notificações.", link: conta, termos: "baixar cópia exportar dados lgpd portabilidade" },
-      { pergunta: "Como excluo minha conta?", resposta: "Em Minha conta, na seção Segurança e privacidade, confirme com sua senha. Nome, telefone, endereços, avisos e notificações são apagados e o acesso é encerrado; os pedidos ficam guardados sem seus dados pessoais, como registro da venda. Com pedido em andamento, a exclusão espera a conclusão ou o cancelamento.", link: conta, termos: "excluir apagar deletar encerrar desativar cancelar conta cadastro lgpd" },
+      { pergunta: "Como baixo uma cópia dos meus dados?", resposta: "Em Minha conta, na seção Dados e segurança, use “Baixar meus dados”: você recebe um arquivo com seu cadastro, endereços, pedidos, avisos de estoque e de preço, perguntas sobre produtos e notificações.", link: dados, termos: "baixar cópia exportar dados lgpd portabilidade" },
+      { pergunta: "Como excluo minha conta?", resposta: "Em Minha conta, na seção Dados e segurança, use “Excluir minha conta” e confirme com sua senha. Nome, telefone, endereços, avisos e notificações são apagados e o acesso é encerrado; os pedidos ficam guardados sem seus dados pessoais, como registro da venda. Com pedido em andamento, a exclusão espera a conclusão ou o cancelamento.", link: dados, termos: "excluir apagar deletar encerrar desativar cancelar conta cadastro lgpd" },
       { pergunta: "Onde ficam meus favoritos?", resposta: "Neste navegador. Em outro aparelho ou navegador, a lista começa vazia.", link: { rotulo: "Ver favoritos", href: "/favoritos.html" }, termos: "favoritos lista desejos coração salvos" },
+      { pergunta: "Posso deixar uma forma de pagamento preferida?", resposta: "Sim. Em Minha conta, na seção Métodos de pagamento, escolha Pix, cartão de crédito (com o número de parcelas) ou boleto. Ela já vem marcada no checkout, e você pode trocar em cada compra. A loja não pede nem guarda número de cartão.", link: { rotulo: "Abrir Métodos de pagamento", href: "/minha-conta.html#pagamentos" }, termos: "forma pagamento preferida padrão salvar método favorito" },
     ],
   },
 ];

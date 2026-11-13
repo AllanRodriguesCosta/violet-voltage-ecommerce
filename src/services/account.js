@@ -1,7 +1,8 @@
 // Segurança e privacidade da conta: troca de senha, cópia dos dados (portabilidade)
 // e exclusão pelo próprio cliente.
 import bcrypt from "bcryptjs";
-import { AppError, text } from "../utils/validation.js";
+import { AppError, text, integer } from "../utils/validation.js";
+import { MAX_INSTALLMENTS } from "./pricing.js";
 import { safeCustomer } from "../middleware/auth.js";
 import { publicOrder } from "../controllers/serialization.js";
 import { publicNotification } from "./notifications.js";
@@ -26,6 +27,16 @@ export async function changePassword(storage, user, body = {}) {
   if (body.atual === nova) throw new AppError(400, "A nova senha precisa ser diferente da atual.", "nova");
   const now = new Date().toISOString();
   const next = { ...user, passwordHash: await bcrypt.hash(nova, 12), passwordChangedAt: now, updatedAt: now };
+  await storage.save("customers", next, user.etag);
+  return next;
+}
+
+// Forma de pagamento preferida: vem marcada no checkout. Parcelas só valem para o cartão.
+export const PAYMENT_METHODS = ["pix", "cartao", "boleto"];
+export async function savePaymentPreference(storage, user, body = {}) {
+  if (!PAYMENT_METHODS.includes(body.metodo)) throw new AppError(400, "Escolha Pix, cartão de crédito ou boleto.", "metodo");
+  const parcelas = body.metodo === "cartao" ? integer(body.parcelas ?? 1, "parcelas", 1, MAX_INSTALLMENTS) : 1;
+  const next = { ...user, pagamento: { metodo: body.metodo, parcelas }, updatedAt: new Date().toISOString() };
   await storage.save("customers", next, user.etag);
   return next;
 }
@@ -73,7 +84,7 @@ export async function deleteAccount(storage, user, body = {}) {
   const now = new Date().toISOString();
   await storage.save(
     "customers",
-    { ...user, ativo: false, nome: "Conta excluída", telefone: "", endereco: "", enderecos: [], passwordHash: "", excluidaEm: now, updatedAt: now },
+    { ...user, ativo: false, nome: "Conta excluída", telefone: "", endereco: "", enderecos: [], pagamento: null, passwordHash: "", excluidaEm: now, updatedAt: now },
     user.etag,
   );
 }

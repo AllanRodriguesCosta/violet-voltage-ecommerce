@@ -1,6 +1,6 @@
 # Fontes das imagens do catálogo
 
-Coloque as **75 imagens PNG fornecidas pelo usuário** em `seed-assets/produtos-violet-voltage/`, com as subpastas `correias`, `amplificadores`, `pedais`, `guitarras`, `acessorios` e `cabos`: as 22 originais e as 53 da etapa 18, listadas com nome de arquivo em [`docs/FOTOS-PENDENTES.txt`](../docs/FOTOS-PENDENTES.txt). Preserve nomes, espaços, acentos e capitalização. O manifesto completo está em `src/services/seed-products.js`; inclusive `correira preta padrão.png` mantém a grafia do arquivo original.
+Coloque as **80 imagens PNG fornecidas pelo usuário** em `seed-assets/produtos-violet-voltage/`, com as subpastas `correias`, `amplificadores`, `pedais`, `guitarras`, `acessorios` e `cabos`: as 22 originais e as 58 novas (53 da etapa 18, 2 da etapa 21 e 3 da etapa 22), listadas com nome de arquivo em [`docs/FOTOS-PENDENTES.txt`](../docs/FOTOS-PENDENTES.txt). Preserve nomes, espaços, acentos e capitalização. O manifesto completo está em `src/services/seed-products.js`; inclusive `correira preta padrão.png` mantém a grafia do arquivo original.
 
 Para conferir a pasta sem alterar nada: `npm run fotos:conferir` (fotos prontas, faltando, PNGs inválidos e arquivos acima de 1 MB).
 
@@ -16,7 +16,7 @@ $env:PORT='3000'
 npm run seed
 ```
 
-O comando lê e confere todas as imagens, carrega os 75 produtos e faz uma chamada a `storage.upload` por imagem, com MIME `image/png`. Em memória, os arquivos ficam no adaptador, e o mesmo processo abre a loja em `http://localhost:3000`. Dados e imagens desaparecem ao parar o servidor. Não execute `npm start` em outro processo esperando compartilhar essa memória.
+O comando lê e confere todas as imagens, carrega os 80 produtos e faz uma chamada a `storage.upload` por imagem, com MIME `image/png`. Em memória, os arquivos ficam no adaptador, e o mesmo processo abre a loja em `http://localhost:3000`. Dados e imagens desaparecem ao parar o servidor. Não execute `npm start` em outro processo esperando compartilhar essa memória.
 
 ## Executar no PostgreSQL
 

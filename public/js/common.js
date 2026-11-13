@@ -489,7 +489,7 @@ function headerHTML() {
 <button type="button" class="icon-button theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Tema escuro">${icon("moon")}</button>
 <a class="icon-button wish-link" href="/favoritos.html" aria-label="Favoritos">${icon("heart")}<span class="count" data-wishlist-count hidden>0</span></a>
 <a class="icon-button notif-link" href="/minha-conta.html#notificacoes" aria-label="Notificações" hidden>${icon("bell")}<span class="count" data-notification-count hidden>0</span></a>
-<a class="account-link" href="/login.html" id="account-link">${icon("user")}<span class="account-label">Entrar</span></a>
+<div class="account-menu" id="account-menu"><a class="account-link" href="/login.html" id="account-link">${icon("user")}<span class="account-label">Entrar</span></a></div>
 <a class="icon-button cart-link" href="/carrinho.html" data-open-cart aria-label="Carrinho">${icon("bag")}<span class="count" id="cart-count" data-cart-count hidden>0</span></a>
 </nav></div></header>
 <nav class="category-nav" aria-label="Categorias"><div class="container category-nav-inner"><a href="/catalogo.html">Todo o catálogo</a>${categories.map((c) => `<a href="${categoryLink(c)}">${c}</a>`).join("")}<a href="/setup.html" class="nav-setup">${icon("sparkle", { size: 16 })}Monte seu setup</a><a href="/kits.html" class="nav-kits">${icon("gift", { size: 16 })}Kits</a><a href="/guias.html">Guias</a><a href="/ajuda.html" class="nav-help">Ajuda</a><a href="/admin.html" class="admin-link" hidden>Painel</a></div></nav>
@@ -541,6 +541,126 @@ function wireDialogs() {
     });
   }
 }
+// Seções de Minha conta: menu do cabeçalho ("Olá, ...") e navegação da própria página.
+// menu: aparece no menu do cabeçalho; nav: aparece na navegação lateral da conta.
+export const accountSections = [
+  { id: "visao-geral", icon: "grid", label: "Visão geral", href: "/minha-conta.html", menu: true, nav: true },
+  { id: "pedidos", icon: "package", label: "Meus pedidos", href: "/minha-conta.html#pedidos", menu: true, nav: true },
+  { id: "dados", icon: "user", label: "Dados e segurança", href: "/minha-conta.html#dados", menu: true, nav: true },
+  { id: "enderecos", icon: "pin", label: "Endereços", href: "/minha-conta.html#enderecos", menu: true, nav: true },
+  { id: "pagamentos", icon: "card", label: "Métodos de pagamento", href: "/minha-conta.html#pagamentos", menu: true, nav: true },
+  { id: "avisos", icon: "tag", label: "Avisos de estoque e preço", href: "/minha-conta.html#avisos", menu: true, nav: true },
+  { id: "notificacoes", icon: "bell", label: "Notificações", href: "/minha-conta.html#notificacoes", menu: false, nav: true },
+  { id: "favoritos", icon: "heart", label: "Favoritos", href: "/favoritos.html", menu: true, nav: false },
+  { id: "ajuda", icon: "question", label: "Preciso de ajuda", href: "/minha-conta.html#ajuda", menu: true, nav: true },
+];
+export const initials = (nome) =>
+  String(nome || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w, i, all) => (i === 0 || i === all.length - 1 ? w[0] : ""))
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "?";
+// Endereço de retorno depois do login: só páginas internas da loja (com busca e âncora opcionais).
+export function safeNext(next) {
+  if (typeof next !== "string" || next.length > 300) return null;
+  if (!/^\/(?!\/)(?:[a-z0-9-]+\.html)?(?:\?[\w=&%.,+-]{0,200})?(?:#[\w-]{1,40})?$/i.test(next)) return null;
+  return /^\/(login|cadastro)\.html/.test(next) ? null : next;
+}
+// Sair: encerra a sessão no servidor e apaga a conversa do assistente desta aba.
+export async function logout() {
+  try {
+    await send("/auth/logout", {});
+  } catch (error) {
+    toast(error.message, { type: "error" });
+    return;
+  }
+  try {
+    sessionStorage.removeItem("vv_assistente");
+  } catch {
+    // Sem armazenamento da aba, não há conversa para apagar.
+  }
+  location.href = "/";
+}
+function accountMenuHTML(user) {
+  const first = user.nome.split(" ")[0];
+  const items = accountSections.filter((s) => s.menu);
+  return `<button type="button" class="account-link account-toggle" id="account-link" aria-expanded="false" aria-controls="account-dropdown"><span class="account-avatar" aria-hidden="true">${escapeHtml(initials(user.nome))}</span><span class="account-label">Olá, ${escapeHtml(first)}</span>${icon("chevronDown", { size: 16, className: "account-chevron" })}<span class="sr-only">: abrir o menu da conta</span></button>
+<div class="account-dropdown" id="account-dropdown" hidden><div class="account-dropdown-head"><span class="account-avatar account-avatar-md" aria-hidden="true">${escapeHtml(initials(user.nome))}</span><span><strong>${escapeHtml(user.nome)}</strong><small>${escapeHtml(user.email)}</small></span></div><nav aria-label="Menu da conta"><ul>${items
+    .map((s) => `<li><a href="${s.href}" data-section="${s.id}">${icon(s.icon, { size: 18 })}${s.label}</a></li>`)
+    .join("")}${user.role === "admin" ? `<li><a href="/admin.html">${icon("chart", { size: 18 })}Painel administrativo</a></li>` : ""}</ul></nav><button type="button" class="account-logout" data-logout>${icon("logout", { size: 18 })}Sair</button></div>`;
+}
+// Menu "Olá, ..." do cabeçalho: abre com clique, Enter ou seta para baixo; fecha com Esc,
+// clique fora ou quando o foco sai do menu. As setas percorrem os itens.
+function wireAccountMenu(user) {
+  const holder = document.querySelector("#account-menu");
+  if (!holder) return;
+  holder.innerHTML = accountMenuHTML(user);
+  const button = holder.querySelector("#account-link");
+  const panel = holder.querySelector("#account-dropdown");
+  const items = () => [...panel.querySelectorAll("a, button")];
+  const open = (show, { focus } = {}) => {
+    panel.hidden = !show;
+    button.setAttribute("aria-expanded", String(show));
+    if (show && focus) items()[focus === "last" ? items().length - 1 : 0]?.focus();
+  };
+  button.addEventListener("click", () => open(panel.hidden));
+  button.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      open(true, { focus: event.key === "ArrowUp" ? "last" : "first" });
+    }
+  });
+  holder.addEventListener("keydown", (event) => {
+    if (panel.hidden) return;
+    if (event.key === "Escape") {
+      open(false);
+      button.focus();
+      return;
+    }
+    // As setas no próprio botão já abriram o menu no primeiro (ou último) item.
+    if (event.target === button) return;
+    const list = items();
+    const index = list.indexOf(document.activeElement);
+    if (index < 0 || !["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === "Home" ? 0 : event.key === "End" ? list.length - 1 : (index + (event.key === "ArrowDown" ? 1 : -1) + list.length) % list.length;
+    list[next].focus();
+  });
+  holder.addEventListener("focusout", (event) => {
+    if (!panel.hidden && !holder.contains(event.relatedTarget)) open(false);
+  });
+  document.addEventListener("click", (event) => {
+    if (!panel.hidden && !holder.contains(event.target)) open(false);
+  });
+  panel.addEventListener("click", (event) => {
+    if (event.target.closest("[data-logout]")) logout();
+    else if (event.target.closest("a")) open(false);
+  });
+}
+// Menu lateral (celular): entradas da conta conforme a sessão.
+function wireMobileAccount(user) {
+  const entry = document.querySelector(".menu-account");
+  if (!entry) return;
+  if (!user) {
+    entry.href = "/login.html";
+    entry.lastChild.textContent = "Entrar ou criar conta";
+    return;
+  }
+  entry.insertAdjacentHTML(
+    "afterend",
+    accountSections
+      .filter((s) => s.menu && !["visao-geral", "favoritos"].includes(s.id))
+      .map((s) => `<a href="${s.href}" class="menu-sub">${icon(s.icon, { size: 18 })}${s.label}</a>`)
+      .join("") + `<button type="button" class="menu-logout" data-logout>${icon("logout", { size: 18 })}Sair</button>`,
+  );
+  entry.parentElement.querySelector(".menu-logout").addEventListener("click", logout);
+  entry.parentElement.addEventListener("click", (event) => {
+    if (event.target.closest(".menu-sub")) document.querySelector("#menu-dialog")?.close();
+  });
+}
 // Sessão compartilhada pelos módulos (avisos de estoque, visualização rápida etc.).
 export let sessionReady = Promise.resolve(null);
 export function setNotificationCount(count) {
@@ -568,11 +688,9 @@ async function loadShell() {
   let user = null;
   try {
     user = await api("/auth/session");
+    wireMobileAccount(user);
     if (!user) return null;
-    const account = document.querySelector("#account-link");
-    account.href = "/minha-conta.html";
-    account.querySelector(".account-label").textContent = `Olá, ${user.nome.split(" ")[0]}`;
-    account.setAttribute("aria-label", `Minha conta, ${user.nome}`);
+    wireAccountMenu(user);
     document.querySelectorAll(".admin-link").forEach((a) => (a.hidden = user.role !== "admin"));
     document.querySelector(".notif-link").hidden = false;
     setNotificationCount(user.naoLidas || 0);
@@ -591,7 +709,7 @@ export function requireUser(user) {
     return false;
   }
   if (!user) {
-    location.href = `/login.html?next=${encodeURIComponent(location.pathname)}`;
+    location.href = `/login.html?next=${encodeURIComponent(location.pathname + location.search + location.hash)}`;
     return false;
   }
   return true;

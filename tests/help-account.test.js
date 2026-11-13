@@ -46,7 +46,7 @@ test("busca na ajuda: acha a pergunta certa e não responde a pedidos de compra"
   assert.ok(r.acoes.some((a) => a.href === "/ajuda.html#produtos-4"));
   const pass = await ask("quero trocar minha senha");
   assert.equal(pass.intencao, "conta", "trocar senha não é troca de produto");
-  assert.match(pass.texto, /Segurança e privacidade/);
+  assert.match(pass.texto, /Dados e segurança/);
   assert.equal((await ask("quero trocar o pedal que comprei")).intencao, "troca");
 });
 

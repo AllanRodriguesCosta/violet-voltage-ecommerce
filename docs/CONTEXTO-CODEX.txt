@@ -8,6 +8,17 @@ ATUALIZACAO 13/11/2026
 - Etapa 26 (PR #22): assistente aberto a visitantes (login so para pedidos,
   historico, trocas e avisos de preco) e reacoes como "muito caro", "nao
   gostei" e orcamento solto. Ver docs/ROADMAP.md, Fase 4.
+- Etapa 27 (PR #23): "Ola, Nome" no cabecalho abre um menu (Meus pedidos,
+  Dados e seguranca, Enderecos, Metodos de pagamento, Avisos, Favoritos,
+  Preciso de ajuda, Sair). Minha conta virou uma pagina em secoes
+  (/minha-conta.html#pedidos, #dados, #enderecos, #pagamentos, #avisos,
+  #notificacoes, #ajuda), com cartoes ocupando a largura da tela. Novo:
+  forma de pagamento preferida (PATCH /api/account/payment), que ja vem
+  marcada no checkout; guarda so metodo e parcelas, nunca dados de cartao.
+  Nada muda no banco: o campo "pagamento" fica dentro do JSON do cliente,
+  sem migracao.
+- Ao testar o site no ar (T08), confira tambem: o menu "Ola" no computador,
+  o menu lateral no celular e "Sair" voltando para o inicio.
 
 LEIA PRIMEIRO
 -------------
@@ -168,14 +179,14 @@ COMO O COPILOT VALIDOU (E O QUE NAO VALIDOU)
   navegador (Playwright, servidor em memoria com o catalogo do manifesto) e
   auditoria de acessibilidade em tema claro e escuro, 375 e 1440 px. Detalhes
   por etapa em VALIDACAO.md (na raiz).
-- NAO validado: o site publicado no Render depois das etapas 17 a 25 (T01),
+- NAO validado: o site publicado no Render depois das etapas 17 a 27 (T01),
   o seed com as fotos novas (T05/T06), o Gemini com chave real (T07),
   Lighthouse do site publicado (T03) e o microfone num navegador real (no
   teste o reconhecimento de voz foi simulado).
 
 ORDEM SUGERIDA PARA O CODEX
 ---------------------------
-1. T01 deploy das etapas 17 a 25 e conferencia de /api/health.
+1. T01 deploy das etapas 17 a 27 e conferencia de /api/health.
 2. T05/T06 quando chegarem fotos (modo parcial ja serve).
 3. T07 se o Allan quiser ligar o Gemini.
 4. T03, T04 e T09 (Lighthouse, capturas, frases reais no assistente).

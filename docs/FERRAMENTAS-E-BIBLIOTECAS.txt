@@ -62,7 +62,7 @@ Comandos uteis (na raiz do projeto):
      jsonwebtoken, bcryptjs, multer, pg, dotenv.
 [OK] Desenvolvimento: eslint, globals, prettier, @electric-sql/pglite.
 
-Etapas 17 a 25: NENHUMA biblioteca nova.
+Etapas 17 a 27: NENHUMA biblioteca nova.
 - A PLN local do assistente (normalizacao, intencao, entidades, dialogo) e
   escrita em JavaScript puro dentro do projeto (src/assistant/, pronta na
   etapa 19).

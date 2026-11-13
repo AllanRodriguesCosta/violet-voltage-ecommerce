@@ -19,7 +19,7 @@ arquivos de ambiente, painel de credenciais ou senhas em uma gravação.
    transação PostgreSQL e identificação de pedidos para evitar duplicação.
 8. **Limites:** mostre que o projeto possui testes e documenta o que não oferece.
 
-### Recursos das etapas 17 a 25 (escolha 3 ou 4 conforme o tempo)
+### Recursos das etapas 17 a 27 (escolha 3 ou 4 conforme o tempo)
 
 - **Ficha e filtros:** catálogo de guitarras filtrado por captação, mão ou
   número de cordas; ficha com trastes e escala.
@@ -30,10 +30,16 @@ arquivos de ambiente, painel de credenciais ou senhas em uma gravação.
 - **Pedido:** comprovante com previsão de entrega e, depois de concluído,
   "Troca ou devolução".
 - **Guias:** `/guias.html` e a busca no glossário.
-- **Assistente (logado):** na página de um produto, "quantos trastes tem
-  essa?", "compara com a Jackson JS32" e "adiciona a segunda no carrinho"
-  (com botão de confirmação); no carrinho, "o que falta no meu carrinho?".
-  Explique que roda com PLN local, sem custo, e que o Gemini é opcional.
+- **Assistente:** sem login, peça "monta um setup de rock clássico até 5 mil"
+  e responda "muito caro" (versão mais barata e faixas de orçamento); "onde
+  está meu pedido?" pede login. Logado, na página de um produto, "quantos
+  trastes tem essa?", "compara com a Jackson JS32" e "adiciona a segunda no
+  carrinho" (com botão de confirmação); no carrinho, "o que falta no meu
+  carrinho?". Explique que roda com PLN local, sem custo, e que o Gemini é
+  opcional.
+- **Minha conta:** abra "Olá, Nome" no cabeçalho, vá a "Métodos de
+  pagamento", salve "Cartão de crédito, 6x" e mostre o checkout já com essa
+  opção; mostre a visão geral com o último pedido e "Preciso de ajuda".
 - **Painel:** indicadores por categoria e mais vendidos, aba Perguntas e aba
   Assistente (frases não entendidas, anônimas).
 

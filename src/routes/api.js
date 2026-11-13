@@ -31,7 +31,7 @@ import { specText } from "../../public/js/specs.js";
 import { reply } from "../assistant/index.js";
 import { askGemini, limiter } from "../assistant/gemini.js";
 import { card as assistantCard } from "../assistant/actions.js";
-import { changePassword, exportData, deleteAccount } from "../services/account.js";
+import { changePassword, exportData, deleteAccount, savePaymentPreference } from "../services/account.js";
 import { logMiss, missSummary, clearMisses } from "../services/assistant-log.js";
 import { answeredQuestions, askQuestion, moderateQuestion, publicQuestion, adminQuestion } from "../services/questions.js";
 const upload = multer({
@@ -199,6 +199,9 @@ export function apiRouter(storage, config) {
     sign(res, u);
     res.json({ data: { ok: true } });
   });
+  r.patch("/account/payment", authenticated, async (req, res) =>
+    res.json({ data: safeCustomer(await savePaymentPreference(storage, req.user, req.body)) }),
+  );
   r.get("/account/export", authenticated, async (req, res) => {
     res
       .set({ "Cache-Control": "no-store", "Content-Disposition": 'attachment; filename="violet-voltage-meus-dados.json"' })

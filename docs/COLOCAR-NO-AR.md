@@ -60,7 +60,7 @@ Abra `http://localhost:3000/api/health`: deve conter `data.storage: "postgresql"
 6. Remova `AZURE_STORAGE_CONNECTION_STRING`, agora sem uso. Deixe o Render fornecer `PORT`.
 7. Salve e publique a versão nova. `render.yaml` foi atualizado, mas serviços configurados manualmente precisam das mudanças no painel.
 8. Na URL HTTPS publicada, abra `/api/health` e confirme `status: "ok"` e `storage: "postgresql"` dentro de `data`.
-9. Confira catálogo, imagens, login, checkout demonstrativo e histórico. Das etapas 21 a 25: `/kits.html`, `/comparar.html`, `/guias.html`, comprovante em Minha conta, serviços no carrinho, perguntas no produto, abas Perguntas e Assistente no painel e o assistente logado (roteiro em `docs/PENDENCIAS-MANUAIS.txt`, T01). Reinicie o serviço e confirme a persistência.
+9. Confira catálogo, imagens, login, checkout demonstrativo e histórico. Das etapas 21 a 27: `/kits.html`, `/comparar.html`, `/guias.html`, comprovante em Minha conta, serviços no carrinho, perguntas no produto, abas Perguntas e Assistente no painel, o assistente com e sem login, o menu "Olá, Nome" do cabeçalho e Métodos de pagamento em Minha conta (roteiro em `docs/PENDENCIAS-MANUAIS.txt`, T01). Reinicie o serviço e confirme a persistência.
 
 As imagens estão no PostgreSQL e não dependem do disco do Render. Não coloque o seed em Build Command ou Start Command.
 

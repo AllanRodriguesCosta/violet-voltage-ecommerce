@@ -102,9 +102,20 @@ confirmação e reforço opcional com o Gemini gratuito. Decisão de custo zero:
 nenhuma biblioteca nova e nenhum serviço pago. Resumo para quem continua o
 trabalho: [CONTEXTO-CODEX.txt](CONTEXTO-CODEX.txt).
 
+## Fase 4 (13/11/2026): ajustes a partir do uso
+
+Duas etapas vindas da revisão do Allan. Etapa 26 (PR #22): o assistente passou
+a atender visitantes e só pede login quando a tarefa exige (pedidos, histórico,
+trocas), e deixou de responder "Por nada!" a "muito caro": agora monta uma
+versão mais barata do setup, pergunta o orçamento e aceita um valor solto.
+Etapa 27 (PR #23): a página de conta, que empilhava formulários numa coluna
+estreita, virou um menu "Olá, Nome" no cabeçalho e uma página em seções com
+cartões distribuídos pela largura, além da forma de pagamento preferida já
+marcada no checkout (sem guardar dados de cartão).
+
 ## Próximos marcos
 
-Publicar as etapas 17 a 25 no Render, carregar as 58 fotos novas, ligar o
+Publicar as etapas 17 a 27 no Render, carregar as 58 fotos novas, ligar o
 Gemini se desejado e medir o site publicado (Lighthouse e capturas), conforme
 [PENDENCIAS-MANUAIS.txt](PENDENCIAS-MANUAIS.txt). Ferramentas de estudo
 (afinador, metrônomo, tablaturas) ficam para um site separado, ligado à loja

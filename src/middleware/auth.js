@@ -7,6 +7,8 @@ export const safeCustomer = (u) => ({
   telefone: u.telefone,
   endereco: u.endereco,
   enderecos: u.enderecos || [],
+  // Forma de pagamento preferida (Pix, cartão ou boleto) e parcelas; nunca dados de cartão.
+  pagamento: u.pagamento || null,
   role: u.role,
   ativo: u.ativo,
 });

@@ -30,9 +30,9 @@ REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
    usado. Nao tente "consertar" mudando codigo.
 
 ----------------------------------------------------------------------
-T01 [ ] ALLAN - Publicar as etapas 17 a 25 no Render
+T01 [ ] ALLAN - Publicar as etapas 17 a 27 no Render
 ----------------------------------------------------------------------
-Depois do merge dos pull requests das etapas 17 a 25 em main:
+Depois do merge dos pull requests das etapas 17 a 27 em main:
 - As etapas 22 e 24 criam as tabelas violet_voltage.questions e
   violet_voltage.assistant_log. O
   servidor cria sozinho ao iniciar; se preferir, rode antes "npm run db:migrate"
@@ -50,12 +50,12 @@ Como conferir no site publicado:
   originais estiverem no banco; depois da T06 aparecem mais).
 - Home mostra "Escolha por estilo musical"; setup.html tem o campo "Estilo
   musical".
-- Logado, aparece o botao "Assistente" no canto da tela. Teste: "quero uma
+- O botao "Assistente" aparece no canto da tela, com ou sem login. Teste: "quero uma
   guitarra mais vintage", depois "blues rock" (precisa das guitarras no
   banco; com so os 22 produtos originais aparece a ST Electric Pink).
-- Minha conta tem a secao "Seguranca e privacidade" (trocar senha, baixar
-  meus dados, excluir conta). Teste a exclusao com uma conta criada so para
-  isso. /ajuda.html tem 6 secoes e 27 perguntas.
+- Minha conta tem a secao "Dados e seguranca" (trocar senha, baixar meus
+  dados, excluir conta). Teste a exclusao com uma conta criada so para isso.
+  /ajuda.html tem 6 secoes e 32 perguntas.
 - Etapa 21: "Comparar" nos cartoes e na pagina do produto abre a barra no
   rodape; /comparar.html mostra a tabela. /kits.html lista os kits (com so os
   22 produtos originais no banco, nenhum kit aparece completo: os kits usam
@@ -77,6 +77,15 @@ Como conferir no site publicado:
   responde em Pedidos e mostra as frases nao entendidas em Assistente.
 - Etapa 25: no Chrome ou no Edge, o assistente tem o botao de microfone; no
   primeiro uso aparece o aviso de privacidade. O Gemini so liga com a T07.
+- Etapa 26: sem login, o assistente recomenda e monta setups; "onde esta meu
+  pedido?" mostra "Entrar ou criar conta" e, depois do login, volta para a
+  mesma pagina. Monte um setup e responda "muito caro": vem uma versao mais
+  barata e as faixas de orcamento.
+- Etapa 27: logado, "Ola, Nome" no cabecalho abre o menu da conta (no
+  celular, os mesmos atalhos ficam no menu lateral). Em Minha conta, as
+  secoes ficam na lateral; salve "Cartao de credito, 6x" em Metodos de
+  pagamento e confira que o checkout ja vem com essa opcao. "Sair" volta
+  para o inicio.
 Os 58 produtos novos so aparecem no site depois da T06 (seed com as fotos).
 Resultado:
 

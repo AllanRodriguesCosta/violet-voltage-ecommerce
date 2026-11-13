@@ -432,5 +432,31 @@ instrumento usado na troca fica de fora.
       opções; "gostei" oferece adicionar ao carrinho. "Muito caro" deixou de
       ser entendido como agradecimento.
 
+### 27. Menu da conta no cabeçalho e Minha conta em seções
+
+- [x] "Olá, Nome" no cabeçalho virou um menu com as iniciais: Visão geral, Meus
+      pedidos, Dados e segurança, Endereços, Métodos de pagamento, Avisos de
+      estoque e preço, Favoritos, Preciso de ajuda e Sair (mais o painel para o
+      administrador). Abre com clique ou setas, fecha com Esc, clique fora ou
+      quando o foco sai; no celular os mesmos atalhos ficam no menu lateral.
+- [x] Minha conta reorganizada em seções (`#visao-geral`, `#pedidos`, `#dados`,
+      `#enderecos`, `#pagamentos`, `#avisos`, `#notificacoes`, `#ajuda`), com
+      navegação lateral no computador e abas roláveis no celular. O conteúdo
+      ocupa a largura em cartões: visão geral com indicadores e cartões (último
+      pedido com etapas e rastreio, notificações, dados, endereço principal,
+      pagamento preferido, avisos e ajuda); "Dados e segurança" com perfil,
+      senha, cópia dos dados e exclusão lado a lado. Links antigos
+      (`#seguranca`) continuam valendo, e o botão voltar do navegador troca de
+      seção.
+- [x] Métodos de pagamento: forma preferida (Pix, cartão com parcelas ou
+      boleto) salva na conta e já marcada no checkout. A loja guarda só o
+      método e o número de parcelas, nunca dados de cartão
+      (`PATCH /api/account/payment`; entra na cópia dos dados e é apagada com a
+      conta).
+- [x] Preciso de ajuda: assuntos frequentes (onde está o pedido, troca,
+      cancelamento, senha e dados, Central de ajuda) e botão que abre o
+      assistente.
+- [x] "Sair" encerra a sessão e apaga a conversa do assistente guardada na aba.
+
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

@@ -5,6 +5,19 @@ import { join } from "node:path";
 import { seedProducts, ORIGINAL_SEED_COUNT } from "../src/services/seed-products.js";
 import { defaultAssetsDirectory } from "../src/services/seed.js";
 import { galleryFiles } from "../src/services/seed-gallery.js";
+import { repoAssetsDirectory } from "../src/services/catalog-sync.js";
+
+// Procura primeiro na pasta local (fora do Git) e depois nas fotos versionadas (seed-assets/catalogo).
+async function read(file) {
+  for (const directory of [defaultAssetsDirectory, repoAssetsDirectory]) {
+    try {
+      return await readFile(join(directory, file));
+    } catch {
+      /* tenta a próxima pasta */
+    }
+  }
+  throw new Error("ausente");
+}
 
 const PNG = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 const LARGE = 1024 * 1024;
@@ -15,7 +28,7 @@ for (const [index, product] of seedProducts.entries()) {
   const label = `${product.file}  (${product.marca} ${product.modelo}${index >= ORIGINAL_SEED_COUNT ? ", etapa 18" : ""})`;
   let buffer;
   try {
-    buffer = await readFile(join(defaultAssetsDirectory, product.file));
+    buffer = await read(product.file);
   } catch {
     missing.push(label);
     continue;
@@ -29,7 +42,7 @@ const missingExtras = [];
 for (const extra of extras) {
   let buffer;
   try {
-    buffer = await readFile(join(defaultAssetsDirectory, extra.file));
+    buffer = await read(extra.file);
   } catch {
     missingExtras.push(extra.file);
     continue;
@@ -40,7 +53,7 @@ for (const extra of extras) {
 const ok = seedProducts.length - missing.length - invalid.filter((i) => !extras.some((e) => e.file === i)).length;
 const section = (title, items) => (items.length ? `\n${title} (${items.length}):\n${items.map((i) => `  - ${i}`).join("\n")}` : "");
 console.log(
-  `Fotos em seed-assets/produtos-violet-voltage: ${ok} de ${seedProducts.length} prontas.` +
+  `Fotos em seed-assets/produtos-violet-voltage e seed-assets/catalogo: ${ok} de ${seedProducts.length} prontas.` +
     section("Faltando", missing) +
     section("Não são PNG válidos (o seed para)", invalid) +
     section("Acima de 1 MB (funciona, mas deixa a loja mais lenta; comprima antes)", large) +

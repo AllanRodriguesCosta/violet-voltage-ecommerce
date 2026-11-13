@@ -10,10 +10,11 @@ SITUACAO EM 13/11/2026
   branco, recorte centralizado, quadradas, PNG valido, todas abaixo de 600 KB).
   Recebidas: 51 fotos principais [x] e 29 fotos extras de amplificadores
   (outras vistas e cores, secao FOTOS EXTRAS no fim deste arquivo).
-- O pacote organizado NAO vai para o GitHub (repositorio publico). Ele foi
-  entregue ao Allan como produtos-violet-voltage.zip: descompacte dentro de
-  seed-assets/ (as subpastas ja vem certas) e siga a tarefa T06 de
-  docs/PENDENCIAS-MANUAIS.txt.
+- Com a autorizacao do Allan (13/11/2026), as fotos recebidas estao no
+  repositorio, em seed-assets/catalogo/<subpasta>/, com os nomes desta lista.
+  Depois do deploy, o servidor cadastra sozinho os produtos que tem foto ali
+  (etapa 30). Nao precisa mais copiar para seed-assets/produtos-violet-voltage/
+  nem rodar o seed.
 - Faltam 8 fotos principais (linhas [ ]): o afinador Boss TU-3 e 7 produtos da
   marca propria Violet Voltage. Para a marca propria, serve foto de um produto
   generico parecido, sem logotipo de outra marca.
@@ -28,8 +29,11 @@ SITUACAO EM 13/11/2026
 O QUE FAZER
 -----------
 1. Salve cada foto com EXATAMENTE o nome indicado na linha, dentro de
-   seed-assets/produtos-violet-voltage/<subpasta>/ (ex.: .../guitarras/).
-   Essa pasta NAO vai para o GitHub (esta no .gitignore).
+   seed-assets/catalogo/<subpasta>/ (ex.: .../guitarras/), e envie num pull
+   request (ou mande a foto ao Copilot, que faz isso). Desde a etapa 30 essa
+   pasta vai para o GitHub e o servidor carrega as fotos dela ao iniciar.
+   (A pasta seed-assets/produtos-violet-voltage/, das 22 fotos originais,
+   continua fora do GitHub.)
 2. Formato: PNG de verdade (JPG ou WebP renomeado para .png e recusado).
    Quadrada (1:1), de 800x800 a 1200x1200 px, produto inteiro e centralizado,
    fundo branco ou transparente, sem textos, precos ou marcas d'agua.
@@ -42,12 +46,11 @@ O QUE FAZER
 5. Confira a pasta: npm run fotos:conferir
    (mostra quantas fotos estao prontas, quais faltam, PNGs invalidos e
    arquivos acima de 1 MB; nao altera nada).
-6. Carregue no banco, como na tarefa T06 de docs/PENDENCIAS-MANUAIS.txt:
+6. Depois do merge, publique (T01): ao iniciar, o servidor cadastra os
+   produtos que ganharam foto em seed-assets/catalogo/, sem rodar o seed.
+   O seed manual continua valendo (T06, opcional):
    - todas as fotos prontas:  npm run seed
    - so parte delas:          npm run seed -- --parcial
-     (carrega os produtos que ja tem foto e lista os que ficaram de fora;
-     rode de novo quando chegarem mais fotos, sem duplicar nada)
-   Enquanto o seed nao rodar, os produtos novos nao aparecem no site publicado.
 
 LEGENDA: [ ] pendente   [x] pronta
 Cada linha: caixa, arquivo, produto (marca e modelo) e codigo do produto.

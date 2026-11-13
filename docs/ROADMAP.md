@@ -489,8 +489,8 @@ instrumento usado na troca fica de fora.
 
 - [x] Fotos enviadas pelo Allan conferidas e padronizadas (fundo branco, recorte
       centralizado, quadradas, PNG abaixo de 600 KB, sem ampliar além do
-      original) e entregues como pacote com os nomes e subpastas do seed. O
-      pacote não vai para o GitHub (repositório público); a carga é a T06.
+      original), com os nomes e subpastas do seed (na etapa 30 elas foram para
+      o repositório, com a autorização do Allan).
 - [x] Galeria na página do produto: carrossel com setas, miniaturas, contador,
       setas do teclado na foto, arrastar no celular e ampliação da foto que está
       na tela. Amplificadores com frente, traseira e, quando os controles ficam
@@ -508,6 +508,21 @@ instrumento usado na troca fica de fora.
       campos ficam no JSON do produto.
 - [x] Produto novo demo-081 (cabo Santo Angelo Standard 2 m), que chegou com as
       fotos.
+
+### 30. Fotos no repositório e carga automática ao iniciar
+
+- [x] Com a autorização do Allan, as fotos novas (51 principais e 29 extras da
+      galeria) passaram a ficar no repositório, em `seed-assets/catalogo/`. As
+      22 fotos originais continuam fora do Git.
+- [x] Ao iniciar, o servidor cadastra os produtos do manifesto que têm foto ali
+      e ainda não estão no banco, e atualiza só as fotos dos que já existem
+      quando os arquivos mudam. Nunca altera preço, estoque, descrição ou
+      status, mantém a foto enviada pelo painel, não apaga nada e roda em
+      segundo plano, sem atrasar a subida. `CATALOG_SYNC=off` desliga.
+- [x] `npm run seed` e `npm run fotos:conferir` procuram cada foto na pasta
+      local e depois nas fotos do repositório. Com isso, a carga das fotos novas
+      no site publicado não depende mais de rodar o seed com a senha do banco:
+      basta o deploy (T01).
 
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

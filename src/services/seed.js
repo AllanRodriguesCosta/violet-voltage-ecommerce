@@ -18,12 +18,35 @@ const listed = (files) =>
   files.slice(0, 10).join(", ") +
   (files.length > 10 ? ` e mais ${files.length - 10}` : "");
 
+// Cada foto é procurada nas pastas em ordem: a local (fotos do Allan, fora do Git) e, se
+// informada, a do repositório (seed-assets/catalogo, etapa 30). A primeira que tiver o arquivo vale.
+async function existingDirectories(directories) {
+  const found = [];
+  for (const directory of directories.filter(Boolean)) {
+    try {
+      if ((await stat(directory)).isDirectory()) found.push(directory);
+    } catch {
+      /* pasta ausente: tenta a próxima */
+    }
+  }
+  return found;
+}
+async function readFirst(directories, file) {
+  for (const directory of directories) {
+    try {
+      return await readFile(join(directory, file));
+    } catch {
+      /* não está nesta pasta */
+    }
+  }
+  return null;
+}
+
 // Pré-validação completa: nenhum registro ou blob é alterado se faltar uma imagem.
 // No modo parcial, produtos sem foto ficam de fora (e são listados); PNG inválido sempre interrompe.
-async function readImages(assetsDirectory, partial) {
-  try {
-    if (!(await stat(assetsDirectory)).isDirectory()) throw new Error();
-  } catch {
+async function readImages(assetsDirectory, partial, fallbackDirectory) {
+  const directories = await existingDirectories([assetsDirectory, fallbackDirectory]);
+  if (!directories.length) {
     throw new SeedInputError(
       `Seed interrompido: a pasta ${folder} não foi encontrada. Coloque nela as ${seedProducts.length} imagens do manifesto, mantendo as subpastas e nomes. Nenhum produto ou imagem foi alterado.`,
     );
@@ -31,10 +54,8 @@ async function readImages(assetsDirectory, partial) {
   const images = new Map();
   const missing = [];
   for (const product of seedProducts) {
-    let buffer;
-    try {
-      buffer = await readFile(join(assetsDirectory, product.file));
-    } catch {
+    const buffer = await readFirst(directories, product.file);
+    if (!buffer) {
       missing.push(product.file);
       continue;
     }
@@ -46,12 +67,8 @@ async function readImages(assetsDirectory, partial) {
     // Fotos extras (outras vistas e cores): opcionais; PNG inválido também interrompe.
     const extras = [];
     for (const extra of galleryFiles(product).slice(1)) {
-      let data;
-      try {
-        data = await readFile(join(assetsDirectory, extra.file));
-      } catch {
-        continue;
-      }
+      const data = await readFirst(directories, extra.file);
+      if (!data) continue;
       if (!isPng(data)) {
         throw new SeedInputError(
           `Seed interrompido: ${extra.file} não é um PNG válido. Nenhum produto ou imagem foi alterado.`,
@@ -71,16 +88,11 @@ async function readImages(assetsDirectory, partial) {
 
 // Fotos extras (outras vistas e cores) que não estão na pasta. São opcionais: o seed segue e o
 // produto entra com as fotos que existirem. Usado nos avisos do "npm run seed".
-export async function missingGalleryFiles(assetsDirectory = defaultAssetsDirectory) {
+export async function missingGalleryFiles(assetsDirectory = defaultAssetsDirectory, fallbackDirectory) {
+  const directories = await existingDirectories([assetsDirectory, fallbackDirectory]);
   const missing = [];
   for (const product of seedProducts)
-    for (const extra of galleryFiles(product).slice(1)) {
-      try {
-        await stat(join(assetsDirectory, extra.file));
-      } catch {
-        missing.push(extra.file);
-      }
-    }
+    for (const extra of galleryFiles(product).slice(1)) if (!(await readFirst(directories, extra.file))) missing.push(extra.file);
   return missing;
 }
 
@@ -88,11 +100,12 @@ export async function seed(
   storage,
   {
     assetsDirectory = defaultAssetsDirectory,
+    fallbackDirectory,
     now = () => new Date(),
     partial = false,
   } = {},
 ) {
-  const { images, missing } = await readImages(assetsDirectory, partial);
+  const { images, missing } = await readImages(assetsDirectory, partial, fallbackDirectory);
   const existing = await storage.list("products");
   const byId = new Map();
   const seedIds = new Set(seedProducts.map((product) => product.rowKey));

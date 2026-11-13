@@ -1,9 +1,29 @@
+# Fase 4, etapa 30 — 13/11/2026
+
+- Com a autorização do Allan, 80 fotos (51 principais e 29 extras da galeria)
+  em `seed-assets/catalogo/`, 12,6 MB, todas PNG abaixo de 600 KB.
+- Testes novos em `tests/stage30.test.js` (5): toda foto do repositório está
+  no manifesto, é PNG e tem até 1 MB; carga ao iniciar cadastra quem tem foto,
+  atualiza só as fotos de quem já existe (preço, estoque e data de criação do
+  painel mantidos), não troca a foto enviada pelo painel, ignora PNG inválido e
+  produto sem foto, não grava nada quando as fotos não mudaram e troca a versão
+  do endereço quando a foto muda; uma falha num produto não interrompe os
+  outros e aparece no resumo; o seed procura na pasta local e depois no
+  repositório (e só no repositório quando a local não existe); `CATALOG_SYNC=off`
+  desliga. Locais: 134/135 (o de PostgreSQL roda no CI).
+- Servidor real em memória (`node src/server.js`): subiu na hora e registrou
+  "Fotos do catálogo: 51 produtos cadastrados, 0 com fotos atualizadas, 0 sem
+  mudança, 30 sem foto no repositório"; API com 51 produtos, 10 com galeria e 4
+  com cores; `/api/images/demo-043/7` devolve o PNG.
+- `npm run fotos:conferir`: 51 de 81 prontas só com o repositório (as 22
+  originais e as 8 que faltam ficam de fora) e 29 de 29 extras.
+
 # Fase 4, etapa 29 — 13/11/2026
 
 - Fotos enviadas pelo Allan (80 arquivos): conferidas uma a uma, renomeadas
   para o manifesto e padronizadas (fundo branco, recorte centralizado em
   quadrado, linhas soltas de recorte removidas, sem ampliar, até 600 KB).
-  `npm run fotos:conferir` com o pacote: 51 fotos novas prontas (as 22
+  `npm run fotos:conferir` com as fotos: 51 fotos novas prontas (as 22
   originais ficam no computador do Allan), 8 faltando, 29 de 29 extras.
 - Testes novos em `tests/stage29.test.js` (6): configuração da galeria (cada
   modelo existe, nomes simples, a frente da primeira cor é a foto principal,

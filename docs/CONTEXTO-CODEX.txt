@@ -23,9 +23,8 @@ ATUALIZACAO 13/11/2026
   barato" sempre sai mais barato ou avisa que chegou no minimo. So codigo do
   assistente: nada muda no banco nem no deploy.
 - Etapa 29 (PR #25): fotos novas, galeria e opcao de cor. O Allan enviou as
-  fotos; o pacote organizado (produtos-violet-voltage.zip) NAO esta no GitHub
-  (repositorio publico): descompacte dentro de seed-assets/ e rode o seed
-  parcial (T05/T06 em docs/PENDENCIAS-MANUAIS.txt). Amplificadores ganharam
+  fotos e o Copilot organizou (na etapa 30 elas foram para o repositorio, ver
+  abaixo). Amplificadores ganharam
   fotos extras (frente, topo com o painel e costas) e, em 4 modelos, cores
   (Blues Junior IV, Hot Rod Deluxe IV, AC30C2 e Crush 20RT). Na pagina do
   produto: carrossel com setas, miniaturas, arrastar no celular e bolinhas de
@@ -34,6 +33,14 @@ ATUALIZACAO 13/11/2026
   2 m (a foto chegou junto). Banco: os campos "fotos" e "cores" ficam no JSON
   do produto, sem migracao. Nova rota publica: GET /api/images/:id/:n (foto n
   da galeria). Configuracao das cores e vistas: src/services/seed-gallery.js.
+- Etapa 30 (PR #26): o Allan autorizou colocar as fotos no GitHub. Elas
+  estao em seed-assets/catalogo/ (mesmos nomes do manifesto). Ao iniciar, o
+  servidor cadastra os produtos com foto ali que faltam no banco e atualiza
+  so as fotos (nunca preco/estoque). Depois do deploy (T01), o log do Render
+  deve mostrar "Fotos do catalogo: 51 produtos cadastrados..." no primeiro
+  boot e "... 51 sem mudanca ..." nos seguintes. A T06 (seed com a senha do
+  banco) deixou de ser necessaria para as fotos novas. CATALOG_SYNC=off
+  desliga. As 22 fotos originais continuam fora do Git.
 - Ao testar o site no ar (T08), confira tambem: o menu "Ola" no computador,
   o menu lateral no celular e "Sair" voltando para o inicio.
 

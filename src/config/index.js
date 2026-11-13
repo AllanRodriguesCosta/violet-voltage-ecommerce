@@ -34,6 +34,8 @@ export function configuration(env = process.env) {
     databaseSsl: env.DATABASE_SSL !== "false",
     databaseCa: env.DATABASE_CA_CERT,
     secret: env.JWT_SECRET || randomBytes(48).toString("hex"),
+    // Etapa 30: ao iniciar, carrega as fotos versionadas do catálogo (CATALOG_SYNC=off desliga).
+    catalogSync: env.CATALOG_SYNC !== "off",
     // Reforço opcional do assistente; sem GEMINI_API_KEY fica desligado.
     gemini: geminiConfig(env),
   };

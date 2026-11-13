@@ -1,6 +1,7 @@
 import { configuration } from "../src/config/index.js";
 import { createStorage } from "../src/repositories/factory.js";
-import { seed, SeedInputError, missingGalleryFiles } from "../src/services/seed.js";
+import { seed, SeedInputError, missingGalleryFiles, defaultAssetsDirectory } from "../src/services/seed.js";
+import { repoAssetsDirectory } from "../src/services/catalog-sync.js";
 import { createApp } from "../src/app.js";
 import { bootstrapAdmin } from "../src/services/bootstrap.js";
 let storage;
@@ -11,7 +12,8 @@ try {
   await storage.init();
   // "npm run seed -- --parcial" carrega só os produtos que já têm foto.
   const partial = process.argv.includes("--parcial");
-  const result = await seed(storage, { partial });
+  // Fotos: pasta local (fora do Git) e, como reserva, as versionadas em seed-assets/catalogo.
+  const result = await seed(storage, { partial, fallbackDirectory: repoAssetsDirectory });
   console.log(
     `Seed concluído: ${result.created} produtos criados, ${result.updated} atualizados e ${result.uploaded} imagens enviadas. Total do catálogo seed: ${result.total}. Produtos manuais preservados.`,
   );
@@ -19,7 +21,7 @@ try {
     console.log(
       `Modo parcial: ${result.ignored.length} produtos ficaram de fora por falta de foto (lista em docs/FOTOS-PENDENTES.txt):\n${result.ignored.map((file) => `  - ${file}`).join("\n")}`,
     );
-  const extras = await missingGalleryFiles();
+  const extras = await missingGalleryFiles(defaultAssetsDirectory, repoAssetsDirectory);
   if (extras.length)
     console.log(
       `Fotos extras (outras vistas e cores) não encontradas: ${extras.length}. Os produtos entraram com as fotos que existem:\n${extras.map((file) => `  - ${file}`).join("\n")}`,

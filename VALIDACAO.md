@@ -1,3 +1,24 @@
+# Fase 4, etapa 26 — 13/11/2026
+
+- Testes novos em `tests/stage26.test.js` (4): setup caro (versão mais barata,
+  orçamento pedido, valor solto e "achei caro, tenho até 2 mil"),
+  recomendação (não gostei sem repetir, achei caro, orçamento solto, gostei),
+  "muito caro" sem contexto e "obrigado"; visitante recebe recomendação e
+  botão de login em pedidos, cancelamento, histórico, troca e favoritos; API
+  sem sessão. O teste antigo que esperava 401 para visitante passou a
+  verificar a resposta com login.
+- Avaliação do assistente: 94,9% em 118 frases, 48/48 entidades, 5/5
+  conversas (2 conversas novas de reação).
+- No navegador (9 verificações): visitante vê o assistente, "muito caro",
+  faixas de orçamento, setup refeito, adicionar ao carrinho sem login, login
+  pedido em pedidos, cadastro volta para a página de origem e resposta já
+  logado.
+- Regressão completa (18 roteiros, 374 verificações) sem falhas e auditoria de
+  acessibilidade (claro/escuro, 375/1440 px) sem problemas: 54/55 páginas e
+  estados conferidos em cada combinação.
+
+---
+
 # Fase 3, etapa 25 — 12/11/2026
 
 - Testes novos em `tests/stage25.test.js` (3), com Gemini falso (sem chave nem

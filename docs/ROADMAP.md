@@ -416,5 +416,21 @@ instrumento usado na troca fica de fora.
       privacidade no primeiro uso; a fala preenche o campo e o envio continua
       sendo do cliente. Privacidade e ajuda atualizadas.
 
+## Fase 4 — Ajustes pedidos pelo Allan (13/11/2026)
+
+### 26. Assistente para visitantes e respostas mais naturais
+
+- [x] Assistente aberto a quem não está logado; pedidos, histórico, preço dos
+      favoritos e trocas respondem com "Entrar ou criar conta", que volta para
+      a mesma página depois do login ou do cadastro (o retorno vale para
+      qualquer página interna).
+- [x] Reações à resposta anterior: "muito caro" no setup monta uma versão mais
+      barata, mostra quanto economiza e pergunta o orçamento; um valor solto
+      ("2500") ou "Até R$ 3.000" refaz o setup; na recomendação mostra opções
+      mais em conta ou explica que já são as mais acessíveis; sem contexto,
+      orienta e oferece kits, parcelas e cupom. "Não gostei" mostra outras
+      opções; "gostei" oferece adicionar ao carrinho. "Muito caro" deixou de
+      ser entendido como agradecimento.
+
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

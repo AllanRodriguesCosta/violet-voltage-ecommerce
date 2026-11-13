@@ -40,6 +40,14 @@ ATUALIZACAO 13/11/2026
   local + 3 copias + Nginx). O QUE FAZER E O QUE PASSAR AO ALLAN PARA O AZURE
   FOR STUDENTS: docs/CODEX-LOAD-BALANCER.txt. Visao geral para o Allan:
   docs/LOAD-BALANCER.md. Admin inicial agora e criado dentro de trava.
+- Etapa 35 (PR #31): buscas anonimas (POST /api/buscas, src/services/
+  searches.js, tabela "searches") e painel de demanda (public/js/admin.js,
+  demandHTML: mais buscados, sem resultado, carrinhos esquecidos, frases do
+  assistente). CI ganhou os jobs "e2e" (scripts/e2e-server.js +
+  tests/e2e/smoke.mjs, Playwright) e "lighthouse" (lighthouserc.json).
+  Rodar o roteiro na maquina: "node scripts/e2e-server.js" em um terminal e
+  "npx playwright install chromium" + "node tests/e2e/smoke.mjs" em outro
+  (precisa de "npm install --no-save playwright@1").
 - Etapa 34 (PR #30): cupons no painel (src/services/coupons.js, tabela
   "coupons"; os 3 padrao de pricing.js valem sem cadastro e podem ser
   sobrescritos), frete por regiao do CEP (public/js/regions.js, usado pelo

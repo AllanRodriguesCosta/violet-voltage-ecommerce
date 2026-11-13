@@ -17,6 +17,7 @@ export class MemoryStorage {
       requests: new Map(),
       partners: new Map(),
       carts: new Map(),
+      searches: new Map(),
       coupons: new Map(),
     };
     this.blobs = new Map();

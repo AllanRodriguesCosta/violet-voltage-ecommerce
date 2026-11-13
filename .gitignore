@@ -15,3 +15,5 @@ seed-assets/produtos-violet-voltage/
 # Etapa 31: variáveis preenchidas do Azure
 infra/azure/variaveis.env
 infra/azure/*.gerado.*
+lighthouse-relatorios/
+.lighthouseci/

@@ -13,6 +13,7 @@ const tables = Object.freeze({
   requests: "violet_voltage.requests",
   partners: "violet_voltage.partners",
   carts: "violet_voltage.carts",
+  searches: "violet_voltage.searches",
   coupons: "violet_voltage.coupons",
 });
 

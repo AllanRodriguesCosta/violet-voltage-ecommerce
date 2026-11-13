@@ -1015,3 +1015,17 @@ body.assistant-open .assistant-launcher { visibility: hidden; }
 .request-answer { background: var(--violet-soft); border-radius: 10px; padding: 8px 10px; }
 .assistant-actions .button.ghost { background: transparent; color: var(--violet); border: 1.5px solid var(--violet); }
 .pre-line { white-space: pre-line; }
+/* Etapa 34: cor esgotada na página do produto. Etapa 35: painel de demanda. */
+.swatch.is-out .swatch-dot { opacity: 0.45; background-image: linear-gradient(135deg, transparent 46%, var(--ink) 47%, var(--ink) 53%, transparent 54%); }
+.color-stock:empty { display: none; }
+.color-stock { margin: 6px 0 0; color: var(--muted); }
+.cep-form { margin-bottom: 14px; }
+.search-chart { width: 100%; height: auto; display: block; }
+.search-chart .bar { fill: var(--violet); }
+.search-chart .bar-miss { fill: var(--danger); }
+.search-chart text { font-size: 12px; fill: var(--ink); font-family: var(--font); }
+.search-chart .bar-value { fill: var(--muted); }
+.funnel { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.funnel li { display: flex; gap: 10px; align-items: baseline; }
+.funnel strong { font-size: 22px; min-width: 2.5ch; }
+.funnel span { color: var(--muted); font-size: 14px; }

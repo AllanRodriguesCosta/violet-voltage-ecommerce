@@ -618,5 +618,24 @@ Para ensaiar e demonstrar sem gastar crédito. Visão geral:
       rota do assistente não as repassava). Lista de cupons não escreve mais "r$ 30".
 - [x] Carrinho salvo entra na cópia dos dados e some na exclusão da conta (LGPD).
 
+### 35. Painel de demanda e testes de navegador no CI
+
+- [x] **O que os clientes procuram**: o catálogo envia o termo buscado e quantos produtos
+      apareceram (`POST /api/buscas`, tabela `searches`), sem conta, IP ou sessão; termos com
+      e-mail ou muitos números são descartados; 90 dias. O painel mostra os mais buscados (barras
+      em SVG), as **buscas sem resultado** (o que falta no catálogo) e as corrigidas pela busca
+      tolerante. `GET/DELETE /api/admin/buscas`.
+- [x] **Carrinhos esquecidos** no painel: com itens salvos, parados há mais de 24 h e quantos já
+      receberam o lembrete. **Assistente**: total de frases não entendidas e as mais comuns.
+- [x] **CI com navegador**: job `e2e` sobe a loja em memória (`scripts/e2e-server.js`) e roda
+      `tests/e2e/smoke.mjs` no Playwright (busca, carrinho com CEP, cadastro, pedido, assistente,
+      painel, celular sem rolagem lateral; erro no console reprova).
+- [x] **Lighthouse no CI** (`lighthouserc.json`): início, catálogo, produto e ajuda.
+      Acessibilidade e boas práticas abaixo de 90 reprovam; desempenho e SEO só avisam. Os
+      relatórios ficam como artefato "lighthouse" da execução.
+- [x] Correção: no checkout, o frete do endereço digitado é recalculado assim que o CEP fica
+      completo (antes era ao sair do campo, o que podia desabilitar o botão no clique de confirmar).
+- [x] Privacidade: seção "Buscas e carrinho salvo".
+
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

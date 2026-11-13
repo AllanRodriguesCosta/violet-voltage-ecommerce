@@ -18,7 +18,9 @@ export default async function checkout(session) {
   const content = document.querySelector("#checkout-content");
   const form = document.querySelector("#checkout-form");
   const submit = form.querySelector("[type=submit]");
-  const state = { entrega: prefs.delivery, pagamento: "pix", parcelas: 1, cupom: prefs.coupon, quote: null };
+  // Forma de pagamento preferida da conta (Minha conta > Métodos de pagamento) vem marcada.
+  const preferred = user.pagamento && ["pix", "cartao", "boleto"].includes(user.pagamento.metodo) ? user.pagamento : null;
+  const state = { entrega: prefs.delivery, pagamento: preferred?.metodo || "pix", parcelas: preferred?.metodo === "cartao" ? preferred.parcelas || 1 : 1, cupom: prefs.coupon, quote: null };
   let items;
   try {
     items = await cartData();

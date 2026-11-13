@@ -142,14 +142,19 @@ export default async function checkout(session) {
       else refresh();
     }
   });
-  // Endereço digitado: ao sair do campo, recalcula o frete se o CEP mudou de região.
+  // Endereço digitado: assim que o CEP fica completo, recalcula o frete (durante a digitação, e não
+  // ao sair do campo, para não desabilitar o botão no mesmo clique que confirma o pedido).
   let typedCep = null;
-  address.addEventListener("blur", () => {
-    const cep = cepFromText(address.value);
-    if (cep && cep !== typedCep) {
-      typedCep = cep;
-      refresh();
-    }
+  let cepTimer = null;
+  address.addEventListener("input", () => {
+    clearTimeout(cepTimer);
+    cepTimer = setTimeout(() => {
+      const cep = cepFromText(address.value);
+      if (cep && cep !== typedCep) {
+        typedCep = cep;
+        refresh();
+      }
+    }, 400);
   });
   form.addEventListener("click", (event) => {
     if (event.target.closest("[data-apply-coupon]")) {

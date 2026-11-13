@@ -546,5 +546,23 @@ aplicar load balancer"). Guia completo: [AZURE-LOAD-BALANCER.md](AZURE-LOAD-BALA
 - [x] `npm run azure:lb-check -- URL 30` conta qual instância respondeu.
 - [ ] Rodar na assinatura do Allan quando a atividade for pedida (T10).
 
+### 32. Load balancer também na máquina local
+
+Para ensaiar e demonstrar sem gastar crédito. Visão geral:
+[LOAD-BALANCER.md](LOAD-BALANCER.md); roteiro para o Codex:
+[CODEX-LOAD-BALANCER.txt](CODEX-LOAD-BALANCER.txt).
+
+- [x] `npm run lb:local`: sobe 3 cópias da loja e um balanceador em Node
+      (`scripts/lb-local.js`) em `localhost:8080`, em rodízio, com checagem de
+      saúde a cada 2 s, nova tentativa em outra cópia para GET/HEAD e comandos
+      `status`, `parar N`, `iniciar N` e `sair`. Mesmo `JWT_SECRET` em todas.
+      Sem `DATABASE_URL`, cada cópia fica em memória (mostra por que o banco
+      precisa ser compartilhado).
+- [x] `infra/local/docker-compose.yml` + `nginx.conf` (`npm run lb:docker`):
+      PostgreSQL local, 3 cópias da imagem e Nginx. O CI roda o Compose em cada
+      PR e confere 3 cópias respondendo e, com uma parada, 2 sem erro.
+- [x] Administrador inicial criado dentro de uma trava (várias cópias subindo
+      juntas não disputam o mesmo cadastro).
+
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

@@ -1,6 +1,9 @@
 # Violet Voltage no Azure com balanceamento de carga (etapa 31)
 
 Roteiro pronto para uma atividade do tipo "publique o site no Azure e aplique um load balancer".
+Antes, se quiser ensaiar sem gastar crédito, veja [LOAD-BALANCER.md](LOAD-BALANCER.md)
+(`npm run lb:local` na sua máquina). O Codex tem o roteiro dele em
+[CODEX-LOAD-BALANCER.txt](CODEX-LOAD-BALANCER.txt).
 Tudo o que depende do código já está feito e testado. O que falta é rodar os roteiros na sua
 assinatura do Azure. Só você (ou o Codex, na sua máquina) pode fazer isso, porque exige o seu login.
 

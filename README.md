@@ -139,7 +139,7 @@ Filtros: `q` (também busca na ficha técnica), `marca`, `modelo`, `categoria`, 
 - Exclusões lógicas preservam histórico; não equivalem a um fluxo completo de apagamento de dados pessoais.
 - Status seguem Recebido → Em preparação → Enviado → Concluído (pode pular etapas, não volta). Cancelamento só até a preparação, devolve os itens ao estoque e é definitivo. Consultas ainda listam registros e filtram em memória, adequadas ao pequeno catálogo.
 - Upload valida MIME e assinatura básica. Substituição administrativa de imagem não é uma transação global; falhas de limpeza podem deixar arquivos órfãos.
-- Sem gateway, frete real, recuperação de senha, e-mail ou integração fiscal. Uma instância é suficiente para a demonstração; para várias atrás de um balanceador (Azure App Service ou VMs + Load Balancer), veja [docs/AZURE-LOAD-BALANCER.md](docs/AZURE-LOAD-BALANCER.md). Os limites de tentativas são contados por instância.
+- Sem gateway, frete real, recuperação de senha, e-mail ou integração fiscal. Uma instância é suficiente para a demonstração; para várias atrás de um balanceador (Azure App Service ou VMs + Load Balancer), veja [docs/LOAD-BALANCER.md](docs/LOAD-BALANCER.md) (na máquina local: `npm run lb:local`) e [docs/AZURE-LOAD-BALANCER.md](docs/AZURE-LOAD-BALANCER.md). Os limites de tentativas são contados por instância.
 - `robots.txt` e `sitemap.xml` são gerados pelo servidor com o endereço da requisição; páginas privadas usam `noindex`. Produto, catálogo por categoria e início saem do servidor com título, descrição, Open Graph, canônico e dados estruturados (`src/http/seo.js`).
 - Falhas de inicialização registram a causa (mensagem de configuração ou código do erro) sem valores secretos.
 

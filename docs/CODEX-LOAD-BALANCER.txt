@@ -1,0 +1,134 @@
+VIOLET VOLTAGE - INSTRUCOES PARA O CODEX: LOAD BALANCER (ETAPA 32)
+===================================================================
+
+Leia antes: docs/LOAD-BALANCER.md (visao geral) e docs/AZURE-LOAD-BALANCER.md
+(Azure). Este arquivo diz o que VOCE (Codex, na maquina do Allan) executa e o
+que deve PASSAR AO ALLAN, porque so ele pode fazer login no Azure.
+
+Regras:
+- Nao altere codigo para "fazer funcionar" sem antes mostrar o erro ao Allan.
+- Nunca imprima, copie para o chat nem commite o .env ou
+  infra/azure/variaveis.env (tem DATABASE_URL, JWT_SECRET e senhas).
+- Nada aqui e obrigatorio para o site no Render. So rode quando o Allan pedir
+  (atividade do professor).
+- Recursos no Azure gastam credito por hora: sempre lembre o Allan de apagar
+  (parte C, passo 9).
+
+
+PARTE A - RODAR COM LOAD BALANCER NA MAQUINA DO ALLAN (SEM DOCKER)
+------------------------------------------------------------------
+A1. Na raiz do repositorio: git pull ; npm install
+A2. Confira o .env (sem exibir valores): se DATABASE_URL estiver preenchida,
+    as copias usam esse banco. Se for o Supabase de producao, AVISE o Allan
+    que testes ali aparecem no site publicado. Para nao tocar no banco real,
+    use a opcao --memoria.
+A3. Terminal 1:  npm run lb:local
+    (ou: npm run lb:local -- --memoria   /  -- --instancias 2 --porta 9000)
+    Espere as 3 linhas "local-N: SAUDAVEL, entra no rodizio".
+    Se a porta 8080 ou 3001-3003 estiver ocupada: --porta 9000 e/ou
+    --porta-inicial 4001.
+A4. Terminal 2:  npm run azure:lb-check -- http://localhost:8080 30
+    Esperado: local-1, local-2 e local-3 com ~33% cada e "Balanceamento OK".
+A5. Tolerancia a falha: no terminal 1 digite "parar 2"; rode o lb-check de
+    novo (so local-1 e local-3, sem "falha"); digite "iniciar 2"; espere
+    "local-2: SAUDAVEL"; lb-check mostra as 3 de novo.
+A6. Abra http://localhost:8080 no navegador e confira que a loja abre.
+    Com banco compartilhado: crie conta/faca login e recarregue varias vezes;
+    deve continuar logado. Em --memoria isso NAO vale (cada copia tem os
+    proprios dados) - e esperado, explique ao Allan.
+A7. "sair" ou Ctrl+C encerra tudo. Relate ao Allan a saida dos lb-check.
+
+Problemas comuns (parte A):
+- "Configure JWT_SECRET": nao acontece no lb:local (ele gera um segredo
+  comum); se aparecer, o .env tem NODE_ENV=production sem JWT_SECRET.
+- Uma copia nunca fica saudavel: leia as linhas [local-N] no terminal 1 (erro
+  de banco, porta ocupada).
+- Windows: tudo funciona no PowerShell; nao precisa de bash nem WSL.
+
+
+PARTE B - (OPCIONAL) MESMO TESTE COM DOCKER DESKTOP + NGINX
+-----------------------------------------------------------
+So se o Allan tiver o Docker Desktop instalado e aberto.
+B1. npm run lb:docker            (constroi a imagem e sobe db + 3 app + Nginx)
+B2. docker compose -f infra/local/docker-compose.yml ps   (tudo "healthy"/"running")
+B3. npm run azure:lb-check -- http://localhost:8080 30     (3 nomes diferentes)
+B4. docker stop <um dos containers app> ; lb-check -> 2 nomes, sem falha.
+B5. npm run lb:docker:parar   (ou "down -v" para apagar o banco local).
+Esse banco e local (PostgreSQL em container), nao toca no Supabase.
+O CI do GitHub ja roda B1-B4 em cada PR (job container-and-infra).
+
+
+PARTE C - O QUE PASSAR AO ALLAN PARA SUBIR NO AZURE FOR STUDENTS
+----------------------------------------------------------------
+Voce nao consegue fazer login na conta dele. Entregue estes passos a ele, um
+de cada vez, e peca a saida de cada comando (sem segredos). Prefira o Azure
+Cloud Shell: ja tem az, git, node e bash, e evita instalar algo no Windows.
+
+C1. Ativar a conta: https://azure.microsoft.com/free/students
+    Entrar com o e-mail da faculdade. Nao pede cartao. Confirmar em
+    portal.azure.com > "Assinaturas" que existe "Azure for Students".
+C2. Abrir o Cloud Shell: portal.azure.com > icone ">_" no topo > Bash.
+    Na primeira vez ele pede para criar um armazenamento: aceitar
+    ("Criar armazenamento" ou "Nenhuma conta de armazenamento necessaria").
+C3. No Cloud Shell:
+      git clone https://github.com/AllanRodriguesCosta/violet-voltage-ecommerce.git
+      cd violet-voltage-ecommerce
+      cp infra/azure/variaveis.env.example infra/azure/variaveis.env
+      code infra/azure/variaveis.env
+C4. Preencher no editor e salvar (Ctrl+S):
+      DATABASE_URL  = a mesma do Render (Render > servico > Environment)
+      JWT_SECRET    = a mesma do Render (ou vazio para gerar uma nova)
+      ADMIN_*       = opcional
+      APP_NAME      = so no caminho A; nome unico, ex.: violetvoltage-allan
+      LOCATION      = eastus2 (se der erro de politica, trocar; ver C8)
+      INSTANCES     = 2
+    Cuidado com aspas: valores com & $ ; ou espaco vao entre aspas simples.
+C5. Escolher o caminho (pergunte ao Allan o que o professor pediu):
+      A) App Service com varias instancias (balanceador embutido):
+         bash infra/azure/app-service.sh
+      B) VMs + Azure Load Balancer (recurso "Load Balancer" visivel no portal):
+         bash infra/azure/vms-load-balancer.sh       (10 a 15 minutos)
+    Na duvida, B: e o que "aplicar load balancer" normalmente significa.
+C6. Conferir (o roteiro mostra a URL ou o IP no final):
+      npm run azure:lb-check -- http://IP-OU-URL 30
+    Esperado: 2 instancias (vv-vm-1 e vv-vm-2, ou app-xxxx) e
+    "Balanceamento OK". No caminho B as VMs podem levar alguns minutos a mais
+    para instalar o Docker; se so uma responder, esperar 3 min e repetir.
+C7. Evidencias para a entrega (prints):
+      - saida do lb-check;
+      - portal: Load Balancer > Pools de back-end (2 VMs) e Investigacoes de
+        integridade (/api/health);
+      - teste de falha (caminho B), no Cloud Shell:
+        az vm run-command invoke -g violet-voltage-lb -n vv-vm-1 \
+          --command-id RunShellScript --scripts "docker stop violet-voltage"
+        npm run azure:lb-check -- http://IP 30      (so vv-vm-2, sem falha)
+        az vm run-command invoke -g violet-voltage-lb -n vv-vm-1 \
+          --command-id RunShellScript --scripts "docker start violet-voltage"
+      - o site aberto pelo IP/URL, logado.
+C8. Se der erro, tabela "Problemas comuns" em docs/AZURE-LOAD-BALANCER.md.
+    Os mais provaveis no Azure for Students:
+      - RequestDisallowedByPolicy / SKU not available: trocar LOCATION
+        (eastus, westus2, brazilsouth, centralus) ou VM_SIZE
+        (Standard_B2ats_v2) no variaveis.env e rodar de novo;
+      - cota de vCPU/IP publico: apagar recursos antigos ou INSTANCES=2;
+      - NODE:24-lts recusado no caminho A: az webapp list-runtimes --os linux
+        e usar APP_RUNTIME=NODE:22-lts;
+      - falha-503 no lb-check: banco inacessivel; conferir DATABASE_URL.
+    Se precisar ajustar algum roteiro, faca na maquina do Allan, rode
+    "npm test" e abra PR (uma branch por tarefa), sem commitar variaveis.env.
+C9. AO TERMINAR A AVALIACAO (lembre o Allan!):
+      bash infra/azure/apagar-tudo.sh      (pede o nome do grupo para confirmar)
+    O banco no Supabase/Render nao e afetado. Conferir no portal que o grupo
+    "violet-voltage-lb" sumiu.
+
+Alternativa sem Cloud Shell (so se o Allan preferir rodar do PC dele):
+instalar Azure CLI (winget install Microsoft.AzureCLI) e Git for Windows,
+"az login" no navegador, e rodar os mesmos "bash infra/azure/..." no Git Bash.
+Neste caso voce (Codex) pode executar os comandos C5-C6 depois que o Allan
+fizer o az login, mas confirme com ele antes de criar recursos pagos.
+
+
+REGISTRO
+--------
+Ao concluir qualquer parte, anote em docs/PENDENCIAS-MANUAIS.txt (T10) a data,
+o caminho usado (A ou B), a URL/IP e se os recursos foram apagados.

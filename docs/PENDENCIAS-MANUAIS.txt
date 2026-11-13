@@ -242,7 +242,9 @@ Resultado:
 ----------------------------------------------------------------------
 T10 [ ] ALLAN/CODEX - Azure com load balancer (so se o professor pedir)
 ----------------------------------------------------------------------
-Guia completo: docs/AZURE-LOAD-BALANCER.md. Resumo:
+Guia completo: docs/AZURE-LOAD-BALANCER.md. Ensaio local (sem Azure):
+npm run lb:local (docs/LOAD-BALANCER.md). Roteiro do Codex, com os passos para
+passar ao Allan: docs/CODEX-LOAD-BALANCER.txt. Resumo:
 1. portal.azure.com > Cloud Shell (Bash) > git clone do repositorio > cd.
 2. cp infra/azure/variaveis.env.example infra/azure/variaveis.env e preencha
    (DATABASE_URL do Render; APP_NAME se for o caminho A). Nunca envie esse

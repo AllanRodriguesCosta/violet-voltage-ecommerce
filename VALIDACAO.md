@@ -1,3 +1,10 @@
+# Fase 4, etapa 35 — 13/11/2026
+
+- `tests/stage35.test.js` (4): termo de busca normalizado e sem e-mail, telefone ou número de pedido; resumo (mais buscados, sem resultado, corrigidos, retenção de 90 dias); API pública `/buscas` grava só termo, resultados e data; resumo do painel com buscas, carrinhos salvos e frases do assistente; painel só para admin; HTML do painel com gráfico acessível; jobs do CI e configuração do Lighthouse.
+- Suíte completa: 179/180 (`postgres.test.js` roda no CI, agora com a tabela `searches`). Lint OK.
+- `tests/e2e/smoke.mjs` rodado aqui contra `scripts/e2e-server.js`: 12/12 (busca, carrinho com CEP do Norte, cadastro, pedido confirmado, assistente, painel com "theremin" nas buscas sem resultado, 5 telas a 375 px sem rolagem lateral). O roteiro achou um defeito da etapa 34 (o recálculo do frete ao sair do campo do endereço desabilitava o botão de confirmar no mesmo clique), corrigido antes do merge da etapa 34.
+- Lighthouse: só roda no CI (aqui não há o `@lhci/cli`).
+
 # Fase 4, etapa 34 — 13/11/2026
 
 - `tests/stage34.test.js` (9): frete por região (todos os dígitos de CEP, SP no preço base, Norte R$ 40 e 9 a 12 dias, CEP dentro do endereço, frete grátis em todo o país); cupons (validade até o fim do dia, esgotado, desativado, porcentagem sem teto, regras do painel); API do painel (criar, código inválido/duplicado, só admin, uso único por cliente, contagem de usos, desativar padrão some do checkout e do assistente); CEP do endereço vale mais que o enviado; carrinho na conta (validação, junção, pedido limpa, cópia de dados); sincronização do navegador (uma vez por sessão, só a última mudança vai); lembrete depois de 24 h, sem repetir; estoque por cor (soma maior que o total recusa, cor esgotada recusada, baixa e devolução da cor); encomendas chegam ao assistente pela API.

@@ -101,5 +101,13 @@ CREATE TABLE IF NOT EXISTS violet_voltage.carts (
   version text NOT NULL,
   CHECK (data->>'rowKey' = row_key AND data->>'partitionKey' = partition_key)
 );
+-- Etapa 35: buscas do catálogo, sem identificar o cliente (90 dias).
+CREATE TABLE IF NOT EXISTS violet_voltage.searches (
+  partition_key text NOT NULL,
+  row_key text PRIMARY KEY,
+  data jsonb NOT NULL CHECK (jsonb_typeof(data) = 'object'),
+  version text NOT NULL,
+  CHECK (data->>'rowKey' = row_key AND data->>'partitionKey' = partition_key)
+);
 REVOKE ALL ON ALL TABLES IN SCHEMA violet_voltage FROM PUBLIC;
 COMMIT;

@@ -1,3 +1,30 @@
+# Fase 4, etapa 28 — 13/11/2026
+
+- Testes novos em `tests/stage28.test.js` (4): "ajuda", "socorro", "help",
+  "tive um problema" e "quero falar com atendente" abrem a triagem de
+  atendimento (5 assuntos em botões e link da Central de Ajuda; visitante é
+  avisado que assunto de pedido pede login), enquanto "o que você faz?"
+  continua apresentando o assistente; logado, a triagem cita o pedido em
+  andamento e cada botão cai na intenção certa (pedido, troca, pagamento com
+  passo a passo, problema para entrar na conta, indicação); "tive um problema
+  com meu pedido" vai direto ao status. Setup de rock clássico até R$ 6 mil com
+  o catálogo de 22 produtos (o que está no ar): cabe no orçamento, explica a
+  troca do amplificador por um de outro perfil e mostra a opção do gênero; cada
+  "mais barato" sai mais barato de verdade ou avisa que chegou no mínimo, nunca
+  repete o mesmo setup. Propriedade conferida nos dois catálogos (22 e 80), 5
+  gêneros e 6 orçamentos: se as peças obrigatórias mais baratas cabem, o setup
+  fica dentro. Teste da etapa 26 ajustado ao novo texto de orçamento estourado.
+  Locais: 123/124 (o de PostgreSQL roda no CI).
+- Avaliação do assistente: 95,9% em 121 frases (antes 94,9% em 118), 48/48
+  entidades, 5/5 conversas. Três frases novas de triagem; "queria falar com o
+  suporte" vai para o atendimento, e "tem suporte de chão?" continua sendo
+  busca de produto. No "mais barato", o assistente avisa quando deixa pedal ou
+  correia de fora para economizar.
+- No navegador (12 verificações novas, 400 e 1440 px): "ajuda" mostra a
+  triagem com 5 botões sem rolagem lateral; "Problema com o pagamento" responde
+  com a solução; setup até R$ 6 mil cabe e "Mais barato" reduz o total.
+  Regressão completa: 20 roteiros, sem falhas.
+
 # Fase 4, etapa 27 — 13/11/2026
 
 - Testes novos em `tests/stage27.test.js` (4): forma de pagamento preferida

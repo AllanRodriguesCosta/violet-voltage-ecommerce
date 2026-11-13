@@ -4,7 +4,7 @@ import { train, classify } from "./classifier.js";
 import { examples } from "./intents.js";
 import { extract } from "./entities.js";
 import { normalize } from "./text.js";
-import { recommend, reasonFor, genreIntro, buildSetup, GROUP } from "./recommend.js";
+import { recommend, reasonFor, genreIntro, buildSetup, GROUP, joinList } from "./recommend.js";
 import { faqAnswer, brl } from "./faq.js";
 import { searchHelp, strongHelp } from "./help-search.js";
 import { sanitizeContext } from "./context.js";
@@ -245,7 +245,9 @@ function handleRecommend(e, ctx, products, { refine = false } = {}) {
   };
 }
 
-function handleSetup(e, ctx, products, override = {}, titulo) {
+// override: filtros do cliente (ex.: orçamento dito por ele). alvo: teto interno de "mais barato"
+// e "mais completo", que não substitui o orçamento do cliente nem aparece como se fosse dele.
+function handleSetup(e, ctx, products, override = {}, titulo, { alvo } = {}) {
   const continuing = ctx.intent === "setup" || ctx.intent === "recomendar";
   const f = {};
   for (const k of ["genero", "estilo", "nivel", "uso", "max"]) {
@@ -257,18 +259,28 @@ function handleSetup(e, ctx, products, override = {}, titulo) {
   if (ctx.aguardando && SKIP.test(e.texto)) perguntas.add(ctx.aguardando);
   if (!f.genero && !perguntas.has("genero")) return ask("genero", f, perguntas, "setup");
   if (!f.max && !perguntas.has("orcamento")) return ask("orcamento", f, perguntas, "setup");
-  const { items, total, dentro } = buildSetup(products, f);
+  const { items, total } = buildSetup(products, alvo ? { ...f, max: alvo } : f);
+  const dentro = !f.max || total <= f.max;
   const contexto = { intent: "setup", filtros: f, aguardando: null, perguntas: [...perguntas], mostrados: items.map((x) => x.produto.id) };
   if (!items.length) return { texto: "Não consegui montar um setup com o estoque de agora.", sugestoes: START, contexto };
   const ids = items.map((x) => x.produto.id);
   const lines = items.map((x) => `• ${x.rotulo}: ${x.produto.marca} ${x.produto.modelo} (${brl(x.produto.priceCents)})`);
+  // Peça fora do gênero pedido: explica a troca e mostra a opção do gênero que ficou de fora.
+  const swaps = f.genero ? items.filter((x) => x.foraDoGenero) : [];
+  const swapText = swaps.length
+    ? `Para respeitar o valor, ${joinList(swaps.map((x) => `${x.rotulo === "Correia" ? "a" : "o"} ${x.rotulo.toLowerCase()} (${x.produto.marca} ${x.produto.modelo})`))} não ${swaps.length > 1 ? "são" : "é"} dos mais típicos de ${f.genero.toLowerCase()}, mas ${swaps.length > 1 ? "atendem" : "atende"} bem.${swaps
+        .filter((x) => x.alternativa && !alvo)
+        .map((x) => ` Se fizer questão do timbre clássico do estilo, ${x.rotulo === "Correia" ? "a" : "o"} ${x.rotulo.toLowerCase()} mais em conta para ${f.genero.toLowerCase()} é ${x.alternativa.marca} ${x.alternativa.modelo} (${brl(x.alternativa.priceCents)}).`)
+        .join("")}`
+    : "";
   const texto = [
     titulo || `Montei um setup${f.genero ? ` de ${f.genero.toLowerCase()}` : ""}${f.max ? ` para até ${brl(f.max)}` : ""}:`,
     ...lines,
-    `Total: ${brl(total)}${parcels(total)}.${total >= FREE_SHIPPING_CENTS ? " A entrega padrão sai grátis." : ""}${dentro ? "" : " Passou do orçamento: é o setup mais acessível que consegui com essas peças."}`,
+    `Total: ${brl(total)}${parcels(total)}.${total >= FREE_SHIPPING_CENTS ? " A entrega padrão sai grátis." : ""}${dentro ? "" : ` Passou do seu orçamento de ${brl(f.max)}: é o setup mais acessível que consigo montar com o estoque de agora.`}`,
+    ...(swapText ? [swapText] : []),
   ].join("\n");
   // Kit pronto que cabe no orçamento: alternativa com desconto.
-  const kit = f.max ? kitsWithin(products, f.max, f.genero)[0] : null;
+  const kit = f.max ? kitsWithin(products, f.max, f.genero).find((k) => k.price.precoCents < total) : null;
   return {
     texto: kit ? `${texto}\nOu comece pelo ${kit.kit.nome}: ${brl(kit.price.precoCents)} com ${kit.kit.descontoPct}% de desconto (${kit.kit.itens.length} itens).` : texto,
     cards: items.map((x) => card(x.produto, f.genero, x.rotulo)),
@@ -279,6 +291,30 @@ function handleSetup(e, ctx, products, override = {}, titulo) {
       link("Ajustar no Monte seu setup", `/setup.html?itens=${ids.join(",")}${f.genero ? `&genero=${encodeURIComponent(f.genero)}` : ""}`),
     ],
     contexto,
+  };
+}
+
+// "Mais barato": precisa sair mais barato de verdade. Tenta uns 20% a menos; se o estoque não
+// permitir, aceita qualquer economia; se já é o mínimo, diz isso em vez de repetir o setup.
+function cheaperSetup(e, ctx, products, total, titulo = "Uma versão mais em conta do setup:") {
+  const before = new Set(shownOf(ctx, products).map((p) => p.categoria));
+  let out;
+  for (const alvo of [Math.floor(total * 0.8), total - 1]) {
+    out = handleSetup(e, ctx, products, {}, titulo, { alvo });
+    const novo = (out.cards || []).reduce((s, c) => s + c.priceCents, 0);
+    if (out.cards?.length && novo < total) {
+      // Peças opcionais que saíram para caber no valor: o cliente fica sabendo.
+      const after = new Set(out.cards.map((c) => c.categoria));
+      const dropped = [["Pedais", "o pedal"], ["Correias", "a correia"]].filter(([c]) => before.has(c) && !after.has(c)).map(([, n]) => n);
+      out.texto += `\nSão ${brl(total - novo)} a menos que o anterior.${dropped.length ? ` Para economizar, deixei de fora ${joinList(dropped)}; dá para incluir depois.` : ""}`;
+      return out;
+    }
+  }
+  return {
+    texto: `Esse já é o setup mais em conta que consigo montar com o estoque de agora (${brl(total)}${parcels(total)}). Dá para economizar mais tirando uma peça que você já tenha, montando peça por peça no montador ou começando por um kit com desconto.`,
+    sugestoes: ["Quais kits vocês têm?", "Outro estilo", "Como funciona o frete?"],
+    acoes: [link("Ajustar no Monte seu setup", `/setup.html?itens=${ctx.mostrados.join(",")}`), link("Ver os kits com desconto", "/kits.html")],
+    contexto: { ...ctx, aguardando: null },
   };
 }
 
@@ -381,11 +417,12 @@ function reaction(text, e, ctx, products) {
   if (PRICE_OBJECTION.test(text) && !/\bmais car/.test(text) && !e.produtos.length) {
     if (ctx.intent === "setup" && shown.length) {
       const total = shown.reduce((s, p) => s + p.priceCents, 0);
-      const max = e.max || Math.floor(total * 0.75);
-      const out = handleSetup(e, ctx, products, { max }, e.max ? `Sem problema! Ajustei o setup para caber em até ${brl(e.max)}:` : "Entendi, ficou acima do que você queria. Troquei algumas peças por opções mais em conta:");
+      const out = e.max
+        ? handleSetup(e, ctx, products, { max: e.max }, `Sem problema! Ajustei o setup para caber em até ${brl(e.max)}:`)
+        : cheaperSetup(e, ctx, products, total, "Entendi, ficou acima do que você queria. Troquei algumas peças por opções mais em conta:");
       const newTotal = (out.cards || []).reduce((s, c) => s + c.priceCents, 0);
       const saved = total - newTotal;
-      out.texto += `${saved > 0 ? `\nSão ${brl(saved)} a menos que o anterior.` : ""}${e.max ? "" : " Se me disser quanto quer gastar no total, eu ajusto certinho."} No cartão, dá para parcelar em até 10x sem juros.`;
+      out.texto += `${saved > 0 && !e.max ? "" : saved > 0 ? `\nSão ${brl(saved)} a menos que o anterior.` : ""}${e.max ? "" : " Se me disser quanto quer gastar no total, eu ajusto certinho."} No cartão, dá para parcelar em até 10x sem juros.`;
       out.sugestoes = e.max ? ["Ainda está caro", "Quais kits vocês têm?", "Como funciona o frete?"] : BUDGET_CHIPS;
       if (!e.max) out.contexto = { ...out.contexto, aguardando: "orcamento" };
       return { intent: "objecao_preco", out };
@@ -445,6 +482,24 @@ function bareBudget(text) {
   const value = Number(m[1].replace(/\./g, "")) * (m[2] ? 1000 : 1);
   return value >= 50 && value <= 1_000_000 ? value * 100 : undefined;
 }
+// "Ajuda", "socorro", "tive um problema": o cliente quer resolver algo. Em vez de explicar o que o
+// assistente faz, pergunta o assunto (com os mais comuns em botões) e, logado, já cita o pedido em
+// andamento. "O que você faz?" continua com a apresentação do assistente.
+const SUPPORT = /^(ajuda|socorro|help|sos|suporte|atendimento|atendente|me ajud\w*)\W*$|\b(socorro|suporte|atendente|atendimento|reclama\w*|tive (um )?problema|estou com (um )?problema|deu (um )?problema|deu errado|preciso de (uma )?ajuda|falar com (alguem|uma pessoa|humano))\b/;
+// Pedido de contato vale mesmo com palavra de produto ("falar com o suporte" não é o suporte de chão).
+const CONTACT = /\b(falar|conversar|contato) com (o |a |um |uma |algum |alguem )?(suporte|atendimento|atendente|alguem|pessoa|humano|vendedor|loja)\b|\b(suporte|atendimento) (ao cliente|tecnico)\b|^(preciso de |quero )?(suporte|atendimento)\W*$/;
+const ABOUT_BOT = /\b(voce|vc|assistente|chat|chatbot|robo|ia|inteligencia artificial|bot|funcoes|perguntar|serve|sabe fazer|consegue fazer|quem e|pode fazer|pode me ajudar|pode ajudar|usar o)\b/;
+function supportAnswer(orders, guest) {
+  const open = [...orders]
+    .filter((o) => !["Concluído", "Cancelado"].includes(o.status))
+    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))[0];
+  const pedido = open ? ` Vi que seu pedido #${open.id.slice(0, 8).toUpperCase()} está “${open.status}”: se for sobre ele, toque em “Onde está meu pedido?”.` : "";
+  return {
+    texto: `Claro, estou aqui para ajudar! Me conta o que aconteceu ou escolha um assunto abaixo.${pedido}${guest ? " Para assuntos de um pedido, vou pedir para você entrar na conta." : ""}`,
+    sugestoes: ["Onde está meu pedido?", "Quero trocar um produto", "Problema com o pagamento", "Não consigo entrar na conta", "Me indica uma guitarra"],
+    acoes: [link("Central de Ajuda", "/ajuda.html"), ...(guest ? [] : [link("Ajuda em Minha conta", "/minha-conta.html#ajuda")])],
+  };
+}
 const LOGIN_NEEDED = { pedido_status: "ver seus pedidos", pedido_cancelar: "cancelar um pedido", historico: "sugerir pelo que você já comprou", troca_pedido: "pedir uma troca" };
 const loginAnswer = (motivo) => ({
   texto: `Para ${motivo}, entre na sua conta (ou crie uma, leva 1 minuto). Depois é só me perguntar de novo. Enquanto isso, posso indicar equipamentos e tirar dúvidas sem login.`,
@@ -476,6 +531,8 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
   if (react) intent = react.intent;
   else if (ctx.aguardando && slotAnswer && !(confirmed(top.intent) && top.p >= 0.5)) intent = ctx.intent || "recomendar";
   else if (action) intent = action.intent;
+  else if (CONTACT.test(text) || (SUPPORT.test(text) && !shopping && !Object.values(INFO).some((re) => re.test(text)))) intent = "ajuda";
+  else if (SUPPORT.test(text) && INFO.pedido_status.test(text) && !INFO.troca.test(text) && !INFO.pedido_cancelar.test(text)) intent = "pedido_status";
   else if (GLOSSARY_Q.test(text) && strongHelp(help)) intent = "central_ajuda";
   else if (informative) intent = informative.intent;
   else if (top.intent === "setup" && top.p >= 0.35 && SETUP_WORDS.test(text)) intent = "setup";
@@ -509,7 +566,7 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
     if (ctx.intent === "setup") {
       const total = ctx.mostrados.map((id) => products.find((p) => p.id === id)?.priceCents || 0).reduce((a, b) => a + b, 0);
       const up = e.ordem === "desc" || /complet|melhor|car/.test(text);
-      out = handleSetup(e, ctx, products, { max: up ? Math.ceil(total * 1.5) : Math.floor(total * 0.8) }, up ? "Uma versão mais completa do setup:" : "Uma versão mais em conta do setup:");
+      out = up ? handleSetup(e, ctx, products, {}, "Uma versão mais completa do setup:", { alvo: Math.ceil(total * 1.5) }) : cheaperSetup(e, ctx, products, total);
     } else out = handleRecommend(e, ctx, products, { refine: true });
   } else if (intent === "setup") out = handleSetup(e, ctx, products);
   else if (intent === "pedido_status" || intent === "pedido_cancelar") out = { ...(await handleOrders(intent, text, orders)), contexto: keep };
@@ -518,6 +575,7 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
   else if (INFO[intent]) out = { ...faqAnswer(intent, text), sugestoes: START.slice(0, 3), contexto: keep };
   else if (intent === "saudacao")
     out = { texto: `Oi${first ? `, ${first}` : ""}! Sou o assistente da Violet Voltage. Posso indicar equipamentos pelo seu estilo, montar um setup, comparar produtos e tirar dúvidas sobre frete, pagamento e trocas${guest ? "" : ", e contar em que etapa está seu pedido"}. Por onde começamos?`, sugestoes: START, contexto: keep };
+  else if (intent === "ajuda" && !ABOUT_BOT.test(text)) out = { ...supportAnswer(guest ? [] : await orders(), guest), contexto: keep };
   else if (intent === "ajuda")
     out = { texto: "Eu entendo frases como “quero uma guitarra vintage para blues até 5 mil”, “monta um setup de rock”, “onde está meu pedido?” ou “aceita pix?”. Indico só o que existe na loja, com preço e estoque de agora; nada é comprado sem você clicar.", sugestoes: START, contexto: keep };
   else if (intent === "agradecimento" && !/obrigad|valeu|brigad|agradec|ajudou|vlw|thanks/.test(text)) out = { texto: "Certo! Quer que eu ajuste alguma coisa? Posso procurar opções mais em conta, outro estilo ou montar um setup.", sugestoes: ["Mais barato", "Outras opções", "Montar um setup"], contexto: keep };

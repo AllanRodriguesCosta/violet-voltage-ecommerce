@@ -14,6 +14,10 @@ export const evalSet = [
   ["quais perguntas posso fazer", "ajuda"],
   ["você é uma inteligência artificial?", "ajuda"],
   ["preciso de uma ajuda", "ajuda"],
+  // etapa 28: pedido de ajuda curto vira triagem de atendimento
+  ["socorro!!", "ajuda"],
+  ["tô com um problema aqui no site", "ajuda"],
+  ["queria falar com o suporte", "ajuda"],
   // recomendar
   ["queria uma guitarra para tocar blues", "recomendar", { categoria: "Guitarras", genero: "Blues" }],
   ["me indica um amplificador valvulado", "recomendar", { categoria: "Amplificadores", tecnologia: "Valvulado" }],

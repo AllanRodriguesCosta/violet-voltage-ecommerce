@@ -1,3 +1,39 @@
+# Fase 4, etapa 27 — 13/11/2026
+
+- Testes novos em `tests/stage27.test.js` (4): forma de pagamento preferida
+  (401 sem sessão, método inválido e parcelas acima de 10 recusados, cartão
+  guarda só método e parcelas mesmo recebendo número e código do cartão, Pix
+  força 1 parcela, sessão e cópia dos dados trazem a preferência), exclusão da
+  conta apaga a preferência, cada atalho do menu leva a uma seção que existe
+  em `minha-conta.html` (incluindo o antigo `#seguranca`), rotas por `#`,
+  texto do pagamento, iniciais e retorno seguro depois do login. Teste da
+  Central de Ajuda atualizado para "Dados e segurança". Locais: 119/120 (o de
+  PostgreSQL roda no CI).
+- Avaliação do assistente sem mudança: 94,9% em 118 frases, 48/48 entidades,
+  5/5 conversas.
+- No navegador (47 verificações novas): visitante em "Meus pedidos" vai ao
+  login e volta para `#pedidos` depois do cadastro; menu "Olá, Nome" com
+  iniciais, abre por clique e setas, Esc devolve o foco, End/Home, lista
+  circular, clique fora fecha; item do menu troca a seção e leva o foco ao
+  título; pagamento no cartão em 6x salvo, selo "Preferida", mantido ao
+  recarregar e já marcado no checkout; visão geral com 4 indicadores, último
+  pedido, endereço, pagamento e dados em 3 colunas, navegação lateral ao lado;
+  `#seguranca` abre a troca de senha; voltar do navegador troca de seção;
+  ajuda com 6 assuntos e botão que abre o assistente; "Sair" volta ao início,
+  encerra a sessão e apaga a conversa; no celular, abas roláveis com a aba
+  ativa à vista, nenhuma seção mais larga que a tela, atalhos e "Sair" no
+  menu lateral.
+- Roteiros antigos ajustados às seções (endereços, avisos, notificações,
+  pedidos e segurança agora abrem pelo `#` da seção). Regressão completa: 19
+  roteiros, 421 verificações, sem falhas. Acessibilidade em claro e escuro, 375
+  e 1440 px, com 6 estados novos (pedidos, pagamento no cartão, avisos,
+  notificações, ajuda e menu da conta aberto ou menu lateral): 60 estados em
+  375 px e 61 em 1440 px, sem problemas. A primeira rodada apontou 3 links
+  pequenos nos cartões ("Todos os pedidos", "Escolher", "Ver pedidos em
+  andamento"); eles ganharam altura mínima de 32 e 44 px e a auditoria passou.
+
+---
+
 # Fase 4, etapa 26 — 13/11/2026
 
 - Testes novos em `tests/stage26.test.js` (4): setup caro (versão mais barata,

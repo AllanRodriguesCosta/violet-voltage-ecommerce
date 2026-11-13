@@ -34,7 +34,7 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/services/seed*.js` | Manifesto, fichas técnicas e carga dos 80 produtos/imagens (modo parcial para fotos em andamento) |
 | `scripts/check-photos.js` | `npm run fotos:conferir`: confere as fotos locais sem alterar nada |
 | `src/knowledge/help.js` | Central de Ajuda: perguntas e respostas (fonte da página `ajuda.html` e da busca do assistente) |
-| `src/services/account.js` | Troca de senha, cópia dos dados e exclusão da conta pelo cliente |
+| `src/services/account.js` | Troca de senha, forma de pagamento preferida, cópia dos dados e exclusão da conta pelo cliente |
 | `src/knowledge/genres.js` | Base de conhecimento musical por gênero, usada pelo assistente |
 | `src/assistant/` | Assistente de compras: pré-processamento, classificador Naive Bayes, entidades, recomendação, setup, dúvidas, contexto e avaliação ([ASSISTENTE.md](ASSISTENTE.md)) |
 | `public/js/assistant.js` | Painel do assistente (aberto a visitantes desde a etapa 26) |
@@ -44,11 +44,11 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/http/static.js` | Compressão Brotli/gzip de arquivos e JSON e cache HTTP por tipo de arquivo |
 | `src/utils/startup-error.js` | Mensagem de falha na inicialização sem segredos |
 | `migrations/001-postgres.sql` | Estrutura idempotente do schema privado, incluindo `alerts` e `notifications` |
-| `public/js/common.js` | API cliente, sessão, formulários, carrinho, favoritos, avisos e layout comum |
+| `public/js/common.js` | API cliente, sessão, formulários, carrinho, favoritos, avisos, layout comum e menu da conta ("Olá, Nome", atalhos e Sair) |
 | `public/js/app.js` | Entrada: tema, cabeçalho, minicarrinho, busca e carregamento da página |
 | `public/js/theme-init.js`, `theme.js` | Tema aplicado antes da primeira pintura; seletores claro, escuro e automático |
 | `public/js/motion.js`, `quickview.js` | Voo até o carrinho, voltar ao topo, sombra do cabeçalho e visualização rápida |
-| `public/js/pages/` | Home, catálogo, montador de setup, favoritos, produto, carrinho, checkout, conta e acesso |
+| `public/js/pages/` | Home, catálogo, montador de setup, favoritos, produto, carrinho, checkout, conta (seções por endereço `#`) e acesso |
 | `public/js/components.js`, `drawer.js`, `search.js`, `icons.js` | Cards, minicarrinho e aviso de item adicionado, sugestões de busca e ícones SVG |
 | `public/js/admin.js` | Painel administrativo |
 | `public/js/specs.js` | Esquema da ficha técnica, validação e textos (compartilhado com o servidor) |
@@ -235,8 +235,18 @@ navegador no chat.
 
 Cadastro, login/logout, perfil e histórico privado. Cadastro público não cria
 administrador. O backend relê o usuário para considerar papel e desativação.
-Minha conta mostra indicadores, filtros e a linha do tempo de cada pedido, com
-"Comprar novamente" e cancelamento enquanto o pedido está "Recebido". O painel
+"Olá, Nome" no cabeçalho abre o menu da conta (Visão geral, Meus pedidos,
+Dados e segurança, Endereços, Métodos de pagamento, Avisos, Favoritos,
+Preciso de ajuda e Sair; no celular, os mesmos atalhos ficam no menu lateral).
+Minha conta é uma página em seções (`#pedidos`, `#dados`, `#enderecos`,
+`#pagamentos`, `#avisos`, `#notificacoes`, `#ajuda`) com navegação lateral no
+computador e abas no celular: a visão geral reúne indicadores e cartões (último
+pedido, notificações, dados, endereço principal, pagamento preferido, avisos e
+ajuda), e cada seção usa a largura toda em cartões. A forma de pagamento
+preferida (`PATCH /api/account/payment`) guarda só o método e as parcelas e já
+vem marcada no checkout. Meus pedidos mostra filtros e a linha do tempo de cada
+pedido, com "Comprar novamente" e cancelamento enquanto o pedido está
+"Recebido". O painel
 mostra volume, pedidos, ticket médio, pedidos por status, vendas dos últimos 14
 dias e estoque baixo, com busca e filtros. Status só avançam no fluxo; o
 cancelamento, permitido até a preparação, devolve os itens ao estoque na mesma

@@ -36,6 +36,16 @@ export function sanitizeContext(input, brands = []) {
   if (brands.includes(source.marca)) filtros.marca = source.marca;
   for (const key of ["min", "max"]) if (cents(source[key])) filtros[key] = source[key];
   if (Number.isInteger(source.trastes) && source.trastes >= 18 && source.trastes <= 30) filtros.trastes = source.trastes;
+  // Etapa 36: peças que o cliente já tem ou tirou do setup, travadas e descartadas.
+  const SETUP = ["Guitarras", "Amplificadores", "Pedais", "Cabos", "Correias"];
+  for (const key of ["tenho", "sem"]) if (Array.isArray(source[key])) {
+    const list = [...new Set(source[key].filter((c) => SETUP.includes(c)))];
+    if (list.length) filtros[key] = list;
+  }
+  for (const [key, max] of [["fixos", 5], ["excluir", 20]]) if (Array.isArray(source[key])) {
+    const list = [...new Set(source[key].filter((id) => typeof id === "string" && /^[\w-]{1,64}$/.test(id)))].slice(-max);
+    if (list.length) filtros[key] = list;
+  }
   return {
     intent: ["recomendar", "setup"].includes(input.intent) ? input.intent : null,
     filtros,

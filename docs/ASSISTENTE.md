@@ -171,3 +171,15 @@ Limitações conhecidas:
   campo e o cliente confere e envia; o primeiro uso explica que o navegador
   pode usar um serviço de voz externo. Sem suporte (Firefox), o botão não
   aparece.
+
+## Etapa 36: setup em conversa e memória
+
+| Frase | O que acontece |
+| --- | --- |
+| "já tenho uma Squier e um cubo" | Monta só o que falta; a verba vai para o resto |
+| "troca só o amplificador" | Troca uma peça, as outras ficam; diz a diferença de preço |
+| "mantém a guitarra" | Trava a peça para as próximas mudanças |
+| "tira a correia" / "põe um pedal" | Remove ou devolve a peça |
+| "por que essas peças?" | Explica cada escolha (artista, som, gênero, cor, orçamento) |
+| "usar o mesmo gosto" | Com conta: monta a partir do gosto do último setup |
+| "esquece meu gosto" | Apaga o gosto guardado |

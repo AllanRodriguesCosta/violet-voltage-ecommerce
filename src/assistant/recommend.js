@@ -138,12 +138,21 @@ function pickBelow(ranked, limit, byScore) {
   if (byScore) return below[0];
   return below.reduce((a, b) => (!a || b.priceCents > a.priceCents ? b : a), undefined);
 }
+// Etapa 36: f.tenho (categorias que o cliente já tem) e f.sem (peças que ele tirou) saem do setup
+// e a verba é redistribuída; f.fixos (IDs) ficam travados; f.excluir (IDs) não voltam.
+export const SETUP_CATEGORIES = SLOTS.map((x) => x.categoria);
+export const slotOf = (categoria) => SLOTS.find((x) => x.categoria === categoria);
 export function buildSetup(products, f) {
   const budget = f.max || Infinity;
   const profile = { genero: f.genero, estilo: f.estilo, nivel: f.nivel, uso: f.uso, artista: f.artista, som: f.som, cor: f.cor };
   const premium = budget === Infinity && hasTaste(f);
-  const picks = SLOTS.map((slot) => {
-    const fits = (p) => !slot.fits || slot.fits(p);
+  const skip = new Set([...(f.tenho || []), ...(f.sem || [])]);
+  const slots = SLOTS.filter((x) => !skip.has(x.categoria));
+  const shareSum = slots.reduce((t, x) => t + x.share, 0) || 1;
+  const excluded = new Set(f.excluir || []);
+  const fixed = new Map((f.fixos || []).map((id) => products.find((p) => p.id === id)).filter((p) => p && p.estoque > 0).map((p) => [p.categoria, p]));
+  const picks = slots.map((slot) => {
+    const fits = (p) => (!slot.fits || slot.fits(p)) && !excluded.has(p.id);
     const ranked = recommend(products, { categoria: slot.categoria, ...profile }, { limit: 1000, premium }).items.filter(fits);
     // Todas as peças da categoria, da que mais combina com o perfil para a que menos combina.
     const all = products
@@ -152,8 +161,9 @@ export function buildSetup(products, f) {
       .sort((a, b) => b.s - a.s || (premium ? b.p.priceCents - a.p.priceCents : a.p.priceCents - b.p.priceCents))
       .map((r) => r.p);
     // Som espacial depende dos pedais: mais verba para eles, menos para o amplificador.
-    const share = f.som === "espacial" ? { Guitarras: 0.4, Amplificadores: 0.25, Pedais: 0.25 }[slot.categoria] ?? slot.share : slot.share;
+    const share = (f.som === "espacial" ? { Guitarras: 0.4, Amplificadores: 0.25, Pedais: 0.25 }[slot.categoria] ?? slot.share : slot.share) / shareSum;
     const allowance = budget * share;
+    if (fixed.has(slot.categoria)) return { slot, ranked, all, choice: fixed.get(slot.categoria), allowance, fixo: true };
     const within = ranked.filter((p) => p.priceCents <= allowance);
     let choice;
     if (f.genero) choice = within[0];
@@ -170,7 +180,7 @@ export function buildSetup(products, f) {
   while (total() > budget) {
     const over = budget - total();
     // Peças que mais passaram da própria fatia primeiro.
-    const order = picks.filter((x) => x.choice).sort((a, b) => b.choice.priceCents - b.allowance - (a.choice.priceCents - a.allowance));
+    const order = picks.filter((x) => x.choice && !x.fixo).sort((a, b) => b.choice.priceCents - b.allowance - (a.choice.priceCents - a.allowance));
     let swapped = false;
     for (const x of order) {
       const same = pickBelow(x.ranked, x.choice.priceCents, f.genero);
@@ -191,14 +201,14 @@ export function buildSetup(products, f) {
       }
     }
     if (swapped) continue;
-    const optional = picks.find((x) => x.slot.optional && x.choice);
+    const optional = picks.find((x) => x.slot.optional && x.choice && !x.fixo);
     if (!optional) break;
     removed.push(optional);
     optional.choice = null;
   }
   for (const categoria of ["Guitarras", "Amplificadores"]) {
     const x = picks.find((y) => y.slot.categoria === categoria);
-    if (!x?.choice || budget === Infinity) continue;
+    if (!x?.choice || x.fixo || budget === Infinity) continue;
     const spare = budget - total();
     const pool = inGenre(x, x.choice) ? x.ranked : x.all;
     const better = f.genero
@@ -213,7 +223,7 @@ export function buildSetup(products, f) {
   }
   const items = picks
     .filter((x) => x.choice)
-    .map((x) => ({ rotulo: x.slot.rotulo, produto: x.choice, foraDoGenero: Boolean(f.genero) && !inGenre(x, x.choice), alternativa: f.genero && !inGenre(x, x.choice) ? x.ranked.reduce((a, b) => (!a || b.priceCents < a.priceCents ? b : a), undefined) : undefined }));
+    .map((x) => ({ rotulo: x.slot.rotulo, produto: x.choice, fixo: Boolean(x.fixo), fatia: x.allowance, foraDoGenero: Boolean(f.genero) && !inGenre(x, x.choice), alternativa: f.genero && !inGenre(x, x.choice) ? x.ranked.reduce((a, b) => (!a || b.priceCents < a.priceCents ? b : a), undefined) : undefined }));
   const sum = total();
   return { items, total: sum, dentro: sum <= budget };
 }

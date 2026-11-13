@@ -431,6 +431,7 @@ export const seedSpecs = {
     nivel: "Iniciante",
   },
   // Cabos (etapa 18)
+  "Cabo Standard P10 2 m": { estilo: "Atemporal", generos: [], tipo: "Instrumento", conectores: "P10 reto / L", comprimento: 2 },
   "American Stage 3 m": {
     estilo: "Atemporal",
     generos: [],

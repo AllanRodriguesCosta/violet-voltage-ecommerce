@@ -94,7 +94,7 @@ fictícios, incluindo o painel sem divulgar acesso administrativo.
 ## Fase 3 (12/11/2026)
 
 Em um dia, nove etapas (17 a 25, PRs #12 a #20), todas com CI verde:
-ficha técnica e catálogo de 80 produtos, assistente de compras com PLN local,
+ficha técnica e catálogo de 81 produtos, assistente de compras com PLN local,
 conta com privacidade, comparador, kits, compatibilidade no carrinho,
 serviços, guias, aviso de preço, perguntas e respostas, SEO no servidor,
 indicadores do painel, trocas pelo comprovante, assistente que age com
@@ -115,7 +115,7 @@ marcada no checkout (sem guardar dados de cartão).
 
 ## Próximos marcos
 
-Publicar as etapas 17 a 27 no Render, carregar as 58 fotos novas, ligar o
+Publicar as etapas 17 a 29 no Render, carregar as fotos novas (51 entregues em 13/11/2026, com galeria e cores nos amplificadores; faltam 8), ligar o
 Gemini se desejado e medir o site publicado (Lighthouse e capturas), conforme
 [PENDENCIAS-MANUAIS.txt](PENDENCIAS-MANUAIS.txt). Ferramentas de estudo
 (afinador, metrônomo, tablaturas) ficam para um site separado, ligado à loja

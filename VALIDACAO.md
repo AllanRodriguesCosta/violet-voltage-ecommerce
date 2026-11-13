@@ -1,3 +1,40 @@
+# Fase 4, etapa 29 — 13/11/2026
+
+- Fotos enviadas pelo Allan (80 arquivos): conferidas uma a uma, renomeadas
+  para o manifesto e padronizadas (fundo branco, recorte centralizado em
+  quadrado, linhas soltas de recorte removidas, sem ampliar, até 600 KB).
+  `npm run fotos:conferir` com o pacote: 51 fotos novas prontas (as 22
+  originais ficam no computador do Allan), 8 faltando, 29 de 29 extras.
+- Testes novos em `tests/stage29.test.js` (6): configuração da galeria (cada
+  modelo existe, nomes simples, a frente da primeira cor é a foto principal,
+  amarelo do Hot Rod só com frente e topo); seed com fotos extras (Crush com 9
+  fotos e 3 cores, Katana com 2 vistas e sem cores, Blues Junior com a cor que
+  tem foto, extras que faltam não interrompem e são listadas, segunda carga
+  sem duplicar); extra que não é PNG interrompe antes de gravar; API com
+  galeria sem nomes internos e rota `/api/images/:id/:n` (404 para posição
+  inexistente, inválida ou produto sem galeria); cor no orçamento e no pedido
+  (só as do produto, padrão sem escolha ou com cor fora de linha, 400 para
+  tipo inválido, produto sem cores ignora a cor); funções da vitrine (fotos da
+  cor, cor padrão, imagem do item). Testes do seed e da lista de fotos
+  ajustados ao produto novo demo-081. Locais: 129/130 (o de PostgreSQL roda no
+  CI).
+- No navegador, com as fotos reais (33 verificações novas): Crush 20RT com 3
+  cores, 3 miniaturas e contador; seta, miniatura, teclado (com volta ao
+  início) e arrastar no celular trocam a foto; leitor de tela ouve "Foto 2 de
+  3: painel de controles"; cor branca troca carrossel, miniaturas, barra fixa e
+  endereço (`?cor=Branco`); ampliação abre a foto da tela; aviso, minicarrinho,
+  carrinho (troca de cor ali mesmo, mantida ao recarregar), checkout,
+  comprovante e histórico mostram a cor e a foto dela; mesma peça em outra cor
+  troca a cor da linha; cor inexistente no link cai na padrão; Katana com 3
+  vistas e sem seletor; pedal de foto única sem setas; cartão do catálogo com
+  "3 cores"; celular escuro sem rolagem lateral e bolinhas de 40 px.
+  Acessibilidade da galeria (3 estados novos: galeria, outra cor e foto,
+  carrinho com cor) em claro e escuro, 375 e 1440 px: sem problemas.
+- Roteiros antigos ajustados ao catálogo de 81 produtos (contador, "Mostrando
+  24 de 81", sitemap). Regressão completa: 21 roteiros, 466
+  verificações, sem falhas. Acessibilidade em claro e escuro, 375 e 1440 px
+  (63 e 64 estados, com os 3 novos): sem problemas.
+
 # Fase 4, etapa 28 — 13/11/2026
 
 - Testes novos em `tests/stage28.test.js` (4): "ajuda", "socorro", "help",

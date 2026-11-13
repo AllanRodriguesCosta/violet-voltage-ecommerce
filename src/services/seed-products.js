@@ -730,6 +730,16 @@ const expansion = [
     3,
     "Single cut com captadores ativos EMG 81 e 60: saída alta, ataque preciso e silêncio total entre os riffs, até com muito ganho.",
   ],
+  // Etapa 29: chegou com o lote de fotos do Allan.
+  [
+    "cabos/santo-angelo-standard-2m.png",
+    "Cabos",
+    "Santo Angelo",
+    "Cabo Standard P10 2 m",
+    5990,
+    30,
+    "Cabo de instrumento de 2 m com plugue reto e plugue em L, curto na medida para ligar a guitarra ao pedal ou ao amplificador em casa.",
+  ],
 ];
 // Lote original (fotos já entregues) seguido da expansão da etapa 18.
 export const ORIGINAL_SEED_COUNT = catalog.length;

@@ -8,6 +8,8 @@ import {
   catalogProducts,
   money,
   productImage,
+  itemImage,
+  itemColor,
   escapeHtml as esc,
   toast,
 } from "./common.js";
@@ -93,7 +95,7 @@ async function render() {
       const p = r.product;
       const name = p ? `${p.marca} ${p.modelo}` : "Produto indisponível";
       const max = Math.min(99, p?.estoque || 0);
-      return `<li class="drawer-item"><img src="${esc(productImage(p))}" alt="" width="72" height="72"><div class="drawer-item-info">${p ? `<a href="/produto.html?id=${encodeURIComponent(p.id)}">${esc(name)}</a><span class="small muted">${money(p.priceCents)} cada</span>` : `<strong>${esc(name)}</strong>`}${!p || r.quantidade > max ? '<span class="field-error">Indisponível nessa quantidade.</span>' : ""}<div class="stepper" role="group" aria-label="Quantidade de ${esc(name)}"><button type="button" data-step="-1" data-id="${esc(r.id)}" data-max="${max}" aria-label="Diminuir quantidade"${r.quantidade <= 1 ? " disabled" : ""}>${icon("minus", { size: 16 })}</button><output aria-live="polite">${r.quantidade}</output><button type="button" data-step="1" data-id="${esc(r.id)}" data-max="${max}" aria-label="Aumentar quantidade"${r.quantidade >= max ? " disabled" : ""}>${icon("plus", { size: 16 })}</button></div></div><div class="drawer-item-end"><strong>${money((p?.priceCents || 0) * r.quantidade)}</strong><button type="button" class="icon-button" data-remove data-id="${esc(r.id)}" aria-label="Remover ${esc(name)}">${icon("trash", { size: 18 })}</button></div></li>`;
+      return `<li class="drawer-item"><img src="${esc(p ? itemImage(p, r.cor) : productImage(p))}" alt="" width="72" height="72"><div class="drawer-item-info">${p ? `<a href="/produto.html?id=${encodeURIComponent(p.id)}">${esc(name)}</a>${itemColor(p, r.cor) ? `<span class="item-color small">Cor: ${esc(itemColor(p, r.cor))}</span>` : ""}<span class="small muted">${money(p.priceCents)} cada</span>` : `<strong>${esc(name)}</strong>`}${!p || r.quantidade > max ? '<span class="field-error">Indisponível nessa quantidade.</span>' : ""}<div class="stepper" role="group" aria-label="Quantidade de ${esc(name)}"><button type="button" data-step="-1" data-id="${esc(r.id)}" data-max="${max}" aria-label="Diminuir quantidade"${r.quantidade <= 1 ? " disabled" : ""}>${icon("minus", { size: 16 })}</button><output aria-live="polite">${r.quantidade}</output><button type="button" data-step="1" data-id="${esc(r.id)}" data-max="${max}" aria-label="Aumentar quantidade"${r.quantidade >= max ? " disabled" : ""}>${icon("plus", { size: 16 })}</button></div></div><div class="drawer-item-end"><strong>${money((p?.priceCents || 0) * r.quantidade)}</strong><button type="button" class="icon-button" data-remove data-id="${esc(r.id)}" aria-label="Remover ${esc(name)}">${icon("trash", { size: 18 })}</button></div></li>`;
     })
     .join("")}</ul>`;
   footer.innerHTML = `${freeShippingHTML(subtotal)}<div class="summary-line summary-total"><span>Subtotal</span><span>${money(subtotal)}</span></div><p class="small muted">Frete, cupom e parcelas no checkout.</p>${invalid ? '<p class="field-error">Ajuste os itens indisponíveis antes de finalizar.</p>' : ""}<a class="button full" href="/checkout.html"${invalid ? ' aria-disabled="true" data-blocked' : ""}>Finalizar compra ${icon("arrowRight", { size: 18 })}</a><a class="button secondary full" href="/carrinho.html">Ver carrinho completo</a>`;
@@ -165,7 +167,7 @@ function ensureNotice() {
     document.querySelector(".site-header .cart-link")?.focus();
   });
 }
-async function showNotice(product, quantity) {
+async function showNotice(product, quantity, { cor, recolored } = {}) {
   ensureNotice();
   const count = cartQuantity();
   const name = `${product.marca} ${product.modelo}`;
@@ -177,7 +179,7 @@ async function showNotice(product, quantity) {
     notice.style.right = `${Math.max(12, innerWidth - cartLink.getBoundingClientRect().right - 8)}px`;
   } else notice.removeAttribute("style");
   notice.innerHTML = `<div class="cart-notice-head"><span class="cart-notice-check">${icon("check", { size: 16 })}</span><h2 id="cart-notice-title">Adicionado ao carrinho</h2><button type="button" class="icon-button" data-notice-close aria-label="Fechar aviso">${icon("close", { size: 18 })}</button></div>
-<div class="cart-notice-item"><img src="${esc(productImage(product))}" alt="" width="56" height="56"><div><span class="product-brand">${esc(product.marca)}</span><strong>${esc(product.modelo)}</strong><span class="small muted">${quantity} × ${money(product.priceCents)}</span></div></div>
+<div class="cart-notice-item"><img src="${esc(itemImage(product, cor))}" alt="" width="56" height="56"><div><span class="product-brand">${esc(product.marca)}</span><strong>${esc(product.modelo)}</strong>${cor ? `<span class="item-color small">Cor: ${esc(cor)}${recolored ? " (cor do item no carrinho atualizada)" : ""}</span>` : ""}<span class="small muted">${quantity} × ${money(product.priceCents)}</span></div></div>
 <div class="cart-notice-ship"></div>
 <div class="cart-notice-actions"><a class="button secondary" href="/carrinho.html" data-notice-cart>Ver carrinho (${count})</a><a class="button" href="/checkout.html">Finalizar compra</a></div><span class="cart-notice-timer" aria-hidden="true"></span>`;
   notice.style.setProperty("--notice-ms", `${NOTICE_MS}ms`);
@@ -204,12 +206,12 @@ export function initDrawer() {
     }),
   );
   document.addEventListener("vv:cart-added", async (event) => {
-    const { product, quantity = 1, source } = event.detail;
+    const { product, quantity = 1, source, cor, recolored } = event.detail;
     if (location.pathname === "/carrinho.html") {
       toast("Produto adicionado ao carrinho.", { type: "success" });
       return;
     }
     await flyToCart(source);
-    showNotice(product, quantity);
+    showNotice(product, quantity, { cor, recolored });
   });
 }

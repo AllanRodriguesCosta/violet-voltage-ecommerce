@@ -359,7 +359,7 @@ instrumento usado na troca fica de fora.
       o catálogo filtrado.
 - [x] Filtros do segmento nas guitarras: mão, cordas e captadores (com 3
       guitarras novas: canhota, 7 cordas e EMG ativos), mais trastes e escala na
-      ficha. Catálogo com 80 produtos.
+      ficha. Catálogo com 80 produtos (81 a partir da etapa 29).
 - [x] Aviso de queda de preço no produto e para todos os favoritos; notifica
       uma vez com o preço antigo e o novo; avisos de estoque e de preço juntos em
       Minha conta.
@@ -484,6 +484,30 @@ instrumento usado na troca fica de fora.
 - [x] "Quero falar com o suporte/atendente" abre a triagem mesmo com a palavra
       "suporte" (que também é um produto); "tem suporte de chão?" continua
       sendo busca de produto.
+
+### 29. Fotos novas, galeria do produto e opção de cor
+
+- [x] Fotos enviadas pelo Allan conferidas e padronizadas (fundo branco, recorte
+      centralizado, quadradas, PNG abaixo de 600 KB, sem ampliar além do
+      original) e entregues como pacote com os nomes e subpastas do seed. O
+      pacote não vai para o GitHub (repositório público); a carga é a T06.
+- [x] Galeria na página do produto: carrossel com setas, miniaturas, contador,
+      setas do teclado na foto, arrastar no celular e ampliação da foto que está
+      na tela. Amplificadores com frente, traseira e, quando os controles ficam
+      em cima, o painel visto de cima.
+- [x] Opção de cor: nos modelos com fotos em mais de uma cor (Blues Junior IV,
+      Hot Rod Deluxe IV, AC30C2 e Crush 20RT), bolinhas ao lado da foto trocam o
+      carrossel para a cor escolhida; `?cor=` no endereço guarda a escolha. Os
+      cartões do catálogo mostram as bolinhas e "N cores".
+- [x] A cor segue a compra: aviso e minicarrinho com a foto da cor, troca de cor
+      no carrinho, resumo do checkout, pedido, histórico e comprovante. O
+      servidor só aceita as cores do produto (sem escolha, vale a padrão).
+- [x] Seed: fotos extras opcionais (o produto entra com as que existirem),
+      `npm run fotos:conferir` e `npm run seed` informam as extras que faltam,
+      rota `GET /api/images/:id/:n` para cada foto da galeria. Sem migração: os
+      campos ficam no JSON do produto.
+- [x] Produto novo demo-081 (cabo Santo Angelo Standard 2 m), que chegou com as
+      fotos.
 
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

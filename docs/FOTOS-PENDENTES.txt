@@ -1,9 +1,29 @@
-VIOLET VOLTAGE - FOTOS PENDENTES (ETAPAS 18 E 21)
-=================================================
+VIOLET VOLTAGE - FOTOS PENDENTES (ETAPAS 18, 21, 22 E 29)
+=========================================================
 
-Ultima atualizacao: 12/11/2026. 58 fotos novas, uma por produto adicionado nas
-etapas 18 e 21 (catalogo passa de 22 para 80 produtos). Os 22 produtos originais
-continuam com as fotos que ja estao na pasta.
+Ultima atualizacao: 13/11/2026. 59 fotos principais novas, uma por produto
+adicionado depois do catalogo inicial (o catalogo tem 81 produtos). Os 22
+produtos originais continuam com as fotos que ja estao na pasta.
+
+SITUACAO EM 13/11/2026
+- O Allan enviou as fotos; o Copilot conferiu, renomeou e padronizou (fundo
+  branco, recorte centralizado, quadradas, PNG valido, todas abaixo de 600 KB).
+  Recebidas: 51 fotos principais [x] e 29 fotos extras de amplificadores
+  (outras vistas e cores, secao FOTOS EXTRAS no fim deste arquivo).
+- O pacote organizado NAO vai para o GitHub (repositorio publico). Ele foi
+  entregue ao Allan como produtos-violet-voltage.zip: descompacte dentro de
+  seed-assets/ (as subpastas ja vem certas) e siga a tarefa T06 de
+  docs/PENDENCIAS-MANUAIS.txt.
+- Faltam 8 fotos principais (linhas [ ]): o afinador Boss TU-3 e 7 produtos da
+  marca propria Violet Voltage. Para a marca propria, serve foto de um produto
+  generico parecido, sem logotipo de outra marca.
+- Fotos pequenas (menos de 400 px no original), que podem ser trocadas por
+  versoes maiores quando houver: Pro Co RAT 2, VOX AC30C2 roxo (traseira),
+  Orange Crush 20RT (frente laranja e preta), Boss TR-2, Marshall DSL20CR,
+  Kyser Quick-Change, MXR Dyna Comp, Fender Blues Junior IV e Fender '65
+  Twin Reverb.
+- A foto "Cabo Santo Angelo Standard 2 m", que nao estava na lista, virou um
+  produto novo (demo-081).
 
 O QUE FAZER
 -----------
@@ -35,63 +55,64 @@ Cada linha: caixa, arquivo, produto (marca e modelo) e codigo do produto.
 GUITARRAS (17) - pasta guitarras/
 ---------------------------------
 O que fotografar: guitarra inteira, de frente, na vertical.
-[ ] guitarras/fender-vintera-ii-60s-stratocaster.png  |  Fender Vintera II '60s Stratocaster  |  demo-023
-[ ] guitarras/squier-classic-vibe-50s-stratocaster.png  |  Squier Classic Vibe '50s Stratocaster  |  demo-024
-[ ] guitarras/fender-player-ii-telecaster.png  |  Fender Player II Telecaster  |  demo-025
-[ ] guitarras/squier-affinity-telecaster.png  |  Squier Affinity Telecaster  |  demo-026
-[ ] guitarras/epiphone-les-paul-standard-50s.png  |  Epiphone Les Paul Standard 50s  |  demo-027
-[ ] guitarras/gibson-les-paul-standard-60s.png  |  Gibson Les Paul Standard 60s  |  demo-028
-[ ] guitarras/epiphone-sg-standard.png  |  Epiphone SG Standard  |  demo-029
-[ ] guitarras/epiphone-es-335.png  |  Epiphone ES-335  |  demo-030
-[ ] guitarras/gretsch-g2420t-streamliner.png  |  Gretsch G2420T Streamliner  |  demo-031
-[ ] guitarras/squier-classic-vibe-60s-jazzmaster.png  |  Squier Classic Vibe '60s Jazzmaster  |  demo-032
-[ ] guitarras/jackson-js32-dinky.png  |  Jackson JS32 Dinky  |  demo-033
-[ ] guitarras/ibanez-grg121sp.png  |  Ibanez GRG121SP  |  demo-034
-[ ] guitarras/tagima-tg-530.png  |  Tagima TG-530  |  demo-035
-[ ] guitarras/prs-se-custom-24.png  |  PRS SE Custom 24  |  demo-036
-[ ] guitarras/squier-affinity-telecaster-canhota.png  |  Squier Affinity Telecaster Canhota  |  demo-078
-[ ] guitarras/ibanez-grg7221.png  |  Ibanez GRG7221 7 Cordas  |  demo-079
-[ ] guitarras/esp-ltd-ec-401.png  |  ESP LTD EC-401  |  demo-080
+[x] guitarras/fender-vintera-ii-60s-stratocaster.png  |  Fender Vintera II '60s Stratocaster  |  demo-023
+[x] guitarras/squier-classic-vibe-50s-stratocaster.png  |  Squier Classic Vibe '50s Stratocaster  |  demo-024
+[x] guitarras/fender-player-ii-telecaster.png  |  Fender Player II Telecaster  |  demo-025
+[x] guitarras/squier-affinity-telecaster.png  |  Squier Affinity Telecaster  |  demo-026
+[x] guitarras/epiphone-les-paul-standard-50s.png  |  Epiphone Les Paul Standard 50s  |  demo-027
+[x] guitarras/gibson-les-paul-standard-60s.png  |  Gibson Les Paul Standard 60s  |  demo-028
+[x] guitarras/epiphone-sg-standard.png  |  Epiphone SG Standard  |  demo-029
+[x] guitarras/epiphone-es-335.png  |  Epiphone ES-335  |  demo-030
+[x] guitarras/gretsch-g2420t-streamliner.png  |  Gretsch G2420T Streamliner  |  demo-031
+[x] guitarras/squier-classic-vibe-60s-jazzmaster.png  |  Squier Classic Vibe '60s Jazzmaster  |  demo-032
+[x] guitarras/jackson-js32-dinky.png  |  Jackson JS32 Dinky  |  demo-033
+[x] guitarras/ibanez-grg121sp.png  |  Ibanez GRG121SP  |  demo-034
+[x] guitarras/tagima-tg-530.png  |  Tagima TG-530  |  demo-035
+[x] guitarras/prs-se-custom-24.png  |  PRS SE Custom 24  |  demo-036
+[x] guitarras/squier-affinity-telecaster-canhota.png  |  Squier Affinity Telecaster Canhota  |  demo-078
+[x] guitarras/ibanez-grg7221.png  |  Ibanez GRG7221 7 Cordas  |  demo-079
+[x] guitarras/esp-ltd-ec-401.png  |  ESP LTD EC-401  |  demo-080
 
 AMPLIFICADORES (10) - pasta amplificadores/
 -------------------------------------------
 O que fotografar: frente do amplificador, com o painel de controles visivel.
-[ ] amplificadores/fender-blues-junior-iv.png  |  Fender Blues Junior IV  |  demo-037
-[ ] amplificadores/fender-hot-rod-deluxe-iv.png  |  Fender Hot Rod Deluxe IV  |  demo-038
-[ ] amplificadores/fender-65-twin-reverb.png  |  Fender '65 Twin Reverb  |  demo-039
-[ ] amplificadores/marshall-dsl20cr.png  |  Marshall DSL20CR  |  demo-040
-[ ] amplificadores/marshall-origin-20c.png  |  Marshall Origin 20C  |  demo-041
-[ ] amplificadores/vox-ac30c2.png  |  VOX AC30C2  |  demo-042
-[ ] amplificadores/orange-crush-20rt.png  |  Orange Crush 20RT  |  demo-043
-[ ] amplificadores/boss-katana-50-mkii.png  |  Boss Katana-50 MkII  |  demo-044
-[ ] amplificadores/fender-champion-20.png  |  Fender Champion 20  |  demo-045
-[ ] amplificadores/evh-5150-iconic-15w.png  |  EVH 5150 Iconic 15W 1x10  |  demo-046
+[x] amplificadores/fender-blues-junior-iv.png  |  Fender Blues Junior IV  |  demo-037
+[x] amplificadores/fender-hot-rod-deluxe-iv.png  |  Fender Hot Rod Deluxe IV  |  demo-038
+[x] amplificadores/fender-65-twin-reverb.png  |  Fender '65 Twin Reverb  |  demo-039
+[x] amplificadores/marshall-dsl20cr.png  |  Marshall DSL20CR  |  demo-040
+[x] amplificadores/marshall-origin-20c.png  |  Marshall Origin 20C  |  demo-041
+[x] amplificadores/vox-ac30c2.png  |  VOX AC30C2  |  demo-042
+[x] amplificadores/orange-crush-20rt.png  |  Orange Crush 20RT  |  demo-043
+[x] amplificadores/boss-katana-50-mkii.png  |  Boss Katana-50 MkII  |  demo-044
+[x] amplificadores/fender-champion-20.png  |  Fender Champion 20  |  demo-045
+[x] amplificadores/evh-5150-iconic-15w.png  |  EVH 5150 Iconic 15W 1x10  |  demo-046
 
 PEDAIS (15) - pasta pedais/
 ---------------------------
 O que fotografar: pedal visto de cima, com os controles legiveis.
-[ ] pedais/ibanez-ts9-tube-screamer.png  |  Ibanez Tube Screamer TS9  |  demo-047
-[ ] pedais/boss-bd-2-blues-driver.png  |  Boss BD-2 Blues Driver  |  demo-048
-[ ] pedais/boss-ds-1-distortion.png  |  Boss DS-1 Distortion  |  demo-049
-[ ] pedais/ehx-big-muff-pi.png  |  Electro-Harmonix Big Muff Pi  |  demo-050
-[ ] pedais/dunlop-cry-baby-gcb95.png  |  Dunlop Cry Baby GCB95  |  demo-051
-[ ] pedais/mxr-carbon-copy.png  |  MXR Carbon Copy  |  demo-052
-[ ] pedais/boss-dd-8-digital-delay.png  |  Boss DD-8 Digital Delay  |  demo-053
-[ ] pedais/ehx-holy-grail-neo.png  |  Electro-Harmonix Holy Grail Neo  |  demo-054
+[x] pedais/ibanez-ts9-tube-screamer.png  |  Ibanez Tube Screamer TS9  |  demo-047
+[x] pedais/boss-bd-2-blues-driver.png  |  Boss BD-2 Blues Driver  |  demo-048
+[x] pedais/boss-ds-1-distortion.png  |  Boss DS-1 Distortion  |  demo-049
+[x] pedais/ehx-big-muff-pi.png  |  Electro-Harmonix Big Muff Pi  |  demo-050
+[x] pedais/dunlop-cry-baby-gcb95.png  |  Dunlop Cry Baby GCB95  |  demo-051
+[x] pedais/mxr-carbon-copy.png  |  MXR Carbon Copy  |  demo-052
+[x] pedais/boss-dd-8-digital-delay.png  |  Boss DD-8 Digital Delay  |  demo-053
+[x] pedais/ehx-holy-grail-neo.png  |  Electro-Harmonix Holy Grail Neo  |  demo-054
 [ ] pedais/boss-tu-3-chromatic-tuner.png  |  Boss TU-3 Chromatic Tuner  |  demo-055
-[ ] pedais/mxr-dyna-comp.png  |  MXR Dyna Comp  |  demo-056
-[ ] pedais/boss-tr-2-tremolo.png  |  Boss TR-2 Tremolo  |  demo-057
-[ ] pedais/proco-rat-2.png  |  Pro Co RAT 2  |  demo-058
-[ ] pedais/boss-mt-2-metal-zone.png  |  Boss MT-2 Metal Zone  |  demo-059
-[ ] pedais/line6-hx-stomp.png  |  Line 6 HX Stomp  |  demo-060
-[ ] pedais/tc-electronic-ditto-looper.png  |  TC Electronic Ditto Looper  |  demo-061
+[x] pedais/mxr-dyna-comp.png  |  MXR Dyna Comp  |  demo-056
+[x] pedais/boss-tr-2-tremolo.png  |  Boss TR-2 Tremolo  |  demo-057
+[x] pedais/proco-rat-2.png  |  Pro Co RAT 2  |  demo-058
+[x] pedais/boss-mt-2-metal-zone.png  |  Boss MT-2 Metal Zone  |  demo-059
+[x] pedais/line6-hx-stomp.png  |  Line 6 HX Stomp  |  demo-060
+[x] pedais/tc-electronic-ditto-looper.png  |  TC Electronic Ditto Looper  |  demo-061
 
-CABOS (3) - pasta cabos/
+CABOS (4) - pasta cabos/
 ------------------------
 O que fotografar: cabo enrolado mostrando os plugues.
-[ ] cabos/daddario-american-stage-3m.png  |  D'Addario American Stage 3 m  |  demo-062
+[x] cabos/daddario-american-stage-3m.png  |  D'Addario American Stage 3 m  |  demo-062
 [ ] cabos/violet-voltage-cabo-tweed-6m.png  |  Violet Voltage Cabo Tweed Vintage 6 m  |  demo-063
 [ ] cabos/violet-voltage-patch-flat-kit-6.png  |  Violet Voltage Kit 6 Patch Cables Flat  |  demo-064
+[x] cabos/santo-angelo-standard-2m.png  |  Santo Angelo Cabo Standard P10 2 m  |  demo-081  (etapa 29)
 
 CORREIAS (3) - pasta correias/
 ------------------------------
@@ -103,13 +124,50 @@ O que fotografar: correia inteira mostrando a cor ou a estampa.
 ACESSORIOS (10) - pasta acessorios/
 -----------------------------------
 O que fotografar: produto em destaque (a embalagem tambem serve).
-[ ] acessorios/daddario-exl110.png  |  D'Addario Encordoamento EXL110 0.10  |  demo-068
-[ ] acessorios/ernie-ball-regular-slinky.png  |  Ernie Ball Encordoamento Regular Slinky 0.10  |  demo-069
-[ ] acessorios/elixir-nanoweb-light.png  |  Elixir Encordoamento Nanoweb Light 0.10  |  demo-070
-[ ] acessorios/kyser-quick-change.png  |  Kyser Capotraste Quick-Change  |  demo-071
-[ ] acessorios/boss-tu-10.png  |  Boss TU-10 Afinador Clip-on  |  demo-072
-[ ] acessorios/dunlop-system-65.png  |  Dunlop Kit de Limpeza System 65  |  demo-073
-[ ] acessorios/dunlop-tortex-073.png  |  Dunlop Palhetas Tortex 0,73 mm (12 un.)  |  demo-074
+[x] acessorios/daddario-exl110.png  |  D'Addario Encordoamento EXL110 0.10  |  demo-068
+[x] acessorios/ernie-ball-regular-slinky.png  |  Ernie Ball Encordoamento Regular Slinky 0.10  |  demo-069
+[x] acessorios/elixir-nanoweb-light.png  |  Elixir Encordoamento Nanoweb Light 0.10  |  demo-070
+[x] acessorios/kyser-quick-change.png  |  Kyser Capotraste Quick-Change  |  demo-071
+[x] acessorios/boss-tu-10.png  |  Boss TU-10 Afinador Clip-on  |  demo-072
+[x] acessorios/dunlop-system-65.png  |  Dunlop Kit de Limpeza System 65  |  demo-073
+[x] acessorios/dunlop-tortex-073.png  |  Dunlop Palhetas Tortex 0,73 mm (12 un.)  |  demo-074
 [ ] acessorios/violet-voltage-suporte-triplo.png  |  Violet Voltage Suporte Triplo de Chão  |  demo-075
 [ ] acessorios/violet-voltage-fonte-9v.png  |  Violet Voltage Fonte 9V 1A Pedal Power  |  demo-076
-[ ] acessorios/joyo-jp-02.png  |  Joyo JP-02 Fonte Isolada 10 Saídas  |  demo-077
+[x] acessorios/joyo-jp-02.png  |  Joyo JP-02 Fonte Isolada 10 Saídas  |  demo-077
+
+FOTOS EXTRAS DA GALERIA (ETAPA 29) - todas recebidas
+----------------------------------------------------
+Opcionais: sem elas o produto entra so com a foto principal. Cada amplificador
+tem uma pasta com o nome da foto principal (sem o .png). Vistas: frente,
+topo (painel de controles, quando os controles ficam em cima) e costas. Com
+mais de uma cor, o nome comeca pela cor; a frente da primeira cor e a foto
+principal. As cores e vistas de cada modelo ficam em src/services/seed-gallery.js.
+- amplificadores/boss-katana-50-mkii/costas.png
+- amplificadores/boss-katana-50-mkii/topo.png
+- amplificadores/evh-5150-iconic-15w/costas.png
+- amplificadores/evh-5150-iconic-15w/topo.png
+- amplificadores/fender-65-twin-reverb/costas.png
+- amplificadores/fender-blues-junior-iv/laranja-costas.png
+- amplificadores/fender-blues-junior-iv/laranja-frente.png
+- amplificadores/fender-blues-junior-iv/preto-costas.png
+- amplificadores/fender-champion-20/costas.png
+- amplificadores/fender-hot-rod-deluxe-iv/amarelo-frente.png
+- amplificadores/fender-hot-rod-deluxe-iv/amarelo-topo.png
+- amplificadores/fender-hot-rod-deluxe-iv/preto-costas.png
+- amplificadores/fender-hot-rod-deluxe-iv/preto-topo.png
+- amplificadores/marshall-dsl20cr/costas.png
+- amplificadores/marshall-origin-20c/costas.png
+- amplificadores/marshall-origin-20c/topo.png
+- amplificadores/orange-crush-20rt/branco-costas.png
+- amplificadores/orange-crush-20rt/branco-frente.png
+- amplificadores/orange-crush-20rt/branco-topo.png
+- amplificadores/orange-crush-20rt/laranja-costas.png
+- amplificadores/orange-crush-20rt/laranja-topo.png
+- amplificadores/orange-crush-20rt/preto-costas.png
+- amplificadores/orange-crush-20rt/preto-frente.png
+- amplificadores/orange-crush-20rt/preto-topo.png
+- amplificadores/vox-ac30c2/preto-costas.png
+- amplificadores/vox-ac30c2/preto-topo.png
+- amplificadores/vox-ac30c2/roxo-costas.png
+- amplificadores/vox-ac30c2/roxo-frente.png
+- amplificadores/vox-ac30c2/roxo-topo.png

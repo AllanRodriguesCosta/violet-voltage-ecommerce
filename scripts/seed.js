@@ -1,6 +1,6 @@
 import { configuration } from "../src/config/index.js";
 import { createStorage } from "../src/repositories/factory.js";
-import { seed, SeedInputError } from "../src/services/seed.js";
+import { seed, SeedInputError, missingGalleryFiles } from "../src/services/seed.js";
 import { createApp } from "../src/app.js";
 import { bootstrapAdmin } from "../src/services/bootstrap.js";
 let storage;
@@ -18,6 +18,11 @@ try {
   if (result.ignored.length)
     console.log(
       `Modo parcial: ${result.ignored.length} produtos ficaram de fora por falta de foto (lista em docs/FOTOS-PENDENTES.txt):\n${result.ignored.map((file) => `  - ${file}`).join("\n")}`,
+    );
+  const extras = await missingGalleryFiles();
+  if (extras.length)
+    console.log(
+      `Fotos extras (outras vistas e cores) não encontradas: ${extras.length}. Os produtos entraram com as fotos que existem:\n${extras.map((file) => `  - ${file}`).join("\n")}`,
     );
   if (config.memory) {
     serving = true;

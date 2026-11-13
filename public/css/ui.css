@@ -961,3 +961,41 @@ body.assistant-open .assistant-launcher { visibility: hidden; }
   .account-view, .account-dropdown { animation: none; }
   a.account-stat:hover { transform: none; }
 }
+
+/* Etapa 29: galeria de fotos (vistas e cores) e seletor de cor. */
+.detail-gallery { display: grid; gap: 12px; min-width: 0; align-content: start; }
+.gallery-nav { position: absolute; z-index: 3; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; min-height: 44px; padding: 0; border-radius: 50%; background: rgb(255 255 255 / 92%); color: var(--media-ink); border: 1px solid var(--media-line); box-shadow: 0 4px 14px rgb(18 11 25 / 12%); }
+.gallery-nav:hover { background: #fff; color: var(--violet); border-color: var(--violet-line); transform: translateY(-50%); }
+.gallery-prev { left: 12px; }
+.gallery-next { right: 12px; }
+.gallery-nav[hidden], .gallery-count[hidden], .gallery-thumbs[hidden] { display: none; }
+.gallery-count { position: absolute; z-index: 3; left: 14px; top: 14px; padding: 3px 10px; border-radius: 999px; background: rgb(18 11 25 / 72%); color: #fff; font-size: 12px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.gallery-thumbs { display: flex; gap: 10px; overflow-x: auto; padding: 2px; scrollbar-width: thin; }
+.gallery-thumb { flex: 0 0 auto; width: 76px; height: 76px; min-height: 0; padding: 4px; border-radius: 12px; background: var(--media-bg); border: 1px solid var(--line); }
+.gallery-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.gallery-thumb:hover { border-color: var(--line-hover); background: var(--media-bg); transform: none; }
+.gallery-thumb[aria-current="true"] { border: 2px solid var(--violet); padding: 3px; }
+:root[data-theme="dark"] .gallery-thumb img { mix-blend-mode: multiply; }
+.color-picker { margin: 14px 0 4px; padding: 0; border: 0; min-width: 0; }
+.color-picker legend { padding: 0; margin-bottom: 8px; font-size: 14px; color: var(--muted, inherit); }
+.color-picker legend strong { color: var(--ink, inherit); }
+.swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+.swatch { position: relative; display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
+.swatch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.swatch-dot { width: 30px; height: 30px; border-radius: 50%; background: var(--swatch, #888); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 18%); outline: 2px solid transparent; outline-offset: 3px; transition: outline-color 0.15s ease; }
+.swatch:hover .swatch-dot { outline-color: var(--line-hover); }
+.swatch input:checked + .swatch-dot { outline-color: var(--violet); }
+.swatch input:focus-visible + .swatch-dot { outline: 3px solid var(--focus); outline-offset: 3px; }
+:root[data-theme="dark"] .swatch input:checked + .swatch-dot { outline-color: var(--lilac); }
+.card-colors { display: flex; align-items: center; gap: 8px; margin: 2px 0 8px; font-size: 13px; color: var(--muted, inherit); }
+.card-dots { display: inline-flex; gap: 4px; }
+.card-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--swatch, #888); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 22%); }
+.item-color { display: block; color: var(--muted, inherit); }
+.cart-color { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0 2px; font-size: 14px; }
+.cart-color select { width: auto; min-height: 36px; padding: 4px 32px 4px 10px; }
+@media (min-width: 900px) {
+  .detail-gallery { position: sticky; top: calc(var(--header-h) + 20px); }
+  .detail-gallery .detail-media { position: relative; top: auto; }
+}
+/* Tema escuro: anel claro para a bolinha preta não sumir no fundo. */
+:root[data-theme="dark"] .swatch-dot, :root[data-theme="dark"] .card-dot { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 45%); }

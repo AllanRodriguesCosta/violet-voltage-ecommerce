@@ -31,7 +31,7 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/services/addresses.js` | Validação e regras dos endereços de entrega (até 5, um principal) |
 | `src/services/notifications.js` | Notificações da conta e avisos "Avise-me" disparados na reposição |
 | `src/services/bootstrap.js` | Criação/atualização privada do administrador |
-| `src/services/seed*.js` | Manifesto, fichas técnicas e carga dos 80 produtos/imagens (modo parcial para fotos em andamento) |
+| `src/services/seed*.js` | Manifesto, fichas técnicas, galeria por cor (`seed-gallery.js`) e carga dos 81 produtos/imagens (modo parcial para fotos em andamento) |
 | `scripts/check-photos.js` | `npm run fotos:conferir`: confere as fotos locais sem alterar nada |
 | `src/knowledge/help.js` | Central de Ajuda: perguntas e respostas (fonte da página `ajuda.html` e da busca do assistente) |
 | `src/services/account.js` | Troca de senha, forma de pagamento preferida, cópia dos dados e exclusão da conta pelo cliente |

@@ -1,3 +1,9 @@
+# Fase 4, etapa 37 — 13/11/2026
+
+- `tests/stage37.test.js` (6): sim/não pela ficha (valvulado, transistor, alavanca, canhota) e pergunta aberta sem sim/não; uso em apartamento e em casa pela potência; baixo (amplificador, cabo) e "preço mais baixo" fora disso; pergunta sobre a peça do setup; setup inteiro no carrinho só com confirmação; entidades (cabo de guitarra, suporte); avaliação com 300+ frases sem repetição.
+- Avaliação do assistente: **96,1% em 308 frases** fora do treino (antes 95,9% em 121), 8 conversas sem erro, entidades sem erro. Erros restantes: frases fora do escopo muito abertas ("quem descobriu o Brasil", "quanto é 2 mais 2") e "tem desconto no pix?" (responde sobre cupons).
+- Suíte: 195/196 (`postgres.test.js` no CI). Lint OK.
+
 # Fase 4, etapa 36 — 13/11/2026
 
 - `tests/stage36.test.js` (10): detecção de "já tenho", "só falta", trocar, manter, tirar, incluir e "por quê"; `buildSetup` sem as peças que o cliente tem (verba redistribuída), com peça travada e com peça excluída; conversas (troca só o amplificador e as outras peças ficam; mantém a guitarra + mais barato; já tenho guitarra e amplificador; tirar e incluir sem trazer de volta o que saiu pelo valor); "por que essa guitarra?" cita o artista; memória (salva, oferece na saudação e no início do setup, reaproveita, esquece, visitante recebe login); contexto só com categorias e IDs válidos; API (gosto salvo, na cópia de dados, apagado pelo assistente).

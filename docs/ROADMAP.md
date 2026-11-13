@@ -654,5 +654,24 @@ Para ensaiar e demonstrar sem gastar crédito. Visão geral:
       outro setup, o assistente oferece "Usar o mesmo gosto". "Esquece meu gosto" apaga. Entra na
       cópia de dados e some com a conta; visitante recebe o botão de login.
 
+### 37. Assistente: perguntas técnicas e avaliação ampliada
+
+- [x] **Sim ou não pela ficha**: "é valvulado?", "tem alavanca?", "é canhota?", "os captadores
+      são ativos?" começam com "Sim" ou "Não" e mostram o dado; pergunta aberta ("qual a
+      captação?") recebe só o dado.
+- [x] **Uso em casa e baixo**: "dá para usar em apartamento?" responde pela potência e pela
+      tecnologia; "serve para baixo?" diz que amplificador de guitarra não é indicado, que cabo
+      serve e que pedal funciona com perda de graves. "Preço mais baixo" não confunde.
+- [x] **Peça do setup**: com um setup na conversa, "o amplificador é valvulado?" e "o pedal
+      precisa de fonte?" falam da peça daquela categoria.
+- [x] **Carrinho com confirmação** (já existia, agora testado com o setup inteiro): "coloca o
+      setup no carrinho" mostra o total e o botão; nada entra sem o toque.
+- [x] **Avaliação ampliada**: 308 frases fora do treino (`src/assistant/eval-set-extra.js`, com
+      erros de digitação e gírias) e 8 conversas, incluindo as das etapas 33 a 37. O teste exige
+      pelo menos 300 frases e 93% de acerto (hoje 96,1%).
+- [x] Correções achadas pela avaliação: "cabo de guitarra" é cabo; "suporte" sozinho é
+      atendimento, não acessório; "código de rastreio" não é cupom; "quero levar essa" adiciona
+      ao carrinho; "guitarra canhota" mostra opções em vez da ficha de um item.
+
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

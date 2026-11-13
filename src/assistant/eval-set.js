@@ -1,7 +1,9 @@
 // Conjunto de avaliação: frases que NÃO estão no treino (intents.js), com a intenção final
 // esperada e, em parte delas, as entidades. Usado por tests/assistant.test.js e por
 // "npm run agente:eval", que mostra o acerto por intenção.
-export const evalSet = [
+import { evalExtra } from "./eval-set-extra.js";
+
+const baseSet = [
   // saudacao
   ["olá!", "saudacao"],
   ["oi, boa tarde", "saudacao"],
@@ -142,6 +144,8 @@ export const evalSet = [
   ["achei salgado demais", "objecao_preco"],
 ];
 
+export const evalSet = [...baseSet, ...evalExtra];
+
 // Conversas com várias mensagens: cada passo traz a intenção e um trecho esperado na resposta.
 export const dialogs = [
   {
@@ -173,6 +177,33 @@ export const dialogs = [
       ["monta um setup de rock clássico até 5 mil", "setup", /Total:/],
       ["muito caro", "objecao_preco", /mais em conta/],
       ["Até R$ 3.000", "setup", /até R\$\s3\.000/],
+    ],
+  },
+  // Etapa 36: o setup muda em conversa, sem recomeçar.
+  {
+    nome: "setup: troca só uma peça, explica e mantém",
+    passos: [
+      ["monta um setup de rock clássico até 6 mil", "setup", /Total:/],
+      ["troca só o amplificador", "setup_trocar", /^Troquei /],
+      ["por que essas peças?", "setup_porque", /Por que cada peça/],
+      ["mantém a guitarra", "setup_manter", /Combinado/],
+      ["mais barato", "refinar", /mantida/],
+    ],
+  },
+  {
+    nome: "setup: já tenho guitarra e amplificador",
+    passos: [
+      ["quero montar um setup, já tenho uma squier e um cubo", "setup_tenho", /já tem a guitarra e o amplificador/],
+      ["blues", "setup", /orçamento/],
+      ["até 2 mil", "setup", /porque você já tem/],
+    ],
+  },
+  {
+    nome: "setup: perguntas sobre as peças (etapa 37)",
+    passos: [
+      ["monta um setup de rock clássico até 6 mil", "setup", /Total:/],
+      ["o amplificador é valvulado?", "ficha", /^(Orange|Fender|Marshall|Vox|Boss|Laney|Peavey|Music Man|EVH|Blackstar)[^:]*: (Sim|Não)/],
+      ["o pedal precisa de fonte?", "ficha", /fonte/i],
     ],
   },
   {

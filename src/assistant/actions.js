@@ -139,13 +139,60 @@ const SPEC_Q = [
   [/efeito|tipo de pedal/, ["efeito"]],
   [/uso|palco|ensaio|estudio|estudar em casa/, ["uso"]],
 ];
-export const SPEC_WORDS = /trast|escala|metros?\b|tamanho|alavanca|tremolo|ponte|floyd|captac|captador|canhot|cordas|formato|potencia|watts|falante|valvul|transistor|tecnologia|fonte|bateria|alimenta|9 ?v\b|conector|plug|comprimento|material|timbre|compativel|funciona (com|no|na|em)|serve (pra|para)|bo[am] (pra|para)|combina com|da pra tocar|estoque|tem (em|no) estoque|garantia|regulagem|ativ[oa]s?\b|passiv|pesad|nivel/;
+// Etapa 37: perguntas de sim ou não respondidas com "Sim" ou "Não" antes do dado da ficha.
+const YES_NO = [
+  [/valvulad/, "tecnologia", (v) => v === "Valvulado", "é valvulado"],
+  [/transistor/, "tecnologia", (v) => v === "Transistor", "é transistorizado"],
+  [/digital|modelag/, "tecnologia", (v) => /digital/i.test(String(v)), "é digital"],
+  [/analogic/, "tecnologia", (v) => v === "Analógico", "é analógico"],
+  [/canhot|mao esquerda/, "mao", (v) => v === "Canhoto", "é para canhoto"],
+  [/alavanca|tremolo|whammy/, "ponte", (v) => ["Tremolo", "Floyd Rose"].includes(v), "tem alavanca"],
+  [/floyd/, "ponte", (v) => v === "Floyd Rose", "tem ponte Floyd Rose"],
+  [/humbucker/, "captacao", (v) => /Humbucker/.test(String(v)), "tem humbucker"],
+  [/single/, "captacao", (v) => /Single/.test(String(v)), "tem single-coil"],
+  [/p90/, "captacao", (v) => v === "P90", "tem P90"],
+  [/\bativ[oa]s?\b/, "captadores", (v) => v === "Ativos", "tem captadores ativos"],
+  [/\b7 cordas|sete cordas/, "cordas", (v) => v === "7 cordas", "é de 7 cordas"],
+];
+// Pergunta aberta ("qual a captação?") recebe o dado; fechada ("é valvulado?"), sim ou não.
+const OPEN_Q = /^(qual|quais|quanto|quantos|quantas|como|que tipo|o que)\b/;
+function yesNo(p, text) {
+  if (OPEN_Q.test(text)) return null;
+  const fi = p.ficha || {};
+  for (const [re, key, test, label] of YES_NO) {
+    if (!re.test(text) || fi[key] === undefined) continue;
+    return test(fi[key]) ? `Sim, ${label}.` : `Não, não ${label}.`;
+  }
+  return null;
+}
+// Uso em casa ou apartamento: pela potência e pela tecnologia do amplificador.
+function homeUse(p) {
+  const w = Number(p.ficha?.potencia);
+  if (!w) return null;
+  if (w <= 20) return `Sim: ${w} W é ótimo para estudar em casa, sem incomodar os vizinhos no volume baixo.`;
+  if (p.ficha?.tecnologia === "Valvulado" && w >= 30) return `Dá, mas ${w} W valvulado é alto: ele soa melhor com volume, o que pesa em apartamento. Para casa, um de até 20 W rende mais.`;
+  return `Dá: ${w} W tem volume de sobra, então use baixo. ${p.ficha?.tecnologia === "Modelagem digital" ? "Por ser digital, soa bem mesmo baixinho." : ""}`.trim();
+}
+// "Serve para baixo?": amplificador de guitarra não é para baixo; cabos e pedais servem.
+function bassUse(p) {
+  if (p.categoria === "Amplificadores") return "Não é indicado para baixo: é um amplificador de guitarra, e as frequências graves do baixo podem danificar o falante. Para baixo, o ideal é um amplificador próprio.";
+  if (p.categoria === "Cabos") return "Serve sim: cabo P10 de instrumento funciona com baixo do mesmo jeito.";
+  if (p.categoria === "Pedais") return "Funciona com baixo, mas pode tirar parte dos graves; pedais feitos para baixo preservam melhor o som.";
+  if (p.categoria === "Guitarras") return "É uma guitarra de 6 cordas afinadas como guitarra, não um baixo.";
+  return null;
+}
+const BASS = /\b(pra|para|com|no|num|de) (o |um )?(contra)?baixo\b/;
+export const SPEC_WORDS = /\bcasas\b|\b(pra|para|com|no|num|de) (o |um )?(contra)?baixo\b|em casa|apartamento|vizinh|ativ[oa]s?\b|digital|analogic|trast|escala|metros?\b|tamanho|alavanca|tremolo|ponte|floyd|captac|captador|canhot|cordas|formato|potencia|watts|falante|valvul|transistor|tecnologia|fonte|bateria|alimenta|9 ?v\b|conector|plug|comprimento|material|timbre|compativel|funciona (com|no|na|em)|serve (pra|para)|bo[am] (pra|para)|combina com|da pra tocar|estoque|tem (em|no) estoque|garantia|regulagem|ativ[oa]s?\b|passiv|pesad|nivel/;
 export function specAnswer(p, text) {
   const rows = specRows(p);
   const fields = new Set();
   for (const [re, keys] of SPEC_Q) if (re.test(text)) for (const k of keys) fields.add(k);
   const answers = rows.filter((r) => fields.has(r.field.key)).map((r) => `${r.field.label}: ${r.text}`);
   const extra = [];
+  const answer = yesNo(p, text);
+  if (answer) extra.push(answer);
+  if (BASS.test(text)) extra.push(bassUse(p));
+  if (/em casa|apartamento|vizinh|baixinho|estudar em casa/.test(text) && p.categoria === "Amplificadores") extra.push(homeUse(p));
   // "Serve para metal?" / "combina com blues?"
   const genre = GENEROS.find((g) => text.includes(normalize(g)) || (g === "Heavy metal" && /\bmetal\b/.test(text)));
   if (genre && /serve|bo[am]|combina|da pra|indicad|funciona/.test(text))
@@ -161,7 +208,7 @@ export function specAnswer(p, text) {
   if (/estoque|tem (ainda|disponivel)|acabou|esgot/.test(text)) extra.push(p.estoque ? `${p.estoque <= 5 ? `Últimas unidades: ${p.estoque}` : `${p.estoque} unidades`} em estoque.` : "Está esgotado agora; na página dá para ativar o Avise-me.");
   if (/quanto custa|preco|valor|parcel/.test(text)) extra.push(`Custa ${brl(p.priceCents)}.`);
   if (/garantia|regulagem/.test(text)) extra.push(p.categoria === "Guitarras" ? "No carrinho dá para incluir regulagem por luthier, troca de cordas e garantia estendida de 12 meses." : ["Amplificadores", "Pedais"].includes(p.categoria) ? "No carrinho dá para incluir garantia estendida de 12 meses." : "Este item não tem serviços adicionais.");
-  const lines = [answers.length ? `${answers.join("; ")}.` : "", ...extra].filter(Boolean);
+  const lines = [extra[0]?.startsWith("Sim") || extra[0]?.startsWith("Não") ? extra.shift() : "", answers.length ? `${answers.join("; ")}.` : "", ...extra].filter(Boolean);
   const texto = lines.length
     ? `${name(p)}: ${lines.join(" ")}`
     : `Não achei esse dado na ficha da ${name(p)}. O que ela informa: ${rows.filter((r) => r.field.key !== "generos").map((r) => `${r.field.label.toLowerCase()} ${r.text}`).slice(0, 5).join(", ")}.`;

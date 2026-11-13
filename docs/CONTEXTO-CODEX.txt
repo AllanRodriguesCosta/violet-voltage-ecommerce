@@ -22,6 +22,18 @@ ATUALIZACAO 13/11/2026
   genero (troca a peca por outra de perfil diferente e explica); "mais
   barato" sempre sai mais barato ou avisa que chegou no minimo. So codigo do
   assistente: nada muda no banco nem no deploy.
+- Etapa 29 (PR #25): fotos novas, galeria e opcao de cor. O Allan enviou as
+  fotos; o pacote organizado (produtos-violet-voltage.zip) NAO esta no GitHub
+  (repositorio publico): descompacte dentro de seed-assets/ e rode o seed
+  parcial (T05/T06 em docs/PENDENCIAS-MANUAIS.txt). Amplificadores ganharam
+  fotos extras (frente, topo com o painel e costas) e, em 4 modelos, cores
+  (Blues Junior IV, Hot Rod Deluxe IV, AC30C2 e Crush 20RT). Na pagina do
+  produto: carrossel com setas, miniaturas, arrastar no celular e bolinhas de
+  cor que trocam as fotos; a cor escolhida vai para o carrinho, o checkout, o
+  pedido e o comprovante. Produto novo: demo-081, cabo Santo Angelo Standard
+  2 m (a foto chegou junto). Banco: os campos "fotos" e "cores" ficam no JSON
+  do produto, sem migracao. Nova rota publica: GET /api/images/:id/:n (foto n
+  da galeria). Configuracao das cores e vistas: src/services/seed-gallery.js.
 - Ao testar o site no ar (T08), confira tambem: o menu "Ola" no computador,
   o menu lateral no celular e "Sair" voltando para o inicio.
 
@@ -68,12 +80,13 @@ avaliacao de instrumento usado na troca.
 O QUE MUDOU POR AREA (ETAPAS 21 A 25)
 -------------------------------------
 Catalogo (src/services/seed-products.js e seed-specs.js)
-- 80 produtos. IDs estaveis: demo-076 e demo-077 sao fontes de pedal (etapa
+- 81 produtos. IDs estaveis: demo-076 e demo-077 sao fontes de pedal (etapa
   21); demo-078 a demo-080 sao guitarras canhota, 7 cordas e EMG ativos
-  (etapa 22). Os IDs antigos nao mudaram.
+  (etapa 22); demo-081 e o cabo Santo Angelo Standard 2 m (etapa 29). Os IDs
+  antigos nao mudaram.
 - Ficha nova: pedais tem "alimentacao"; guitarras tem mao, cordas,
   captadores, trastes e escala. Acessorios aceitam o tipo "Fonte".
-- Fotos pendentes: 58 (docs/FOTOS-PENDENTES.txt).
+- Fotos: 51 recebidas em 13/11/2026, faltam 8 (docs/FOTOS-PENDENTES.txt).
 
 Carrinho, checkout e pedido
 - Kits: public/js/kits.js e a fonte unica (vitrine e servidor). Desconto
@@ -204,7 +217,7 @@ docs/ASSISTENTE.md                 arquitetura e avaliacao do assistente
 docs/DOCUMENTACAO-COMPLETA.md      descricao tecnica completa
 docs/PENDENCIAS-MANUAIS.txt        tarefas do Allan e do Codex (T01-T09)
 docs/FERRAMENTAS-E-BIBLIOTECAS.txt contas, variaveis e bibliotecas
-docs/FOTOS-PENDENTES.txt           as 58 fotos que faltam
+docs/FOTOS-PENDENTES.txt           fotos recebidas, as 8 que faltam e a galeria
 docs/COLOCAR-NO-AR.md              banco, seed e Render
 docs/DEMONSTRACAO.md               roteiro para apresentar o projeto
 VALIDACAO.md (raiz)                evidencias de cada etapa

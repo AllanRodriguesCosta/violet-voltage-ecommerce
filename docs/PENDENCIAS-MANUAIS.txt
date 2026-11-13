@@ -1,7 +1,7 @@
 VIOLET VOLTAGE - PENDENCIAS MANUAIS (ALLAN E CODEX)
 ====================================================
 
-Ultima atualizacao: 12/11/2026 (etapa 25 da Fase 3).
+Ultima atualizacao: 13/11/2026 (etapa 29 da Fase 4).
 
 PARA QUE SERVE
 --------------
@@ -11,7 +11,8 @@ Este arquivo lista o que o Copilot NAO consegue fazer a partir do GitHub e que
 precisa ser feito no computador do Allan, por ele ou pelo Codex.
 Resumo de tudo que mudou em 12/11/2026 (leia antes): docs/CONTEXTO-CODEX.txt.
 Ferramentas, contas e bibliotecas: docs/FERRAMENTAS-E-BIBLIOTECAS.txt.
-Fotos de produtos novos: docs/FOTOS-PENDENTES.txt (58 fotos, etapas 18, 21 e 22).
+Fotos de produtos novos: docs/FOTOS-PENDENTES.txt (51 recebidas em 13/11/2026,
+faltam 8; mais 29 fotos extras de amplificadores para a galeria).
 
 REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
 --------------------------------------------
@@ -30,9 +31,9 @@ REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
    usado. Nao tente "consertar" mudando codigo.
 
 ----------------------------------------------------------------------
-T01 [ ] ALLAN - Publicar as etapas 17 a 27 no Render
+T01 [ ] ALLAN - Publicar as etapas 17 a 29 no Render
 ----------------------------------------------------------------------
-Depois do merge dos pull requests das etapas 17 a 27 em main:
+Depois do merge dos pull requests das etapas 17 a 29 em main:
 - As etapas 22 e 24 criam as tabelas violet_voltage.questions e
   violet_voltage.assistant_log. O
   servidor cria sozinho ao iniciar; se preferir, rode antes "npm run db:migrate"
@@ -56,6 +57,9 @@ Como conferir no site publicado:
 - Minha conta tem a secao "Dados e seguranca" (trocar senha, baixar meus
   dados, excluir conta). Teste a exclusao com uma conta criada so para isso.
   /ajuda.html tem 6 secoes e 32 perguntas.
+- Etapas 28 e 29: no assistente, "ajuda" mostra os assuntos de atendimento
+  em botoes; "monta um setup de rock" ate R$ 6 mil cabe no valor e "mais
+  barato" sempre baixa o total. Galeria e cores so aparecem depois da T06.
 - Etapa 21: "Comparar" nos cartoes e na pagina do produto abre a barra no
   rodape; /comparar.html mostra a tabela. /kits.html lista os kits (com so os
   22 produtos originais no banco, nenhum kit aparece completo: os kits usam
@@ -136,13 +140,19 @@ no README. Nao mostre dados pessoais reais nas capturas.
 Resultado:
 
 ----------------------------------------------------------------------
-T05 [ ] ALLAN - Fotos dos produtos novos (etapas 18 e 21)
+T05 [ ] ALLAN - Fotos dos produtos novos (etapas 18, 21, 22 e 29)
 ----------------------------------------------------------------------
-Siga docs/FOTOS-PENDENTES.txt: 58 fotos PNG (2 fontes de pedal na etapa 21 e
-3 guitarras na etapa 22: canhota, 7 cordas e captadores ativos), cada uma com o nome exato da
-lista, em seed-assets/produtos-violet-voltage/<subpasta>/. Formato, tamanho e
-ferramentas gratuitas para reduzir o peso estao no inicio daquele arquivo.
-Nao precisa entregar todas de uma vez (ver T06, modo parcial).
+Siga docs/FOTOS-PENDENTES.txt: 59 fotos principais PNG, cada uma com o nome
+exato da lista, em seed-assets/produtos-violet-voltage/<subpasta>/. Formato,
+tamanho e ferramentas gratuitas para reduzir o peso estao no inicio daquele
+arquivo. Nao precisa entregar todas de uma vez (ver T06, modo parcial).
+13/11/2026: o Allan enviou as fotos e o Copilot devolveu o pacote organizado
+produtos-violet-voltage.zip (51 fotos principais + 29 extras da galeria dos
+amplificadores, ja com nomes e subpastas certos). Para usar: descompacte o zip
+dentro de seed-assets/ (vai juntar com as fotos dos 22 produtos originais que
+ja estao la; nenhum arquivo antigo e substituido) e rode
+"npm run fotos:conferir": deve mostrar 73 de 81 prontas e 29 de 29 extras.
+Faltam 8 fotos principais (lista em docs/FOTOS-PENDENTES.txt).
 Resultado:
 
 ----------------------------------------------------------------------
@@ -155,13 +165,19 @@ seed-assets/README.md e docs/COLOCAR-NO-AR.md. Resumo, na raiz do projeto:
                            invalidos e arquivos acima de 1 MB)
 - .env local com DATABASE_URL, DATABASE_SSL=true e JWT_SECRET (sem mostrar
   os valores) e DEV_MEMORY_STORAGE=false.
-- Todas as 80 fotos prontas:  npm run seed
+- Todas as 81 fotos prontas:  npm run seed
   Parte das fotos:            npm run seed -- --parcial
+  (com o pacote de 13/11, use o modo parcial: faltam 8 fotos principais)
 O resumo deve informar produtos criados/atualizados e imagens enviadas; no
 modo parcial, tambem a lista dos que ficaram sem foto. Rodar de novo quando
 chegarem mais fotos completa o catalogo sem duplicar. Atencao: o seed
-restaura precos e estoques do manifesto nos produtos demo-001 a demo-080.
-Depois, confira no site publicado: /catalogo.html mostra "Mostrando 24 de N".
+restaura precos e estoques do manifesto nos produtos demo-001 a demo-081.
+O seed tambem envia as fotos extras dos amplificadores (outras vistas e cores)
+e avisa no fim quais extras faltaram, sem interromper.
+Depois, confira no site publicado: /catalogo.html mostra "Mostrando 24 de N";
+/produto.html?id=demo-043 (Orange Crush 20RT) mostra 3 bolinhas de cor e 3
+fotos por cor (frente, painel e traseira); escolher "Branco" troca as fotos e
+o item vai para o carrinho com "Cor: Branco".
 Resultado:
 
 ----------------------------------------------------------------------

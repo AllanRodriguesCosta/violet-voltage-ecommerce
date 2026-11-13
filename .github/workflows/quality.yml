@@ -37,7 +37,7 @@ jobs:
   # no /api/health; os roteiros de infra/azure passam pelo shellcheck.
   container-and-infra:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
         with:
@@ -58,6 +58,21 @@ jobs:
           grep -q '"instancia":"ci-1"' health.json
           grep -qi '^x-served-by: ci-1' headers.txt
           test "$(docker inspect --format '{{.Config.User}}' violet-voltage-ci)" = "node"
+      - name: Balanceamento local (docker compose - 3 cópias, Nginx e PostgreSQL)
+        run: |
+          docker compose -f infra/local/docker-compose.yml up --build -d --wait --wait-timeout 240
+          node scripts/lb-check.js http://127.0.0.1:8080 30 | tee lb.txt
+          grep -q "3 instâncias responderam" lb.txt
+          curl -fsS -D raiz.txt -o /dev/null http://127.0.0.1:8080/
+          grep -qi '^x-balanceador: nginx' raiz.txt
+          # Tolerância a falha: com uma cópia parada, as outras duas continuam respondendo.
+          docker stop "$(docker compose -f infra/local/docker-compose.yml ps -q app | head -n 1)"
+          sleep 2
+          node scripts/lb-check.js http://127.0.0.1:8080 20 | tee lb2.txt
+          grep -q "2 instâncias responderam" lb2.txt
+          ! grep -q "falha" lb2.txt
       - name: Registro do contêiner em caso de falha
         if: failure()
-        run: docker logs vv || true
+        run: |
+          docker logs vv || true
+          docker compose -f infra/local/docker-compose.yml logs --tail 80 || true

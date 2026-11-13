@@ -1,3 +1,9 @@
+# Fase 4, etapa 32 — 13/11/2026
+
+- `tests/stage32.test.js` (6): opções do `lb:local`; rodízio pulando cópias fora do ar; mesmo `JWT_SECRET` e nome por cópia; balanceador com 2 servidores falsos (503 antes da primeira checagem, alternância A/B/A/B, POST com corpo e `X-Forwarded-For`, cópia derrubada sem aviso: GET refeito na outra e marcada fora do ar); admin criado uma vez dentro da trava; Compose e Nginx (3 cópias, banco compartilhado, nova tentativa).
+- Execução real de `npm run lb:local` (memória, 3 cópias): `lb-check` com 12 pedidos deu 4/4/4; `parar 2` → a cópia saiu do rodízio e o `lb-check` deu 6/6 em local-1 e local-3, sem falha; `iniciar 2` → voltou ao rodízio; `sair` encerrou as 3.
+- Não executado aqui (sem Docker): o Compose roda no CI (job `container-and-infra`), que confere 3 cópias e, com uma parada, 2 sem falha.
+
 # Fase 4, etapa 31 — 13/11/2026
 
 - Testes novos em `tests/stage31.test.js` (12):

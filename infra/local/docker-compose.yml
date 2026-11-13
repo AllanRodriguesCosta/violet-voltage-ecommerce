@@ -1,0 +1,58 @@
+# Etapa 32: balanceamento de carga na sua máquina com Docker Desktop (opcional).
+# 1 PostgreSQL + 3 cópias da loja + Nginx como balanceador em http://localhost:8080
+# Uso (na raiz do projeto):
+#   docker compose -f infra/local/docker-compose.yml up --build -d
+#   npm run azure:lb-check -- http://localhost:8080 30
+#   docker compose -f infra/local/docker-compose.yml stop app   (ou derrube só uma: docker stop <nome>)
+#   docker compose -f infra/local/docker-compose.yml down -v     (apaga tudo, inclusive o banco local)
+# Tudo aqui é só para testes locais: senhas fixas e banco sem TLS, nunca use em produção.
+name: violet-voltage-lb
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: vv
+      POSTGRES_PASSWORD: vv-local-somente-teste
+      POSTGRES_DB: violet_voltage
+    volumes:
+      - banco:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vv -d violet_voltage"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build:
+      context: ../..
+    deploy:
+      replicas: 3
+    environment:
+      # development porque o banco local não tem TLS (produção exige TLS).
+      NODE_ENV: development
+      DATABASE_URL: postgres://vv:vv-local-somente-teste@db:5432/violet_voltage
+      DATABASE_SSL: "false"
+      # Mesmo segredo nas 3 cópias: o login feito numa vale nas outras.
+      JWT_SECRET: ${JWT_SECRET:-segredo-local-de-teste-com-mais-de-32-caracteres}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@violetvoltage.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-TrocarEsta#Senha2026}
+      ADMIN_NAME: ${ADMIN_NAME:-Administrador}
+      # Atrás do Nginx: 1 proxy confiável. INSTANCE_NAME fica vazio: cada cópia usa o próprio hostname.
+      TRUST_PROXY: "1"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  balanceador:
+    image: nginx:1.29-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      app:
+        condition: service_healthy
+
+volumes:
+  banco:

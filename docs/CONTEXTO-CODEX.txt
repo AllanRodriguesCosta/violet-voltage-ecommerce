@@ -33,6 +33,13 @@ ATUALIZACAO 13/11/2026
   2 m (a foto chegou junto). Banco: os campos "fotos" e "cores" ficam no JSON
   do produto, sem migracao. Nova rota publica: GET /api/images/:id/:n (foto n
   da galeria). Configuracao das cores e vistas: src/services/seed-gallery.js.
+- Etapa 32 (PR #28): load balancer na maquina local. "npm run lb:local"
+  sobe 3 copias (portas 3001-3003) e um balanceador em Node em
+  localhost:8080 (scripts/lb-local.js; comandos status / parar N / iniciar N
+  / sair). Opcional com Docker: "npm run lb:docker" (infra/local: PostgreSQL
+  local + 3 copias + Nginx). O QUE FAZER E O QUE PASSAR AO ALLAN PARA O AZURE
+  FOR STUDENTS: docs/CODEX-LOAD-BALANCER.txt. Visao geral para o Allan:
+  docs/LOAD-BALANCER.md. Admin inicial agora e criado dentro de trava.
 - Etapa 31 (PR #27): pronto para Azure com load balancer (so se o professor
   pedir). Guia: docs/AZURE-LOAD-BALANCER.md. Dockerfile na raiz; roteiros em
   infra/azure/ (rodar no Azure Cloud Shell, com infra/azure/variaveis.env

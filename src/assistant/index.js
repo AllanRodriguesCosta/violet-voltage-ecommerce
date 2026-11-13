@@ -5,7 +5,9 @@ import { examples } from "./intents.js";
 import { extract } from "./entities.js";
 import { normalize } from "./text.js";
 import { recommend, reasonFor, genreIntro, buildSetup, GROUP, joinList } from "./recommend.js";
-import { detectOwned, detectEdit, explainSetup, describeParts, PART_NAME } from "./setup-edit.js";
+import { detectOwned, detectEdit, explainSetup, describeParts, PART_NAME, partsIn } from "./setup-edit.js";
+// "A primeira", "a segunda": fala dos produtos mostrados na conversa, não da página aberta.
+const PRONOUN_SHOWN = /\b(primeir[oa]|segund[oa]|terceir[oa]|ultim[oa])\b/;
 import { faqAnswer, brl } from "./faq.js";
 import { searchHelp, strongHelp } from "./help-search.js";
 import { sanitizeContext } from "./context.js";
@@ -40,10 +42,10 @@ export const THRESHOLD = 0.45;
 const INFO = {
   entrega: /frete|entreg|prazo|cheg|retir|envio|correio|sedex|demor/,
   pagamento: /pag|pix|boleto|cart|parcel|juros|vezes|\d+ ?x\b/,
-  cupom: /cupo|desconto|promo|codigo/,
+  cupom: /cupo|desconto|promo|codigo(?! de rastrei)/,
   troca: /^(?!.*\b(senha|e-?mail|endereco|dados)\b).*(\btroc|devol|garantia|defeito|estragad|quebrad)/,
   conta: /senha|dados|e-?mail|endereco|favorit|cadastr|telefone|minha conta|da conta|na conta/,
-  pedido_status: /\bpedidos?\b|minhas? compras?|encomenda|rastre|status|enviad|cheg|\bsaiu\b|recebi/,
+  pedido_status: /\bpedidos?\b|minhas? compras?|encomenda|rastre|status|enviad|cheg|\bsaiu\b|recebi|(onde|cade) (ta|esta) (a |o )?minha? \w+ que comprei/,
   pedido_cancelar: /cancel|desist|arrepend/,
 };
 const CONVERSATION = ["saudacao", "ajuda", "agradecimento", "despedida", "setup", "fora_escopo"];
@@ -407,11 +409,11 @@ async function handleOrders(intent, text, loadOrders) {
 }
 
 // Pedidos de ação e perguntas sobre produtos específicos, antes da classificação geral.
-const ADD = /\b(adiciona|adicione|adicionar|coloca|coloque|colocar|poe|ponha|bota|joga|inclui|incluir|manda)\b.*\b(carrinho|sacola)\b|^(adiciona|adicione|coloca|coloque|quero comprar|vou levar|compra|comprar) /;
+const ADD = /\b(adiciona|adicione|adicionar|coloca|coloque|colocar|poe|ponha|bota|joga|inclui|incluir|manda)\b.*\b(carrinho|sacola)\b|^(adiciona|adicione|coloca|coloque|quero comprar|vou levar|quero levar|compra|comprar) /;
 const ADD_ALL = /\b(tudo|todos|todas|o setup|esses itens|essas opcoes|os tres|as tres)\b/;
 const COMPARE = /compar|diferenca|\bvs\b|versus|qual (e |eh )?(a |o )?melhor|melhor (a|o) /;
 const CART_Q = /(o que|oque) (mais )?(falta|esta faltando)|(falta|faltando) (algo|alguma coisa|algum|no meu carrinho)|esqueci (algo|alguma)|(meu|no|do) carrinho.*(falta|precis|complet|compat|funciona)|(confere|revisa|olha|checa) (o |meu )?carrinho/;
-const HISTORY = /(com base|baseado|pelo que|de acordo com).*(compr|pedido)|parecid\w* com (o que|oq) (eu )?compr|combina com (o que|oq) (eu )?compr|(minhas|meus) (compras|pedidos) (anteriores|passad)/;
+const HISTORY = /(com base|baseado|pelo que|de acordo com).*(compr|pedido)|pelo meu historico|combina com o que (eu )?(ja )?comprei|parecid\w* com (o que|oq) (eu )?compr|combina com (o que|oq) (eu )?compr|(minhas|meus) (compras|pedidos) (anteriores|passad)/;
 const FAVORITES = /favorit|lista de desejos/;
 const COUPON_APPLY = /(aplica|aplique|aplicar|usa|usar|use|ativa|ativar|coloca|colocar) (o |um )?cupom|cupom (voltage10|primeiroacorde|fretevolt)/;
 const BUDGET_START = /(do zero|comecar a tocar|comecando agora|primeiro setup|tudo (o )?que (eu )?preciso)/;
@@ -443,9 +445,15 @@ function special(text, e, ctx, page, products) {
   }
   if (HISTORY.test(text)) return { intent: "historico" };
   if (FAVORITES.test(text) && /preco|baix|promo|desconto|barat|valor/.test(text)) return { intent: "favoritos" };
-  const browsing = e.categoria && !PRONOUN.test(text) && /^(tem|quero|procuro|preciso|busco|voces (tem|vendem)|vende|gostaria|me (indica|mostra))\b/.test(text);
-  if (SPEC_WORDS.test(text) && !browsing && (e.produtos.length || PRONOUN.test(text) || (page.produto && !e.categoria && !e.tipo))) {
-    const [p] = found();
+  // Busca: verbo de compra no início, ou só "categoria + característica" ("guitarra canhota").
+  const browsing = e.categoria && !PRONOUN.test(text) && (/^(tem|quero|procuro|preciso|busco|voces (tem|vendem)|vende|gostaria|me (indica|mostra))\b/.test(text) || (text.split(" ").length <= 3 && !page.produto));
+  // Etapa 37: no setup, "o amplificador é valvulado?" fala da peça daquela categoria; na página
+  // do produto, pergunta curta de sim ou não ("é transistor?", "tem alavanca?") é sobre ele.
+  const shownNow = shownOf(ctx, products);
+  const part = !e.produtos.length && shownNow.length ? partsIn(text).map((c) => shownNow.find((p) => p.categoria === c)).filter(Boolean) : [];
+  const closedOnPage = page.produto && !e.produtos.length && /^(e|eh|tem|ela e|ele e|ela tem|ele tem|serve|da pra|vem com|precisa)\b/.test(text);
+  if (SPEC_WORDS.test(text) && !browsing && (e.produtos.length || PRONOUN.test(text) || part.length === 1 || closedOnPage || (page.produto && !e.categoria && !e.tipo))) {
+    const p = part.length === 1 ? part[0] : page.produto && !e.produtos.length && !PRONOUN_SHOWN.test(text) ? page.produto : found()[0];
     if (p) return { intent: "ficha", out: specAnswer(p, text) };
   }
   if (BUDGET_START.test(text) && (e.max || e.min)) return { intent: "setup" };
@@ -615,12 +623,11 @@ async function memoryAnswer(text, e, ctx, products, perfil, guest) {
   const forget = FORGET_TASTE.test(text);
   if (!same && !forget) return null;
   if (guest) return { intent: "memoria", out: { ...loginAnswer("eu lembrar do seu gosto entre uma visita e outra"), contexto: { ...ctx, aguardando: null } } };
-  if (!perfil) return null;
   if (forget) {
-    await perfil.esquecer();
+    await perfil?.esquecer();
     return { intent: "memoria_apagar", out: { texto: "Pronto, esqueci o gosto que eu tinha guardado. Nos próximos setups eu pergunto tudo de novo.", sugestoes: ["Montar setup pelo meu gosto"], contexto: { ...ctx, aguardando: null } } };
   }
-  const saved = await perfil.carregar();
+  const saved = perfil ? await perfil.carregar() : null;
   if (!saved) return { intent: "memoria", out: { texto: "Ainda não tenho um gosto seu guardado. Vamos montar o primeiro setup?", sugestoes: ["Montar setup pelo meu gosto"], contexto: { ...ctx, aguardando: null } } };
   const fresh = { intent: null, filtros: {}, aguardando: null, perguntas: ["cor", "orcamento"], mostrados: [] };
   const out = handleSetup(e, fresh, products, saved, `Partindo do seu gosto da última vez (${describeTaste(saved)}):`);
@@ -699,7 +706,7 @@ function bareBudget(text) {
 // "Ajuda", "socorro", "tive um problema": o cliente quer resolver algo. Em vez de explicar o que o
 // assistente faz, pergunta o assunto (com os mais comuns em botões) e, logado, já cita o pedido em
 // andamento. "O que você faz?" continua com a apresentação do assistente.
-const SUPPORT = /^(ajuda|socorro|help|sos|suporte|atendimento|atendente|me ajud\w*)\W*$|\b(socorro|suporte|atendente|atendimento|reclama\w*|tive (um )?problema|estou com (um )?problema|deu (um )?problema|deu errado|preciso de (uma )?ajuda|falar com (alguem|uma pessoa|humano))\b/;
+const SUPPORT = /^(ajuda|socorro|help|sos|suporte|atendimento|atendente|me ajud\w*)\W*$|\b(socorro|suporte|atendente|atendimento|reclama\w*|tive (um )?problema|estou com (um )?problema|deu (um )?problema|deu errado|preciso de (uma )?ajuda|falar com (alguem|uma pessoa|humano)|deu ruim|tem (algum|alguma) (humano|pessoa|atendente))\b/;
 // Pedido de contato vale mesmo com palavra de produto ("falar com o suporte" não é o suporte de chão).
 const CONTACT = /\b(falar|conversar|contato) com (o |a |um |uma |algum |alguem )?(suporte|atendimento|atendente|alguem|pessoa|humano|vendedor|loja)\b|\b(suporte|atendimento) (ao cliente|tecnico)\b|^(preciso de |quero )?(suporte|atendimento)\W*$/;
 const ABOUT_BOT = /\b(voce|vc|assistente|chat|chatbot|robo|ia|inteligencia artificial|bot|funcoes|perguntar|serve|sabe fazer|consegue fazer|quem e|pode fazer|pode me ajudar|pode ajudar|usar o)\b/;

@@ -52,7 +52,7 @@ const findCategoria = finder([
   [["pedal", "pedais", "efeito", "efeitos"], "Pedais"],
   [["cabo", "cabos", "p10"], "Cabos"],
   [["correia", "correias", "alca", "alcas", "strap"], "Correias"],
-  [["acessorio", "acessorios", "suporte", "suportes"], "Acessórios"],
+  [["acessorio", "acessorios", "suportes", "suporte de", "suporte para", "suporte pra", "suporte parede", "suporte chao"], "Acessórios"],
 ]);
 const findFormato = finder([
   [["stratocaster", "strato", "strat", "estilo strat"], "Strat"],
@@ -204,7 +204,9 @@ export function extract(message, products = []) {
   const mao = /\bcanhot[oa]s?\b|mao esquerda/.test(rest) ? "Canhoto" : undefined;
   const captadores = /captador(es)? ativos?|\bativos?\b.*captador|\bemg\b/.test(rest) ? "Ativos" : undefined;
   const trastes = Number(rest.match(/\b(2[0-9])\s*trastes\b/)?.[1]) || undefined;
-  let categoria = findCategoria(rest);
+  // "cabo de guitarra", "pedal pra guitarra": a peça é o que vem antes de "de/para guitarra".
+  const head = rest.match(/\b(cabos?|pedal|pedais|correias?|amplificador(?:es)?|amps?|suportes?)\b(?:\s+(?:de|para|pra)\s+\w+)?\s+(?:de|para|pra|da)\s+(?:guitarra|violao)/);
+  let categoria = head ? findCategoria(/^suporte$/.test(head[1]) ? "suportes" : head[1]) : findCategoria(rest);
   if (!categoria && (formato || captacao || mao || cordas || captadores || trastes)) categoria = "Guitarras";
   if (!categoria && tipo) categoria = tipo in TIPO_CATEGORIA ? TIPO_CATEGORIA[tipo] || undefined : "Pedais";
   if (!categoria && (voicing || ["Valvulado", "Transistor", "Modelagem digital"].includes(tecnologia))) categoria = "Amplificadores";

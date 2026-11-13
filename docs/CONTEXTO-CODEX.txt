@@ -33,6 +33,15 @@ ATUALIZACAO 13/11/2026
   2 m (a foto chegou junto). Banco: os campos "fotos" e "cores" ficam no JSON
   do produto, sem migracao. Nova rota publica: GET /api/images/:id/:n (foto n
   da galeria). Configuracao das cores e vistas: src/services/seed-gallery.js.
+- Etapa 31 (PR #27): pronto para Azure com load balancer (so se o professor
+  pedir). Guia: docs/AZURE-LOAD-BALANCER.md. Dockerfile na raiz; roteiros em
+  infra/azure/ (rodar no Azure Cloud Shell, com infra/azure/variaveis.env
+  preenchido, que fica fora do git). Caminho A: app-service.sh. Caminho B:
+  vms-load-balancer.sh (VMs + Load Balancer Standard). Depois:
+  "npm run azure:lb-check -- URL 30" e, ao terminar, apagar-tudo.sh. Codigo:
+  cabecalho X-Served-By, campo "instancia" no /api/health, trava no PostgreSQL
+  para migracao e sincronizacao das fotos, SIGTERM gracioso, TRUST_PROXY.
+  Nada muda no Render: sem variaveis novas obrigatorias.
 - Etapa 30 (PR #26): o Allan autorizou colocar as fotos no GitHub. Elas
   estao em seed-assets/catalogo/ (mesmos nomes do manifesto). Ao iniciar, o
   servidor cadastra os produtos com foto ali que faltam no banco e atualiza

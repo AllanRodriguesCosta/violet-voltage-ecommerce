@@ -18,6 +18,10 @@ export class MemoryStorage {
     this.blobs = new Map();
   }
   async init() {}
+  // Uma instância só: a trava entre servidores (etapa 31) é sempre obtida.
+  async withLock(_name, work) {
+    return { acquired: true, result: await work() };
+  }
   async list(table) {
     return structuredClone([...this.tables[table].values()]);
   }

@@ -1,0 +1,16 @@
+.git
+.github
+node_modules
+.env
+.env.*
+!.env.example
+tests
+docs
+coverage
+logs
+*.log
+tmp
+seed-assets/produtos-violet-voltage
+infra
+Dockerfile
+.dockerignore

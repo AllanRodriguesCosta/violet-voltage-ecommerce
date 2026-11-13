@@ -72,6 +72,7 @@ Em memória, o próprio seed abre `http://localhost:3000`; reiniciar apaga todos
 | `JWT_SECRET` | Segredo aleatório privado, pelo menos 32 caracteres |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | Configure os três para criar/atualizar o administrador |
 | `GEMINI_API_KEY` | Opcional: chave gratuita do Google AI Studio para o reforço do assistente; sem ela, só PLN local |
+| `INSTANCE_NAME`, `INSTANCE_HEADER`, `TRUST_PROXY` | Opcionais (etapa 31, várias instâncias): nome no cabeçalho `X-Served-By` e no `/api/health`; `off` tira o cabeçalho; quantos proxies confiáveis (padrão 1 em produção) |
 | `CATALOG_SYNC` | Opcional: `off` desliga a carga automática das fotos versionadas em `seed-assets/catalogo` ao iniciar |
 | `GEMINI_MODEL`, `GEMINI_TIMEOUT_MS`, `GEMINI_PER_MINUTE` | Opcionais: modelo (`gemini-flash-latest`), tempo limite (6000 ms) e chamadas por minuto (8) |
 
@@ -138,7 +139,7 @@ Filtros: `q` (também busca na ficha técnica), `marca`, `modelo`, `categoria`, 
 - Exclusões lógicas preservam histórico; não equivalem a um fluxo completo de apagamento de dados pessoais.
 - Status seguem Recebido → Em preparação → Enviado → Concluído (pode pular etapas, não volta). Cancelamento só até a preparação, devolve os itens ao estoque e é definitivo. Consultas ainda listam registros e filtram em memória, adequadas ao pequeno catálogo.
 - Upload valida MIME e assinatura básica. Substituição administrativa de imagem não é uma transação global; falhas de limpeza podem deixar arquivos órfãos.
-- Sem gateway, frete real, recuperação de senha, e-mail ou integração fiscal. Uma instância é suficiente para a demonstração.
+- Sem gateway, frete real, recuperação de senha, e-mail ou integração fiscal. Uma instância é suficiente para a demonstração; para várias atrás de um balanceador (Azure App Service ou VMs + Load Balancer), veja [docs/AZURE-LOAD-BALANCER.md](docs/AZURE-LOAD-BALANCER.md). Os limites de tentativas são contados por instância.
 - `robots.txt` e `sitemap.xml` são gerados pelo servidor com o endereço da requisição; páginas privadas usam `noindex`. Produto, catálogo por categoria e início saem do servidor com título, descrição, Open Graph, canônico e dados estruturados (`src/http/seo.js`).
 - Falhas de inicialização registram a causa (mensagem de configuração ou código do erro) sem valores secretos.
 

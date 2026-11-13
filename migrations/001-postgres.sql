@@ -1,4 +1,6 @@
 BEGIN;
+-- Etapa 31: várias instâncias subindo juntas esperam a vez (a trava some no COMMIT).
+SELECT pg_advisory_xact_lock(hashtext('violet_voltage:migracao'));
 -- Schema fora de public: dados de login não são expostos pela Data API do Supabase.
 CREATE SCHEMA IF NOT EXISTS violet_voltage;
 REVOKE ALL ON SCHEMA violet_voltage FROM PUBLIC;

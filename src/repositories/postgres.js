@@ -186,6 +186,41 @@ export class PostgresStorage {
       name,
     ]);
   }
+  // Etapa 31: trava entre instâncias (várias VMs ou App Service com 2+ instâncias). É trava de
+  // transação, que também funciona no pooler de transação do Supabase. Se outra instância já está
+  // com ela, não espera: devolve { acquired: false }. O trabalho usa as conexões normais do pool.
+  async withLock(name, work) {
+    const client = await this.pool.connect();
+    let broken = false;
+    try {
+      await client.query("BEGIN");
+      const { rows } = await client.query("SELECT pg_try_advisory_xact_lock(hashtext($1)) AS ok", [`violet_voltage:${name}`]);
+      if (!rows[0]?.ok) {
+        await client.query("ROLLBACK");
+        return { acquired: false };
+      }
+      let result;
+      try {
+        result = await work();
+      } catch (error) {
+        try {
+          await client.query("ROLLBACK");
+        } catch {
+          broken = true;
+        }
+        throw error;
+      }
+      // O trabalho já foi feito; se o banco encerrou a transação ociosa, só descarta a conexão.
+      try {
+        await client.query("COMMIT");
+      } catch {
+        broken = true;
+      }
+      return { acquired: true, result };
+    } finally {
+      client.release(broken || undefined);
+    }
+  }
   async transaction(work) {
     for (let attempt = 0; attempt < 3; attempt++) {
       const client = await this.pool.connect();

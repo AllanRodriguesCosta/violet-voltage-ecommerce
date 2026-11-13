@@ -10,7 +10,13 @@ const publicDir = fileURLToPath(new URL("../public", import.meta.url));
 export function createApp(storage, config) {
   const app = express();
   app.disable("x-powered-by");
-  if (config.production) app.set("trust proxy", 1);
+  const proxies = config.trustProxy ?? (config.production ? 1 : 0);
+  if (proxies) app.set("trust proxy", proxies);
+  if (config.instanceHeader && config.instanceName)
+    app.use((_req, res, next) => {
+      res.set("X-Served-By", config.instanceName);
+      next();
+    });
   app.use(
     helmet({
       contentSecurityPolicy: {

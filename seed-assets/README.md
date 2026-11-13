@@ -60,3 +60,11 @@ Além da foto principal, os amplificadores podem ter fotos extras numa pasta com
 
 As cores (nome e tom da bolinha) e as vistas de cada modelo estão em `src/services/seed-gallery.js`. As fotos extras são opcionais: se faltar alguma, o seed continua, o produto entra com as que existirem e o comando lista as que faltaram. `npm run fotos:conferir` também mostra quantas extras estão prontas.
 
+## Fotos versionadas (etapa 30)
+
+As fotos dos produtos novos (51 principais e 29 extras da galeria, enviadas pelo Allan em 13/11/2026) estão no repositório, em `seed-assets/catalogo/`, com as mesmas subpastas e nomes do manifesto. As 22 fotos originais continuam só no computador do Allan, em `seed-assets/produtos-violet-voltage/` (fora do Git).
+
+- Ao iniciar, o servidor cadastra os produtos que têm foto em `seed-assets/catalogo/` e ainda não estão no banco, e atualiza só as fotos dos que já existem quando os arquivos mudam (preço, estoque, descrição e status nunca mudam; foto enviada pelo painel é mantida). `CATALOG_SYNC=off` desliga.
+- `npm run seed` e `npm run fotos:conferir` procuram cada foto primeiro na pasta local e depois em `seed-assets/catalogo/`.
+- Foto nova ou trocada: salve com o nome exato da lista em `seed-assets/catalogo/<subpasta>/` (PNG, até 1 MB) e envie num pull request; depois do deploy, o servidor carrega sozinho.
+

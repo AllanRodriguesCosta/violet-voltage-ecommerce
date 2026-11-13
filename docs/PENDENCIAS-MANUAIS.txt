@@ -31,9 +31,9 @@ REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
    usado. Nao tente "consertar" mudando codigo.
 
 ----------------------------------------------------------------------
-T01 [ ] ALLAN - Publicar as etapas 17 a 29 no Render
+T01 [ ] ALLAN - Publicar as etapas 17 a 30 no Render
 ----------------------------------------------------------------------
-Depois do merge dos pull requests das etapas 17 a 29 em main:
+Depois do merge dos pull requests das etapas 17 a 30 em main:
 - As etapas 22 e 24 criam as tabelas violet_voltage.questions e
   violet_voltage.assistant_log. O
   servidor cria sozinho ao iniciar; se preferir, rode antes "npm run db:migrate"
@@ -42,7 +42,11 @@ Depois do merge dos pull requests das etapas 17 a 29 em main:
   deploy terminou com sucesso. Caso contrario, use "Manual Deploy" > "Deploy
   latest commit".
 - Nao e preciso rodar o seed: os produtos ja gravados recebem a ficha tecnica
-  na leitura.
+  na leitura, e (etapa 30) o servidor cadastra sozinho os 51 produtos novos
+  que tem foto em seed-assets/catalogo/. No log do Render, procure a linha
+  "Fotos do catalogo: 51 produtos cadastrados, ..." logo depois da subida
+  (nos deploys seguintes: "... 51 sem mudanca ..."). Se aparecer "Falhas:",
+  anote a mensagem.
 Como conferir no site publicado:
 - /produto.html?id=demo-013 mostra "Sobre este equipamento" com Estilo,
   Indicado para (generos clicaveis), Formato, Captacao, Ponte, Timbre e Nivel.
@@ -146,19 +150,23 @@ Siga docs/FOTOS-PENDENTES.txt: 59 fotos principais PNG, cada uma com o nome
 exato da lista, em seed-assets/produtos-violet-voltage/<subpasta>/. Formato,
 tamanho e ferramentas gratuitas para reduzir o peso estao no inicio daquele
 arquivo. Nao precisa entregar todas de uma vez (ver T06, modo parcial).
-13/11/2026: o Allan enviou as fotos e o Copilot devolveu o pacote organizado
-produtos-violet-voltage.zip (51 fotos principais + 29 extras da galeria dos
-amplificadores, ja com nomes e subpastas certos). Para usar: descompacte o zip
-dentro de seed-assets/ (vai juntar com as fotos dos 22 produtos originais que
-ja estao la; nenhum arquivo antigo e substituido) e rode
-"npm run fotos:conferir": deve mostrar 73 de 81 prontas e 29 de 29 extras.
+13/11/2026: o Allan enviou as fotos e o Copilot organizou (51 fotos
+principais + 29 extras da galeria dos amplificadores, com nomes e subpastas
+certos). "npm run fotos:conferir" no computador do Allan deve mostrar 73 de 81
+prontas (22 originais locais + 51 do repositorio) e 29 de 29 extras.
 Faltam 8 fotos principais (lista em docs/FOTOS-PENDENTES.txt).
-Resultado:
+13/11/2026 (etapa 30): o Allan autorizou colocar as fotos no GitHub; elas
+estao em seed-assets/catalogo/ e entram no site sozinhas depois do deploy. Para
+as 8 que faltam: mande ao Copilot ou salve com o nome exato da lista em
+seed-assets/catalogo/<subpasta>/ e abra um pull request.
+Resultado: 51 de 59 entregues (13/11/2026); faltam 8.
 
 ----------------------------------------------------------------------
-T06 [ ] CODEX - Rodar o seed com as fotos novas (depois da T05)
+T06 [ ] CODEX - Rodar o seed com as fotos novas (OPCIONAL desde a etapa 30)
 ----------------------------------------------------------------------
-Depende da T05 (pode rodar com parte das fotos). Passo a passo completo em
+Desde a etapa 30 o servidor carrega sozinho as fotos de seed-assets/catalogo/
+(ver T01). Rode o seed so se quiser restaurar precos e estoques do manifesto
+ou recarregar tudo de uma vez. Passo a passo completo em
 seed-assets/README.md e docs/COLOCAR-NO-AR.md. Resumo, na raiz do projeto:
 - npm ci                  (so na primeira vez ou se o package-lock.json mudar)
 - npm run fotos:conferir  (nao altera nada; mostra prontas, faltando, PNGs
@@ -167,7 +175,7 @@ seed-assets/README.md e docs/COLOCAR-NO-AR.md. Resumo, na raiz do projeto:
   os valores) e DEV_MEMORY_STORAGE=false.
 - Todas as 81 fotos prontas:  npm run seed
   Parte das fotos:            npm run seed -- --parcial
-  (com o pacote de 13/11, use o modo parcial: faltam 8 fotos principais)
+  (com as fotos de 13/11, use o modo parcial: faltam 8 fotos principais)
 O resumo deve informar produtos criados/atualizados e imagens enviadas; no
 modo parcial, tambem a lista dos que ficaram sem foto. Rodar de novo quando
 chegarem mais fotos completa o catalogo sem duplicar. Atencao: o seed

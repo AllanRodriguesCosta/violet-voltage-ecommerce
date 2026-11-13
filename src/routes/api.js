@@ -317,7 +317,13 @@ export function apiRouter(storage, config) {
       await logMiss(storage, mensagem).catch(() => {});
       // Só o que a PLN local não entendeu vai ao Gemini (sem nome, e-mail ou pedido).
       const extra = config.gemini && geminiSlot() ? await askGemini(mensagem, products, config.gemini, { fetchImpl: config.geminiFetch }) : null;
-      if (extra)
+      // Etapa 38: primeiro a frase reescrita pelo Gemini passa pelo motor da loja (dados reais);
+      // só se o motor ainda não entender vale a resposta gerada.
+      const viaEngine = extra?.frase
+        ? await reply({ mensagem: extra.frase, contexto, pagina, carrinho, favoritos }, { products, orders, alerts, cupons, requests, perfil: profileDeps(storage, req.user), user: req.user })
+        : null;
+      if (viaEngine?.entendeu) answer = { ...viaEngine, fonte: "gemini-interpretou", interpretado: extra.frase };
+      else if (extra?.texto)
         answer = {
           ...answer,
           texto: extra.texto,

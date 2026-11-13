@@ -31,7 +31,7 @@ test("Gemini: resposta validada, dados da loja e falhas caem para a resposta loc
   };
   const outOfStock = products.map((p) => (p.id === "demo-016" ? { ...p, estoque: 0 } : p));
   const r = await askGemini("tenho o email ana@x.com, qual guitarra para surf?", outOfStock, config, { fetchImpl: spy });
-  assert.deepEqual(r, { texto: "A Jazzmaster é ótima para surf.", produtos: ["demo-032"] });
+  assert.deepEqual(r, { texto: "A Jazzmaster é ótima para surf.", produtos: ["demo-032"], frase: "" });
   assert.match(sent.url, /models\/modelo-teste:generateContent$/);
   assert.equal(sent.init.headers["x-goog-api-key"], "chave-de-teste");
   assert.ok(!sent.url.includes("chave-de-teste"), "chave fora da URL");

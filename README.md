@@ -74,7 +74,7 @@ Em memória, o próprio seed abre `http://localhost:3000`; reiniciar apaga todos
 | `GEMINI_API_KEY` | Opcional: chave gratuita do Google AI Studio para o reforço do assistente; sem ela, só PLN local |
 | `INSTANCE_NAME`, `INSTANCE_HEADER`, `TRUST_PROXY` | Opcionais (etapa 31, várias instâncias): nome no cabeçalho `X-Served-By` e no `/api/health`; `off` tira o cabeçalho; quantos proxies confiáveis (padrão 1 em produção) |
 | `CATALOG_SYNC` | Opcional: `off` desliga a carga automática das fotos versionadas em `seed-assets/catalogo` ao iniciar |
-| `GEMINI_MODEL`, `GEMINI_TIMEOUT_MS`, `GEMINI_PER_MINUTE` | Opcionais: modelo (`gemini-flash-latest`), tempo limite (6000 ms) e chamadas por minuto (8) |
+| `GEMINI_MODEL`, `GEMINI_TIMEOUT_MS`, `GEMINI_PER_MINUTE` | Opcionais: modelo (`gemini-3.5-flash-lite`), tempo limite (6000 ms) e chamadas por minuto (8) |
 
 Senha administrativa: 12 a 72 caracteres e até 72 bytes UTF-8. Bootstrap reaplica o administrador em cada inicialização. Login em `/login.html`, painel em `/admin.html`. Sem senha padrão; cadastro público sempre cria cliente. Nunca publique `.env` ou conexões privadas.
 

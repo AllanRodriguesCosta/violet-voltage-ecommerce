@@ -17,3 +17,5 @@ infra/azure/variaveis.env
 infra/azure/*.gerado.*
 lighthouse-relatorios/
 .lighthouseci/
+# Etapa 38: relatórios da validação do Gemini
+gemini-relatorio.*

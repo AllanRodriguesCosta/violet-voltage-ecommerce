@@ -673,5 +673,24 @@ Para ensaiar e demonstrar sem gastar crédito. Visão geral:
       atendimento, não acessório; "código de rastreio" não é cupom; "quero levar essa" adiciona
       ao carrinho; "guitarra canhota" mostra opções em vez da ficha de um item.
 
+### 38. Gemini híbrido: o Gemini entende, a loja decide
+
+- [x] **Frase reescrita**: quando a PLN local não entende, uma única chamada ao Gemini devolve
+      também o pedido reescrito em linguagem simples ("guitarra para grunge até 1500 reais").
+      Essa frase passa pelo motor da loja, que responde com catálogo, preço, estoque e regras
+      reais; a conversa mostra "Entendi como …". Só se o motor ainda não entender vale a
+      resposta gerada (como na etapa 25).
+- [x] **Proteções**: a frase é limpa (sem HTML, até 160 caracteres, sem marcadores de dado
+      pessoal) e ignorada se for igual à original; instrução para ignorar pedidos de mudar as
+      regras ou revelar as instruções.
+- [x] **Validação com a chave real**: workflow `Gemini` (segredo `GEMINI_API_KEY` do
+      repositório) roda `npm run agente:validar-gemini` com 26 frases difíceis (20 pedidos da
+      loja em linguagem leiga e 6 para recusar, incluindo injeção e cupom inventado), compara a
+      PLN local sozinha com o híbrido e procura preço, cupom ou produto inventado. Resultado em
+      `docs/VALIDACAO-GEMINI.md`: 13/20 → 16–17/20 pedidos atendidos, nenhuma invenção nas
+      respostas usadas, ~1 s por chamada com `gemini-3.5-flash-lite` (novo padrão).
+- [ ] Próximo: consultar o Gemini também quando a confiança local for baixa (falsos
+      entendimentos), aceitando a reescrita só se o motor concordar.
+
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

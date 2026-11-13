@@ -1,0 +1,70 @@
+name: Gemini
+
+# Etapa 38: valida o reforço com o Gemini usando o segredo GEMINI_API_KEY do repositório.
+# A chave fica só no segredo (o GitHub a mascara nos logs). Roda à mão (Actions > Gemini >
+# Run workflow) ou em PRs que mexem no Gemini. Usa o plano gratuito: poucas chamadas, com pausa.
+on:
+  workflow_dispatch:
+    inputs:
+      modelo:
+        description: "Modelo do Gemini (vazio = descobrir um que responda)"
+        required: false
+        default: ""
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/assistant/gemini.js"
+      - "scripts/gemini-validate.js"
+      - ".github/workflows/gemini.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gemini-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      # Plano gratuito: no máximo ~4 chamadas por minuto e tempo limite folgado para medir a latência.
+      GEMINI_PAUSE_MS: "13000"
+      GEMINI_TIMEOUT_MS: "15000"
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Instalar dependências
+        run: npm ci
+      - name: Conferir o segredo (sem exibir)
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "::error title=Gemini::Segredo GEMINI_API_KEY ausente ou indisponível neste evento."
+            exit 1
+          fi
+          echo "::notice title=Gemini::Segredo presente."
+      - name: Validar a hipótese (frases difíceis)
+        env:
+          GEMINI_MODEL: ${{ inputs.modelo }}
+        run: npm run agente:validar-gemini -- --descobrir
+      - name: Teste rápido
+        if: always()
+        run: sleep 30 && npm run agente:smoke
+      - name: Frases que a PLN local não entendeu
+        if: always()
+        run: sleep 30 && npm run agente:eval -- --gemini
+      - name: Guardar relatório
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-relatorio
+          path: gemini-relatorio.*
+          if-no-files-found: ignore
+          retention-days: 14

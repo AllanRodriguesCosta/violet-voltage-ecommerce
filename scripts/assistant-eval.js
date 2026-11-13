@@ -27,10 +27,12 @@ if (process.argv.includes("--gemini")) {
     const products = seedProducts.map((p) => ({ ...p, id: p.rowKey, ativo: true }));
     console.log(`\nGemini (${config.model}) nas ${misses.length} frases que a PLN local não entendeu:`);
     let ok = 0;
+    const pause = Math.max(0, Number(process.env.GEMINI_PAUSE_MS ?? 0));
     for (const e of misses) {
+      if (pause) await new Promise((r) => setTimeout(r, pause));
       const g = await askGemini(e.mensagem, products, config);
       if (g) ok++;
-      console.log(`  "${e.mensagem}" → ${g ? g.texto : "(sem resposta)"}`);
+      console.log(`  "${e.mensagem}" → ${g ? `${g.frase ? `[entende como "${g.frase}"] ` : ""}${g.texto}` : "(sem resposta)"}`);
     }
     console.log(`Gemini respondeu ${ok} de ${misses.length}. Confira se as respostas estão corretas antes de anotar o resultado.`);
   }

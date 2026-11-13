@@ -40,6 +40,16 @@ ATUALIZACAO 13/11/2026
   local + 3 copias + Nginx). O QUE FAZER E O QUE PASSAR AO ALLAN PARA O AZURE
   FOR STUDENTS: docs/CODEX-LOAD-BALANCER.txt. Visao geral para o Allan:
   docs/LOAD-BALANCER.md. Admin inicial agora e criado dentro de trava.
+- Etapa 38 (PR #34): Gemini hibrido. askGemini devolve tambem "frase" (o
+  pedido reescrito em linguagem que a PLN local entende). Em /api/assistente,
+  quando a PLN local nao entende: 1 chamada ao Gemini -> a frase passa por
+  reply() (motor da loja, dados reais) -> se entender, fonte
+  "gemini-interpretou" e campo "interpretado" (widget mostra "Entendi como");
+  senao vale o texto gerado (fonte "gemini"). Validacao com a chave real:
+  workflow .github/workflows/gemini.yml (segredo GEMINI_API_KEY do repo;
+  Actions > Gemini > Run workflow) e "npm run agente:validar-gemini"
+  (scripts/gemini-validate.js: 26 frases dificeis, detector de preco/cupom
+  inventado e injecao; relatorio gemini-relatorio.md/.json, fora do git).
 - Etapa 37 (PR #33): perguntas de sim/nao, uso em casa e baixo em
   src/assistant/actions.js (YES_NO, homeUse, bassUse); pergunta sobre peca do
   setup roteada em special() (index.js). Avaliacao: eval-set.js + novo
@@ -223,7 +233,7 @@ BANCO DE DADOS
 VARIAVEIS DE AMBIENTE NOVAS (TODAS OPCIONAIS)
 ---------------------------------------------
 GEMINI_API_KEY      chave gratuita do Google AI Studio (sem faturamento)
-GEMINI_MODEL        padrao gemini-flash-latest
+GEMINI_MODEL        padrao gemini-3.5-flash-lite (etapa 38)
 GEMINI_TIMEOUT_MS   padrao 6000
 GEMINI_PER_MINUTE   padrao 8
 Sem elas o site funciona igual, so com a PLN local.

@@ -189,7 +189,15 @@ o item vai para o carrinho com "Cor: Branco".
 Resultado:
 
 ----------------------------------------------------------------------
-T07 [ ] ALLAN/CODEX - Ligar o Gemini gratuito (etapa 25, opcional)
+T07 [~] ALLAN - Ligar o Gemini gratuito no site publicado
+----------------------------------------------------------------------
+ATUALIZACAO 13/11/2026 (etapa 38): a chave ja esta no segredo GEMINI_API_KEY
+do GitHub e foi VALIDADA no CI (docs/VALIDACAO-GEMINI.md): modelo
+gemini-3.5-flash-lite, 26/26 respostas, ~1 s. Falta so o passo 5 abaixo
+(Render > Environment: GEMINI_API_KEY e, se quiser, GEMINI_MODEL) e o deploy.
+Os passos 1 a 4 ficam como referencia.
+----------------------------------------------------------------------
+T07 (historico) - Ligar o Gemini gratuito (etapa 25, opcional)
 ----------------------------------------------------------------------
 Sem a chave, o assistente funciona so com a PLN local (como hoje).
 1. ALLAN: criar a chave no Google AI Studio sem faturamento (passos em

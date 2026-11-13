@@ -27,6 +27,9 @@ carrinho" dependem de um clique.
 | Glossário (etapa 24) | "o que é humbucker?", "diferença entre fuzz e overdrive" | Definição do glossário com link para o termo e para o guia |
 | Troca (etapa 24) | "quero trocar o pedal que comprei" | Se há pedido no prazo, o caminho para "Solicitar troca" no comprovante |
 | Reações (etapa 26) | "muito caro", "achei caro, tenho 2 mil", "não gostei", "gostei" | Setup ou opções mais em conta, pergunta o orçamento e aceita valor solto ("2500"); outras opções; oferta de adicionar ao carrinho |
+| Gosto pessoal (etapa 33) | "montar setup pelo meu gosto", "som do Slash", "algo pesado e intenso", "guitarra vermelha", "quero em preto" | Pergunta artista/som, depois cor, depois teto (ou sem limite); explica o que o artista usa e escolhe as peças mais próximas; cor filtra e o card abre na cor |
+| Encomendas (etapa 33) | "Les Paul com captadores Seymour Duncan e tarraxas Gotoh", "vocês importam um Klon?", "como está minha encomenda?" | Resumo das peças, pronta entrega parecida e botão para o formulário preenchido; status das encomendas do cliente |
+| Parceiros (etapa 33) | "sou fornecedor de pedais", "tenho uma marca de correias" | Link para a ficha de parceria (sem login), com o tipo de produto marcado |
 | Filtros novos (etapa 24) | "guitarra canhota", "de 7 cordas", "com captador ativo", "com 24 trastes" | Recomendação com esses filtros e link para o catálogo filtrado |
 
 Disponível para todos, inclusive visitantes (botão "Assistente" no canto da tela). Pedidos, sugestões pelo histórico, aviso de preço dos favoritos e trocas respondem com um botão "Entrar ou criar conta", que volta para a mesma página depois do login (etapa 26).

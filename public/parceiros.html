@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Fabricantes, distribuidores e luthiers: seja parceiro da Violet Voltage." />
+    <meta name="theme-color" content="#120b19" />
+    <meta property="og:site_name" content="Violet Voltage" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content="Parceiros e fornecedores | Violet Voltage" />
+    <meta property="og:description" content="Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone." />
+    <title>Parceiros e fornecedores | Violet Voltage</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <script src="/js/theme-init.js"></script>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/ui.css" />
+    <script type="module" src="/js/app.js"></script>
+    <link rel="modulepreload" href="/js/common.js" />
+    <link rel="modulepreload" href="/js/icons.js" />
+    <link rel="modulepreload" href="/js/theme.js" />
+    <link rel="modulepreload" href="/js/drawer.js" />
+    <link rel="modulepreload" href="/js/components.js" />
+    <link rel="modulepreload" href="/js/pricing.js" />
+    <link rel="modulepreload" href="/js/motion.js" />
+    <link rel="modulepreload" href="/js/search.js" />
+    <link rel="modulepreload" href="/js/alerts.js" />
+    <link rel="modulepreload" href="/js/specs.js" />
+    <link rel="modulepreload" href="/js/compare.js" />
+    <link rel="modulepreload" href="/js/pages/partners.js" />
+  </head>
+  <body>
+    <div id="header"></div>
+    <main id="main" tabindex="-1">
+      <div class="container page-wrap">
+        <nav class="breadcrumb" aria-label="Trilha de navegação"><a href="/">Início</a><span aria-hidden="true">/</span><span aria-current="page">Parceiros e fornecedores</span></nav>
+        <header class="page-head"><div><span class="eyebrow">Para empresas</span><h1 class="page-title">Seja um parceiro da Violet Voltage.</h1><p class="lead">Fabricantes, marcas, distribuidores e luthiers: preencha a ficha e a equipe comercial entra em contato em até 5 dias úteis. Não é preciso ter conta na loja.</p></div></header>
+        <div class="request-layout">
+          <section class="panel" aria-labelledby="partner-title">
+            <h2 id="partner-title">Ficha de solicitação de parceria</h2>
+            <form id="partner-form">
+              <fieldset><legend>Empresa</legend><div class="form-grid">
+                <div class="field"><label for="p-razao">Razão social</label><input id="p-razao" name="razaoSocial" type="text" required minlength="2" maxlength="120" autocomplete="organization" /></div>
+                <div class="field"><label for="p-fantasia">Nome fantasia (opcional)</label><input id="p-fantasia" name="nomeFantasia" type="text" maxlength="120" /></div>
+                <div class="field"><label for="p-cnpj">CNPJ</label><input id="p-cnpj" name="cnpj" type="text" required inputmode="numeric" maxlength="18" placeholder="00.000.000/0000-00" pattern="\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}" title="Informe os 14 dígitos do CNPJ." /></div>
+                <div class="field"><label for="p-modalidade">Tipo de parceria</label><select id="p-modalidade" name="modalidade"><option>Fabricante ou marca</option><option>Distribuidor ou importador</option><option>Luthier ou oficina</option><option>Outro</option></select></div>
+                <div class="field"><label for="p-site">Site ou rede social (opcional)</label><input id="p-site" name="site" type="url" maxlength="200" placeholder="https://" /></div>
+              </div></fieldset>
+              <fieldset><legend>Tipo de produto ou serviço oferecido</legend><div class="check-grid" id="partner-products"></div></fieldset>
+              <div class="field"><label for="p-marcas">Marcas que fabrica ou representa (opcional)</label><input id="p-marcas" name="marcas" type="text" maxlength="300" /></div>
+              <fieldset><legend>Quem a equipe da Violet Voltage deve procurar</legend><div class="form-grid">
+                <div class="field"><label for="p-contato">Nome do contato</label><input id="p-contato" name="contatoNome" type="text" required minlength="3" maxlength="100" autocomplete="name" /></div>
+                <div class="field"><label for="p-cargo">Cargo (opcional)</label><input id="p-cargo" name="cargo" type="text" maxlength="80" autocomplete="organization-title" /></div>
+                <div class="field"><label for="p-email">E-mail comercial</label><input id="p-email" name="email" type="email" required maxlength="200" autocomplete="email" /></div>
+                <div class="field"><label for="p-telefone">Telefone ou WhatsApp com DDD</label><input id="p-telefone" name="telefone" type="tel" required maxlength="20" autocomplete="tel" /></div>
+              </div></fieldset>
+              <div class="field"><label for="p-mensagem">Conte um pouco sobre a proposta (opcional)</label><textarea id="p-mensagem" name="mensagem" rows="4" maxlength="1500"></textarea></div>
+              <div class="field hp-field" aria-hidden="true"><label for="p-website">Deixe este campo vazio</label><input id="p-website" name="website" type="text" tabindex="-1" autocomplete="off" /></div>
+              <div class="field"><label class="check"><input type="checkbox" name="aceite" required /><span>Concordo que estes dados sejam usados só para avaliar a parceria e entrar em contato.</span></label><p class="form-help">Saiba como tratamos os dados na <a href="/privacidade.html">política de privacidade</a>.</p></div>
+              <button type="submit">Enviar ficha</button>
+            </form>
+            <div id="partner-done" hidden></div>
+          </section>
+          <aside class="request-aside"><section class="panel"><h2>O que avaliamos</h2><ul class="steps-list"><li>Produtos para guitarristas: instrumentos, amplificação, efeitos, cabos, acessórios e peças.</li><li>Garantia e assistência no Brasil.</li><li>Prazo de reposição e condições para lojista.</li></ul><p class="small muted">Para dúvidas de compra, use a <a href="/ajuda.html">Central de ajuda</a>.</p></section></aside>
+        </div>
+      </div>
+    </main>
+    <div id="footer"></div>
+  </body>
+</html>

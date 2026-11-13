@@ -564,5 +564,35 @@ Para ensaiar e demonstrar sem gastar crédito. Visão geral:
 - [x] Administrador inicial criado dentro de uma trava (várias cópias subindo
       juntas não disputam o mesmo cadastro).
 
+### 33. Assistente pelo gosto, encomendas e parceiros
+
+- [x] **Setup pelo gosto**, não só pelo orçamento: a primeira pergunta aceita estilo, artista ou
+      banda e "como quer que soe" em palavras leigas ("pesado e intenso", "suave e melódico",
+      "espacial, com eco", "sujo, de garagem", "dançante"...). Depois pergunta a cor e, por
+      último, se há teto ou se pode montar sem limite. Base em `src/knowledge/taste.js`: 33
+      artistas e bandas (Slash, Hendrix, Gilmour, Cobain, Kiko Loureiro, Lulu Santos...) com o
+      equipamento pelo qual são conhecidos, 7 tipos de som e 15 cores; a cor de cada guitarra e
+      correia veio da conferência das fotos. Sem limite, escolhe a peça mais próxima do original e
+      cita a alternativa mais em conta do mesmo formato. Nunca diz que vende modelo assinatura.
+- [x] "Quero em preto", "e no estilo do Hendrix?" remontam o setup; "guitarra vermelha",
+      "amplificador roxo" filtram pela cor (o card abre o produto já na cor). Artista que a base
+      não conhece: o assistente diz isso e pede uma descrição do som.
+- [x] **Encomendas** (`/encomenda.html`): guitarra personalizada ("Les Paul com captadores
+      Seymour Duncan e tarraxas Gotoh", aceitando erro como "saymour") ou produto fora do
+      catálogo. O assistente resume as peças, mostra a pronta entrega parecida e leva ao
+      formulário já preenchido; o visitante entra na conta e o rascunho volta. Painel: aba
+      Encomendas (status, valor, prazo e resposta, que avisa o cliente nas Notificações).
+      "Como está minha encomenda?" no assistente. "Encomenda" com palavra de entrega ("minha
+      encomenda não chegou") continua sendo o pedido.
+- [x] **Parceiros e fornecedores** (`/parceiros.html`, link "Seja um parceiro" no rodapé):
+      ficha pública com razão social, CNPJ (dígitos verificadores no navegador e no servidor),
+      tipo de produto, marcas e o contato que a loja deve procurar; anti-robô e limite por rede.
+      "Sou fornecedor de pedais" no assistente leva à ficha já com o tipo marcado. Painel: aba
+      Parcerias com status e notas internas.
+- [x] **Login sem perder a conversa**: quando o pedido exige conta, o assistente mostra
+      **Entrar** e **Criar conta**; depois do login, a conversa de visitante continua e a pergunta
+      é respondida sozinha.
+- [x] Encomendas entram na cópia dos dados e na exclusão da conta (LGPD).
+
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

@@ -69,5 +69,21 @@ CREATE TABLE IF NOT EXISTS violet_voltage.assistant_log (
   version text NOT NULL,
   CHECK (data->>'rowKey' = row_key AND data->>'partitionKey' = partition_key)
 );
+-- Etapa 33: encomendas (por cliente) e fichas de parceria de fornecedores.
+CREATE TABLE IF NOT EXISTS violet_voltage.requests (
+  partition_key text NOT NULL,
+  row_key text PRIMARY KEY,
+  data jsonb NOT NULL CHECK (jsonb_typeof(data) = 'object'),
+  version text NOT NULL,
+  CHECK (data->>'rowKey' = row_key AND data->>'partitionKey' = partition_key)
+);
+CREATE INDEX IF NOT EXISTS requests_partition ON violet_voltage.requests (partition_key);
+CREATE TABLE IF NOT EXISTS violet_voltage.partners (
+  partition_key text NOT NULL,
+  row_key text PRIMARY KEY,
+  data jsonb NOT NULL CHECK (jsonb_typeof(data) = 'object'),
+  version text NOT NULL,
+  CHECK (data->>'rowKey' = row_key AND data->>'partitionKey' = partition_key)
+);
 REVOKE ALL ON ALL TABLES IN SCHEMA violet_voltage FROM PUBLIC;
 COMMIT;

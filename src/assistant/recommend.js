@@ -2,6 +2,7 @@
 // formato...) e pontuação pela ficha técnica e pela base de conhecimento de gêneros.
 import { genres } from "../knowledge/genres.js";
 import { UTILITY_EFFECTS, fitsGenre } from "../../public/js/specs.js";
+import { tasteScore, hasTaste, colorMatches } from "./taste.js";
 
 export const GROUP = { Guitarras: "guitarras", Amplificadores: "amplificadores", Pedais: "pedais" };
 export const profileOf = (nome) => genres.find((g) => g.nome === nome);
@@ -47,11 +48,15 @@ export function score(p, f) {
   else if (f.estilo === "Vintage" && fi.estilo === "Atemporal") s += 0.5;
   if (f.nivel && fi.nivel === f.nivel) s += 1.5;
   if (f.uso && list(fi.uso).includes(f.uso)) s += 1.5;
+  // Etapa 33: gosto pessoal (artista, tipo de som e cor).
+  if (hasTaste(f)) s += tasteScore(p, f);
   return s;
 }
 
-export function recommend(products, f, { exclude = [], ordem, limit = 3 } = {}) {
-  const pool = products.filter((p) => p.ativo !== false && p.estoque > 0 && matches(p, f));
+// onlyColor: só produtos daquela cor. premium: no empate de pontos, o mais caro primeiro (gosto
+// pessoal sem limite de orçamento: a peça mais próxima do original).
+export function recommend(products, f, { exclude = [], ordem, limit = 3, onlyColor, premium = false } = {}) {
+  const pool = products.filter((p) => p.ativo !== false && p.estoque > 0 && matches(p, f) && (!onlyColor || colorMatches(p, onlyColor)));
   let fits = pool;
   // Gênero pedido: nas categorias principais, só itens indicados para ele ou versáteis.
   if (f.genero) {
@@ -68,7 +73,7 @@ export function recommend(products, f, { exclude = [], ordem, limit = 3 } = {}) 
         ? a.p.priceCents - b.p.priceCents
         : ordem === "desc"
           ? b.p.priceCents - a.p.priceCents
-          : b.s - a.s || a.p.priceCents - b.p.priceCents,
+          : b.s - a.s || (premium ? b.p.priceCents - a.p.priceCents : a.p.priceCents - b.p.priceCents),
     )
     .map((r) => r.p);
   const rest = ranked.filter((p) => !exclude.includes(p.id));
@@ -135,17 +140,20 @@ function pickBelow(ranked, limit, byScore) {
 }
 export function buildSetup(products, f) {
   const budget = f.max || Infinity;
-  const profile = { genero: f.genero, estilo: f.estilo, nivel: f.nivel, uso: f.uso };
+  const profile = { genero: f.genero, estilo: f.estilo, nivel: f.nivel, uso: f.uso, artista: f.artista, som: f.som, cor: f.cor };
+  const premium = budget === Infinity && hasTaste(f);
   const picks = SLOTS.map((slot) => {
     const fits = (p) => !slot.fits || slot.fits(p);
-    const ranked = recommend(products, { categoria: slot.categoria, ...profile }, { limit: 1000 }).items.filter(fits);
+    const ranked = recommend(products, { categoria: slot.categoria, ...profile }, { limit: 1000, premium }).items.filter(fits);
     // Todas as peças da categoria, da que mais combina com o perfil para a que menos combina.
     const all = products
       .filter((p) => p.ativo !== false && p.estoque > 0 && p.categoria === slot.categoria && fits(p))
       .map((p) => ({ p, s: score(p, profile) }))
-      .sort((a, b) => b.s - a.s || a.p.priceCents - b.p.priceCents)
+      .sort((a, b) => b.s - a.s || (premium ? b.p.priceCents - a.p.priceCents : a.p.priceCents - b.p.priceCents))
       .map((r) => r.p);
-    const allowance = budget * slot.share;
+    // Som espacial depende dos pedais: mais verba para eles, menos para o amplificador.
+    const share = f.som === "espacial" ? { Guitarras: 0.4, Amplificadores: 0.25, Pedais: 0.25 }[slot.categoria] ?? slot.share : slot.share;
+    const allowance = budget * share;
     const within = ranked.filter((p) => p.priceCents <= allowance);
     let choice;
     if (f.genero) choice = within[0];

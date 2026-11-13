@@ -14,6 +14,8 @@ export class MemoryStorage {
       notifications: new Map(),
       questions: new Map(),
       assistantLog: new Map(),
+      requests: new Map(),
+      partners: new Map(),
     };
     this.blobs = new Map();
   }

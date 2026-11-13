@@ -40,6 +40,16 @@ ATUALIZACAO 13/11/2026
   local + 3 copias + Nginx). O QUE FAZER E O QUE PASSAR AO ALLAN PARA O AZURE
   FOR STUDENTS: docs/CODEX-LOAD-BALANCER.txt. Visao geral para o Allan:
   docs/LOAD-BALANCER.md. Admin inicial agora e criado dentro de trava.
+- Etapa 33 (PR #29): assistente monta setup pelo GOSTO (artista/banda, tipo
+  de som em palavras leigas, cor) alem do orcamento; base em
+  src/knowledge/taste.js e logica em src/assistant/taste.js (pontuacao extra
+  em recommend.js). Encomendas: /encomenda.html, POST/GET /api/encomendas,
+  admin /api/admin/encomendas (src/services/requests.js; deteccao das pecas
+  em src/assistant/custom-order.js). Parceiros: /parceiros.html, POST
+  /api/parcerias (publica), admin /api/admin/parcerias. Tabelas novas
+  "requests" e "partners" (CREATE TABLE IF NOT EXISTS na migracao 001, roda
+  sozinha no deploy). Login pelo assistente guarda a pergunta e responde
+  depois de entrar (public/js/assistant.js, takePending).
 - Etapa 31 (PR #27): pronto para Azure com load balancer (so se o professor
   pedir). Guia: docs/AZURE-LOAD-BALANCER.md. Dockerfile na raiz; roteiros em
   infra/azure/ (rodar no Azure Cloud Shell, com infra/azure/variaveis.env

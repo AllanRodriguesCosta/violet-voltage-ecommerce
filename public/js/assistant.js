@@ -1,4 +1,5 @@
-// Assistente de compras: painel não modal, disponível só para quem está logado.
+// Assistente de compras: painel não modal, aberto a visitantes; pedidos, encomendas e trocas
+// pedem login, e a pergunta é retomada sozinha depois que a pessoa entra.
 // As respostas vêm de /api/assistente (PLN local do servidor); o histórico fica nesta aba.
 import { icon } from "./icons.js";
 import { send, money, productImage, escapeHtml as esc, addCart, getCart, getWishlist, catalogProducts, toast } from "./common.js";
@@ -6,7 +7,10 @@ import { openCart } from "./drawer.js";
 
 const KEY = "vv_assistente";
 const LIMIT = 40;
-const START = ["Quero uma guitarra vintage", "Montar um setup de rock", "Onde está meu pedido?", "O que é humbucker?"];
+const START = ["Quero uma guitarra vintage", "Montar setup pelo meu gosto", "Onde está meu pedido?", "Quero encomendar uma guitarra"];
+// Pergunta que pediu login: fica guardada na aba e é respondida assim que a pessoa entra.
+const PENDING = "vv_assistente_pendente";
+const PENDING_TTL = 30 * 60 * 1000;
 // Sugestões iniciais conforme a página: o assistente sabe qual produto está aberto.
 function pageInfo() {
   const params = new URLSearchParams(location.search);
@@ -38,7 +42,20 @@ const VOICE_OK = "vv_voz_ok";
 function load(userId) {
   try {
     const saved = JSON.parse(sessionStorage.getItem(KEY) || "null");
-    return saved?.user === userId && Array.isArray(saved.mensagens) ? saved : null;
+    if (!Array.isArray(saved?.mensagens)) return null;
+    if (saved.user === userId) return saved;
+    // Quem conversou como visitante e acabou de entrar continua a mesma conversa.
+    if (saved.user === "visitante" && userId !== "visitante") return { ...saved, user: userId };
+    return null;
+  } catch {
+    return null;
+  }
+}
+export function takePending(now = Date.now()) {
+  try {
+    const pending = JSON.parse(sessionStorage.getItem(PENDING) || "null");
+    sessionStorage.removeItem(PENDING);
+    return pending && typeof pending.texto === "string" && now - pending.ts < PENDING_TTL ? pending.texto.slice(0, 500) : null;
   } catch {
     return null;
   }
@@ -53,7 +70,7 @@ function save(state) {
 
 function cardHTML(c) {
   const name = `${c.marca} ${c.modelo}`;
-  return `<li class="assistant-card"><a href="/produto.html?id=${encodeURIComponent(c.id)}"><img src="${esc(productImage(c))}" alt="" width="64" height="64" loading="lazy"><span class="assistant-card-text"><small>${esc(c.marca)}</small><strong>${esc(c.modelo)}</strong>${c.motivo ? `<span class="assistant-card-why">${esc(c.motivo)}</span>` : ""}<span class="assistant-card-price">${money(c.priceCents)}</span></span></a><button type="button" class="icon-button" data-assistant-add="${esc(c.id)}"${c.estoque > 0 ? "" : " disabled"} aria-label="${c.estoque > 0 ? `Adicionar ${esc(name)} ao carrinho` : `${esc(name)} esgotado`}">${icon("bag", { size: 18 })}</button></li>`;
+  return `<li class="assistant-card"><a href="/produto.html?id=${encodeURIComponent(c.id)}${c.cor ? `&cor=${encodeURIComponent(c.cor)}` : ""}"><img src="${esc(productImage(c))}" alt="" width="64" height="64" loading="lazy"><span class="assistant-card-text"><small>${esc(c.marca)}</small><strong>${esc(c.modelo)}</strong>${c.motivo ? `<span class="assistant-card-why">${esc(c.motivo)}</span>` : ""}<span class="assistant-card-price">${money(c.priceCents)}</span></span></a><button type="button" class="icon-button" data-assistant-add="${esc(c.id)}"${c.estoque > 0 ? "" : " disabled"} aria-label="${c.estoque > 0 ? `Adicionar ${esc(name)} ao carrinho` : `${esc(name)} esgotado`}">${icon("bag", { size: 18 })}</button></li>`;
 }
 function messageHTML(m, last) {
   if (m.de === "voce") return `<div class="msg msg-user"><p>${esc(m.texto)}</p></div>`;
@@ -70,7 +87,7 @@ function messageHTML(m, last) {
             : a.tipo === "cupom"
               ? `<button type="button" class="button small" data-assistant-coupon="${esc(a.codigo)}">${icon("tag", { size: 16 })}${esc(a.rotulo)}</button>`
               : a.tipo === "login"
-                ? `<a class="button small" href="/login.html?next=${encodeURIComponent(location.pathname + location.search)}">${icon("user", { size: 16 })}${esc(a.rotulo)}</a>`
+                ? `<a class="button small" data-assistant-login href="/login.html?next=${encodeURIComponent(location.pathname + location.search)}">${icon("user", { size: 16 })}Entrar</a><a class="button small ghost" data-assistant-login href="/cadastro.html?next=${encodeURIComponent(location.pathname + location.search)}">Criar conta</a>`
                 : `<a class="button secondary small" href="${esc(safeHref(a.href))}">${esc(a.rotulo)}</a>`,
         )
         .join("")}</div>`
@@ -104,7 +121,7 @@ export function mountAssistant(user) {
 
   const greeting = () => ({
     de: "assistente",
-    texto: `Oi${first ? `, ${first}` : ""}! Posso indicar e comparar equipamentos, responder sobre a ficha do produto que você está vendo, conferir o que falta no carrinho, montar um setup e explicar termos${user ? " e contar em que etapa está seu pedido" : ". Para ver pedidos ou pedir trocas, é só entrar na sua conta"}.`,
+    texto: `Oi${first ? `, ${first}` : ""}! Posso indicar e comparar equipamentos, montar um setup pelo seu orçamento ou pelo seu gosto (artistas, tipo de som, cores), responder sobre a ficha do produto que você está vendo, conferir o que falta no carrinho e ajudar com encomendas${user ? ", além de contar em que etapa está seu pedido" : ". Para ver pedidos ou pedir trocas, eu peço para você entrar e continuo de onde parou"}.`,
     sugestoes: startChips(),
   });
   function render() {
@@ -226,6 +243,12 @@ export function mountAssistant(user) {
       voiceStatus.textContent = "Não foi possível usar a voz agora. Digite a mensagem.";
     }
   });
+  // Voltou do login com uma pergunta pendente: abre o painel e responde.
+  const pending = user ? takePending() : null;
+  if (pending) {
+    open(true);
+    ask(pending);
+  }
   // No carrinho, o botão avisa quando falta algo essencial (cabo, amplificador, fonte...).
   if (location.pathname === "/carrinho.html") {
     const hint = async () => {
@@ -261,6 +284,14 @@ export function mountAssistant(user) {
       save(state);
       render();
       input.focus();
+    } else if (t.closest("[data-assistant-login]")) {
+      // Guarda a pergunta que pediu login para responder assim que a pessoa voltar.
+      const texto = state.mensagens.findLast((m) => m.de === "voce")?.texto;
+      try {
+        if (texto) sessionStorage.setItem(PENDING, JSON.stringify({ texto, ts: Date.now() }));
+      } catch {
+        /* sem armazenamento, a pessoa pergunta de novo */
+      }
     } else if (t.closest("[data-assistant-say]")) ask(t.closest("[data-assistant-say]").dataset.assistantSay);
     else if (t.closest("[data-assistant-add]")) {
       const button = t.closest("[data-assistant-add]");

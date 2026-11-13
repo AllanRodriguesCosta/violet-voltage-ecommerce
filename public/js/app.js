@@ -47,6 +47,8 @@ const routes = {
   "/kits.html": "kits",
   "/pedido.html": "order",
   "/guias.html": "guides",
+  "/encomenda.html": "request",
+  "/parceiros.html": "partners",
 };
 try {
   if (location.pathname === "/admin.html") {

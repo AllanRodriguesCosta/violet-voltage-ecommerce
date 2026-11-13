@@ -84,6 +84,8 @@ export async function adminPage(user) {
       ["user", "Clientes ativos", s.clientes],
       ["grid", "Produtos ativos", s.produtos],
       ["question", "Perguntas aguardando", s.perguntasPendentes || 0],
+      ["wrench", "Encomendas em aberto", s.encomendasAbertas || 0],
+      ["store", "Parcerias novas", s.parceriasNovas || 0],
     ]
       .map(([symbol, label, value]) => `<div class="stat">${icon(symbol, { size: 20 })}<span>${label}</span><strong>${value}</strong></div>`)
       .join("")}</div><div class="dash-grid"><section class="panel chart-panel"><h2>Vendas nos últimos 14 dias</h2>${chart(s.vendasPorDia)}</section><section class="panel"><h2>Pedidos por status</h2><ul class="status-bars">${statuses
@@ -160,6 +162,74 @@ export async function adminPage(user) {
         await load();
       });
       wireSearch(filterRows);
+      return;
+    }
+    // Etapa 33: encomendas (resposta avisa o cliente) e fichas de parceria.
+    if (tab === "requests") {
+      items = await api("/admin/encomendas");
+      const statusList = ["Recebida", "Em análise", "Orçamento enviado", "Aprovada", "Recusada", "Concluída"];
+      const render = () => {
+        const q = normalize(panel.querySelector("#admin-search")?.value || "");
+        const list = items.filter((x) => !q || normalize(`${x.codigo} ${x.produto} ${x.cliente} ${x.detalhes}`).includes(q));
+        panel.querySelector("#request-admin-list").innerHTML = list.length
+          ? list
+              .map(
+                (x) => `<article class="panel question-admin"><header><span class="badge ${["Recebida", "Em análise"].includes(x.status) ? "badge-low" : x.status === "Recusada" ? "badge-out" : "badge-in"}">${esc(x.status)}</span><strong>${esc(x.codigo)} · ${esc(x.tipoNome)}</strong><small class="muted">${esc(x.cliente)} · ${esc(x.email)}${x.telefone ? ` · ${esc(x.telefone)} (${esc(x.contato)})` : ""} · ${new Date(x.createdAt).toLocaleDateString("pt-BR")}</small></header><p class="question-text"><strong>${esc(x.produto)}</strong></p>${x.detalhes ? `<p class="small pre-line">${esc(x.detalhes)}</p>` : ""}<p class="small muted">Orçamento do cliente: ${x.orcamentoCents ? money(x.orcamentoCents) : "não informado"} · Prazo: ${esc(x.prazo)}</p><form class="question-form" data-request="${esc(x.id)}"><div class="form-grid"><div class="field"><label for="rs-${esc(x.id)}">Status</label><select id="rs-${esc(x.id)}" name="status">${statusList.map((s) => `<option${s === x.status ? " selected" : ""}>${s}</option>`).join("")}</select></div><div class="field"><label for="rv-${esc(x.id)}">Valor orçado (R$)</label><input id="rv-${esc(x.id)}" name="valor" type="number" min="100" step="1" value="${x.valorCents ? x.valorCents / 100 : ""}"></div><div class="field"><label for="rp-${esc(x.id)}">Prazo (dias)</label><input id="rp-${esc(x.id)}" name="prazoDias" type="number" min="1" max="365" value="${x.prazoDias || ""}"></div></div><label for="rr-${esc(x.id)}">Resposta para o cliente</label><textarea id="rr-${esc(x.id)}" name="resposta" rows="3" maxlength="1500">${esc(x.resposta)}</textarea><div class="row"><button type="submit">Salvar e avisar o cliente</button></div></form></article>`,
+              )
+              .join("")
+          : emptyState({ symbol: "wrench", title: "Nenhuma encomenda ainda.", level: 3 });
+      };
+      panel.innerHTML = `${toolbar("Encomendas", "")}<p class="form-help">Guitarras personalizadas e produtos fora do catálogo pedidos pelos clientes (pelo site ou pelo assistente). Mudar o status ou a resposta avisa o cliente nas notificações.</p><div class="question-list" id="request-admin-list"></div>`;
+      panel.querySelector("#request-admin-list").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.target.closest("[data-request]");
+        const el = form.elements;
+        form.querySelector("[type=submit]").disabled = true;
+        try {
+          const updated = await send(`/admin/encomendas/${form.dataset.request}`, { status: el.status.value, resposta: el.resposta.value.trim(), valorCents: el.valor.value ? Math.round(Number(el.valor.value) * 100) : null, prazoDias: el.prazoDias.value ? Number(el.prazoDias.value) : null }, "PATCH");
+          items = items.map((x) => (x.id === updated.id ? updated : x));
+          toast("Encomenda atualizada; o cliente foi avisado.", { type: "success" });
+          render();
+          await stats();
+        } catch (e) {
+          toast(e.message, { type: "error" });
+          form.querySelector("[type=submit]").disabled = false;
+        }
+      });
+      render();
+      wireSearch(render);
+      return;
+    }
+    if (tab === "partners") {
+      items = await api("/admin/parcerias");
+      const statusList = ["Nova", "Em contato", "Aprovada", "Recusada"];
+      const render = () => {
+        const q = normalize(panel.querySelector("#admin-search")?.value || "");
+        const list = items.filter((x) => !q || normalize(`${x.razaoSocial} ${x.nomeFantasia} ${x.cnpj} ${x.contatoNome} ${x.produtos.join(" ")} ${x.marcas}`).includes(q));
+        panel.querySelector("#partner-admin-list").innerHTML = list.length
+          ? list
+              .map(
+                (x) => `<article class="panel question-admin"><header><span class="badge ${x.status === "Nova" ? "badge-low" : x.status === "Recusada" ? "badge-out" : "badge-in"}">${esc(x.status)}</span><strong>${esc(x.nomeFantasia || x.razaoSocial)}</strong><small class="muted">CNPJ ${esc(x.cnpj)} · ${esc(x.modalidade)} · ${new Date(x.createdAt).toLocaleDateString("pt-BR")}</small></header><p class="small"><strong>Produtos:</strong> ${esc(x.produtos.join(", "))}${x.marcas ? ` · <strong>Marcas:</strong> ${esc(x.marcas)}` : ""}</p><p class="small"><strong>Contato:</strong> ${esc(x.contatoNome)}${x.cargo ? ` (${esc(x.cargo)})` : ""} · <a href="mailto:${esc(x.email)}">${esc(x.email)}</a> · ${esc(x.telefone)}${x.site ? ` · <a href="${esc(x.site)}" rel="noopener noreferrer" target="_blank">site</a>` : ""}</p>${x.mensagem ? `<p class="small pre-line">${esc(x.mensagem)}</p>` : ""}<form class="question-form" data-partner="${esc(x.id)}"><div class="form-grid"><div class="field"><label for="ps-${esc(x.id)}">Status</label><select id="ps-${esc(x.id)}" name="status">${statusList.map((s) => `<option${s === x.status ? " selected" : ""}>${s}</option>`).join("")}</select></div></div><label for="pn-${esc(x.id)}">Notas internas</label><textarea id="pn-${esc(x.id)}" name="notas" rows="2" maxlength="1000">${esc(x.notas)}</textarea><div class="row"><button type="submit">Salvar</button></div></form></article>`,
+              )
+              .join("")
+          : emptyState({ symbol: "store", title: "Nenhuma ficha de parceria ainda.", level: 3 });
+      };
+      panel.innerHTML = `${toolbar("Parcerias e fornecedores", "")}<p class="form-help">Fichas enviadas pela página Seja um parceiro. As notas são internas.</p><div class="question-list" id="partner-admin-list"></div>`;
+      panel.querySelector("#partner-admin-list").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.target.closest("[data-partner]");
+        try {
+          const updated = await send(`/admin/parcerias/${form.dataset.partner}`, { status: form.elements.status.value, notas: form.elements.notas.value.trim() }, "PATCH");
+          items = items.map((x) => (x.id === updated.id ? updated : x));
+          toast("Ficha atualizada.", { type: "success" });
+          render();
+          await stats();
+        } catch (e) {
+          toast(e.message, { type: "error" });
+        }
+      });
+      render();
+      wireSearch(render);
       return;
     }
     if (tab === "questions") {

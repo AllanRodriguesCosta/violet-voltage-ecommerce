@@ -18,6 +18,7 @@ import { quote, deliveryOptions } from "../services/pricing.js";
 import { activeRules, activeList, allCoupons, createCoupon, updateCoupon, publicCoupon, checkCustomerUse } from "../services/coupons.js";
 import { getSavedCart, saveCart, remindAbandoned, abandonedStats } from "../services/carts.js";
 import { logSearch, searchSummary, clearSearches } from "../services/searches.js";
+import { profileDeps } from "../services/assistant-profile.js";
 import { cepDigits } from "../../public/js/regions.js";
 import { updateOrderStatus, summary, requestExchange, answerExchange, exchangeWindow } from "../services/orders.js";
 import { addressInput, saveAddress, removeAddress } from "../services/addresses.js";
@@ -311,7 +312,7 @@ export function apiRouter(storage, config) {
     const cupons = () => activeList(storage);
     // Correção da etapa 33: "como está minha encomenda?" precisa das encomendas do cliente.
     const requests = async () => (req.user ? (await myRequests(storage, req.user)).map(publicRequest) : []);
-    let answer = await reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders, alerts, cupons, requests, user: req.user });
+    let answer = await reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders, alerts, cupons, requests, perfil: profileDeps(storage, req.user), user: req.user });
     if (!answer.entendeu) {
       await logMiss(storage, mensagem).catch(() => {});
       // Só o que a PLN local não entendeu vai ao Gemini (sem nome, e-mail ou pedido).

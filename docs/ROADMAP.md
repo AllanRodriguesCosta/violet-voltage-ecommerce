@@ -637,5 +637,22 @@ Para ensaiar e demonstrar sem gastar crédito. Visão geral:
       completo (antes era ao sair do campo, o que podia desabilitar o botão no clique de confirmar).
 - [x] Privacidade: seção "Buscas e carrinho salvo".
 
+### 36. Assistente: setup em conversa e memória do gosto
+
+- [x] **Já tenho parte do equipamento**: "já tenho uma Squier e um cubo", "só falta o amp e o
+      pedal" tiram essas peças do setup e a verba vai para o resto (`src/assistant/setup-edit.js`;
+      `buildSetup` aceita `tenho`, `sem`, `fixos` e `excluir`).
+- [x] **Montar aos poucos**: "troca só o amplificador" (as outras peças ficam), "mantém a
+      guitarra" (trava para as próximas mudanças, inclusive "mais barato"), "tira a correia",
+      "põe um pedal". Peça que saiu para caber no valor não volta sozinha. O texto diz o que
+      saiu, o que entrou e a diferença de preço.
+- [x] **Por que essa peça?**: "por que essas peças?" ou "por que esse amplificador?" explica
+      cada escolha pelo artista (formato, captação, marca), tipo de som, gênero, cor e a parte do
+      orçamento reservada para a peça. Chip "Por que essas peças?" em todo setup.
+- [x] **Memória do gosto** (só com conta; tabela `profiles`): o último setup guarda gênero,
+      artista, som, cor, teto e o que o cliente já tem, nunca a conversa. Na saudação e ao começar
+      outro setup, o assistente oferece "Usar o mesmo gosto". "Esquece meu gosto" apaga. Entra na
+      cópia de dados e some com a conta; visitante recebe o botão de login.
+
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

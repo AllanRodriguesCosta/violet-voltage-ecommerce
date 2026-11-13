@@ -109,5 +109,13 @@ CREATE TABLE IF NOT EXISTS violet_voltage.searches (
   version text NOT NULL,
   CHECK (data->>'rowKey' = row_key AND data->>'partitionKey' = partition_key)
 );
+-- Etapa 36: gosto do último setup (memória do assistente), um por cliente.
+CREATE TABLE IF NOT EXISTS violet_voltage.profiles (
+  partition_key text NOT NULL,
+  row_key text PRIMARY KEY,
+  data jsonb NOT NULL CHECK (jsonb_typeof(data) = 'object'),
+  version text NOT NULL,
+  CHECK (data->>'rowKey' = row_key AND data->>'partitionKey' = partition_key)
+);
 REVOKE ALL ON ALL TABLES IN SCHEMA violet_voltage FROM PUBLIC;
 COMMIT;

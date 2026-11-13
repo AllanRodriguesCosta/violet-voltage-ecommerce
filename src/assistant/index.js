@@ -5,6 +5,7 @@ import { examples } from "./intents.js";
 import { extract } from "./entities.js";
 import { normalize } from "./text.js";
 import { recommend, reasonFor, genreIntro, buildSetup, GROUP, joinList } from "./recommend.js";
+import { detectOwned, detectEdit, explainSetup, describeParts, PART_NAME } from "./setup-edit.js";
 import { faqAnswer, brl } from "./faq.js";
 import { searchHelp, strongHelp } from "./help-search.js";
 import { sanitizeContext } from "./context.js";
@@ -280,7 +281,7 @@ function handleRecommend(e, ctx, products, { refine = false } = {}) {
 function handleSetup(e, ctx, products, override = {}, titulo, { alvo } = {}) {
   const continuing = ctx.intent === "setup" || ctx.intent === "recomendar";
   const f = {};
-  for (const k of ["genero", "estilo", "nivel", "uso", "max", "artista", "som", "cor"]) {
+  for (const k of ["genero", "estilo", "nivel", "uso", "max", "artista", "som", "cor", "tenho", "sem", "fixos", "excluir"]) {
     if (continuing && ctx.filtros[k] !== undefined) f[k] = ctx.filtros[k];
     if (e[k] !== undefined) f[k] = e[k];
   }
@@ -301,7 +302,9 @@ function handleSetup(e, ctx, products, override = {}, titulo, { alvo } = {}) {
   const contexto = { intent: "setup", filtros: f, aguardando: null, perguntas: [...perguntas], mostrados: items.map((x) => x.produto.id) };
   if (!items.length) return { texto: "Não consegui montar um setup com o estoque de agora.", sugestoes: START, contexto };
   const ids = items.map((x) => x.produto.id);
-  const lines = items.map((x) => `• ${x.rotulo}: ${x.produto.marca} ${x.produto.modelo} (${brl(x.produto.priceCents)})`);
+  const lines = items.map((x) => `• ${x.rotulo}: ${x.produto.marca} ${x.produto.modelo} (${brl(x.produto.priceCents)})${(ctx.filtros.fixos || []).includes(x.produto.id) ? " · mantida" : ""}`);
+  // Etapa 36: o que o cliente já tem fica de fora (e a verba vai para o resto).
+  const ownedText = f.tenho?.length ? `Sem ${describeParts(f.tenho).replace(/\b(a|o) /g, "")}, porque você já tem${f.max ? ": a verba foi para o resto" : ""}.` : "";
   // Peça fora do gênero pedido: explica a troca e mostra a opção do gênero que ficou de fora.
   const swaps = f.genero ? items.filter((x) => x.foraDoGenero) : [];
   const swapText = swaps.length
@@ -313,23 +316,24 @@ function handleSetup(e, ctx, products, override = {}, titulo, { alvo } = {}) {
   // Pelo gosto e sem limite: a guitarra mais próxima do original, com a alternativa mais em conta.
   const guitar = items.find((x) => x.rotulo === "Guitarra")?.produto;
   const cheaperGuitar =
-    taste && !f.max && !alvo && guitar
-      ? recommend(products, { categoria: "Guitarras", formato: guitar.ficha?.formato, genero: f.genero, artista: f.artista, som: f.som, cor: f.cor }, { limit: 50 }).items.find((p) => p.priceCents <= guitar.priceCents * 0.7)
+    taste && !f.max && !alvo && guitar && !(f.fixos || []).includes(guitar.id)
+      ? recommend(products, { categoria: "Guitarras", formato: guitar.ficha?.formato, genero: f.genero, artista: f.artista, som: f.som, cor: f.cor }, { limit: 50 }).items.find((p) => p.priceCents <= guitar.priceCents * 0.7 && !(f.excluir || []).includes(p.id))
       : undefined;
   const texto = [
     ...(taste && !titulo && !alvo ? [tasteIntro(f)] : []),
     titulo || (taste ? `Montei um setup pelo seu gosto${f.max ? `, para até ${brl(f.max)}` : ""}:` : `Montei um setup${f.genero ? ` de ${f.genero.toLowerCase()}` : ""}${f.max ? ` para até ${brl(f.max)}` : ""}:`),
     ...lines,
+    ...(ownedText ? [ownedText] : []),
     `Total: ${brl(total)}${parcels(total)}.${total >= FREE_SHIPPING_CENTS ? " A entrega padrão sai grátis." : ""}${dentro ? "" : ` Passou do seu orçamento de ${brl(f.max)}: é o setup mais acessível que consigo montar com o estoque de agora.`}`,
     ...(swapText ? [swapText] : []),
     ...(cheaperGuitar ? [`Quer gastar menos? A ${cheaperGuitar.marca} ${cheaperGuitar.modelo} tem o mesmo formato por ${brl(cheaperGuitar.priceCents)}.`] : []),
   ].join("\n");
   // Kit pronto que cabe no orçamento: alternativa com desconto.
-  const kit = f.max ? kitsWithin(products, f.max, f.genero).find((k) => k.price.precoCents < total) : null;
+  const kit = f.max && !override.fixos && !f.tenho?.length ? kitsWithin(products, f.max, f.genero).find((k) => k.price.precoCents < total) : null;
   return {
     texto: kit ? `${texto}\nOu comece pelo ${kit.kit.nome}: ${brl(kit.price.precoCents)} com ${kit.kit.descontoPct}% de desconto (${kit.kit.itens.length} itens).` : texto,
     cards: items.map((x) => card(x.produto, f.genero, x.rotulo, f.cor)),
-    sugestoes: taste ? ["Mais barato", "Quero em preto", "Outro artista", "Mais completo"].filter((c) => c !== `Quero em ${String(f.cor).toLowerCase()}`) : ["Mais barato", "Mais completo", "Pelo meu gosto", "Como funciona o frete?"],
+    sugestoes: taste ? ["Mais barato", "Por que essas peças?", "Quero em preto", "Outro artista", "Troca o amplificador"].filter((c) => c !== `Quero em ${String(f.cor).toLowerCase()}`) : ["Mais barato", "Por que essas peças?", "Troca o amplificador", "Mais completo", "Pelo meu gosto"],
     acoes: [
       { tipo: "carrinho", rotulo: "Adicionar tudo ao carrinho", itens: ids },
       ...(kit ? [{ tipo: "carrinho", rotulo: `Adicionar o ${kit.kit.nome}`, itens: kit.kit.itens }] : []),
@@ -515,6 +519,113 @@ const BUDGET_CHIPS = ["Até R$ 1.500", "Até R$ 3.000", "Até R$ 5.000"];
 function shownOf(ctx, products) {
   return ctx.mostrados.map((id) => products.find((p) => p.id === id)).filter(Boolean);
 }
+// Etapa 36: mudanças num setup já mostrado (trocar, manter, tirar, incluir, "por quê?") e o que
+// o cliente já tem. Devolve { intent, out } como reaction(), ou null.
+const SETUP_CATS = ["Guitarras", "Amplificadores", "Pedais", "Cabos", "Correias"];
+const OWNED_CONTEXT = /\b(setup|monta\w*|montar|resto|complet\w*|equipamento\w*|o que falta|kit)\b/;
+const PRICEY = /\b(barat\w*|economi\w*|car[oa]s?|gastar menos)\b/;
+function setupEditAnswer(text, mensagem, e, ctx, products) {
+  const setupNow = ctx.intent === "setup" && ctx.mostrados.length > 0;
+  const owned = detectOwned(mensagem);
+  if (owned && (ctx.intent === "setup" || OWNED_CONTEXT.test(text))) {
+    const sem = (ctx.filtros.sem || []).filter((c) => !owned.tenho.includes(c));
+    const out = handleSetup(e, { ...ctx, intent: "setup", aguardando: null }, products, { tenho: owned.tenho, ...(sem.length ? { sem } : { sem: undefined }), fixos: undefined, excluir: undefined });
+    out.texto = `Anotado: você já tem ${describeParts(owned.tenho)}, então ${owned.tenho.length > 1 ? "ficam" : "fica"} de fora.\n${out.texto}`;
+    return { intent: "setup_tenho", out };
+  }
+  if (!setupNow) return null;
+  const edit = detectEdit(mensagem);
+  if (!edit || (PRICEY.test(text) && edit.acao !== "trocar")) return null;
+  const shown = shownOf(ctx, products);
+  const f = ctx.filtros;
+  const inSetup = (cat) => shown.find((p) => p.categoria === cat);
+  const parts = edit.partes.filter((c) => !(f.tenho || []).includes(c));
+  if (edit.acao === "porque") {
+    const built = buildSetup(products, f).items;
+    const items = shown.map((p) => built.find((x) => x.produto.id === p.id) || { produto: p, fixo: (f.fixos || []).includes(p.id) });
+    const texto = explainSetup(items, f, edit.partes.filter((c) => inSetup(c)));
+    if (!texto) return { intent: "setup_porque", out: { texto: `${describeParts(edit.partes)} não está neste setup.`, sugestoes: ["Por que essas peças?"], contexto: { ...ctx, aguardando: null } } };
+    return { intent: "setup_porque", out: { texto, sugestoes: ["Troca o amplificador", "Mantém a guitarra", "Mais barato"], contexto: { ...ctx, aguardando: null } } };
+  }
+  if (!parts.length) return { intent: "setup_editar", out: { texto: `Você me disse que já tem ${describeParts(edit.partes)}, então ${edit.partes.length > 1 ? "elas ficaram" : "ficou"} de fora do setup. Quer que eu inclua mesmo assim?`, sugestoes: [`Põe ${edit.partes[0] === "Amplificadores" ? "um amplificador" : `um ${PART_NAME[edit.partes[0]]}`}`, "Mais barato"], contexto: { ...ctx, filtros: { ...f, tenho: (f.tenho || []).filter((c) => !edit.partes.includes(c)) }, aguardando: null } } };
+  const keepIds = (cats) => shown.filter((p) => !cats.includes(p.categoria)).map((p) => p.id);
+  // Peças que já estavam fora do setup (tiradas para caber no valor) continuam fora.
+  const absent = SETUP_CATS.filter((c) => !inSetup(c) && !(f.tenho || []).includes(c) && !parts.includes(c));
+  const rebuild = (override, titulo) => {
+    // As outras peças ficam travadas só nesta montagem; os "mantém" do cliente continuam valendo.
+    const sem = override.sem === undefined ? f.sem || [] : override.sem;
+    const out = handleSetup(e, ctx, products, { ...override, sem: [...new Set([...sem, ...absent])], fixos: [...new Set([...(f.fixos || []), ...keepIds(parts)])] }, titulo);
+    if (out.contexto?.filtros) {
+      const filtros = { ...out.contexto.filtros, sem, fixos: (f.fixos || []).filter((id) => !parts.includes(products.find((p) => p.id === id)?.categoria)) };
+      for (const k of ["sem", "fixos"]) if (!filtros[k].length) delete filtros[k];
+      out.contexto.filtros = filtros;
+    }
+    return out;
+  };
+  if (edit.acao === "manter") {
+    const ids = parts.map(inSetup).filter(Boolean).map((p) => p.id);
+    if (!ids.length) return null;
+    const names = ids.map((id) => products.find((p) => p.id === id)).map((p) => `${p.marca} ${p.modelo}`);
+    return { intent: "setup_manter", out: { texto: `Combinado: ${joinList(names)} ${ids.length > 1 ? "ficam" : "fica"}. Se pedir mais barato ou trocar outra peça, ${ids.length > 1 ? "elas continuam" : "ela continua"} no setup.`, sugestoes: ["Troca o amplificador", "Mais barato", "Por que essas peças?"], contexto: { ...ctx, filtros: { ...f, fixos: [...new Set([...(f.fixos || []), ...ids])] }, aguardando: null } } };
+  }
+  if (edit.acao === "trocar") {
+    const current = parts.map(inSetup).filter(Boolean);
+    if (!current.length) return null;
+    const locked = current.filter((p) => (f.fixos || []).includes(p.id));
+    const out = rebuild({ excluir: [...new Set([...(f.excluir || []), ...current.map((p) => p.id)])], fixos: undefined }, "Setup com a troca:");
+    const swaps = current.map((old) => ({ old, neu: (out.cards || []).find((c) => c.categoria === old.categoria) }));
+    const done = swaps.filter((x) => x.neu && x.neu.id !== x.old.id);
+    const header = done.length
+      ? `Troquei ${joinList(done.map((x) => `${x.old.marca} ${x.old.modelo} por ${x.neu.marca} ${x.neu.modelo} (${x.neu.priceCents < x.old.priceCents ? `${brl(x.old.priceCents - x.neu.priceCents)} a menos` : x.neu.priceCents > x.old.priceCents ? `${brl(x.neu.priceCents - x.old.priceCents)} a mais` : "mesmo preço"})`))}.`
+      : `Não encontrei outr${current[0].categoria === "Guitarras" || current[0].categoria === "Correias" ? "a" : "o"} ${PART_NAME[current[0].categoria]} que combine e caiba no valor; deixei como estava.`;
+    out.texto = `${locked.length ? "Você tinha pedido para manter, mas troquei como pediu agora. " : ""}${header}\n${out.texto.replace(/^.*\n/, "")}`;
+    return { intent: "setup_trocar", out };
+  }
+  if (edit.acao === "tirar") {
+    const present = parts.filter(inSetup);
+    if (!present.length) return { intent: "setup_editar", out: { texto: `O setup já está sem ${describeParts(parts)}.`, sugestoes: ["Por que essas peças?", "Mais barato"], contexto: { ...ctx, aguardando: null } } };
+    const out = rebuild({ sem: [...new Set([...(f.sem || []), ...present])] }, `Tirei ${describeParts(present)}:`);
+    return { intent: "setup_tirar", out };
+  }
+  if (edit.acao === "incluir") {
+    const missing = parts.filter((c) => !inSetup(c));
+    if (!missing.length) return null;
+    const out = rebuild({ sem: (f.sem || []).filter((c) => !missing.includes(c)) }, `Incluí ${describeParts(missing)}:`);
+    const added = missing.filter((c) => (out.cards || []).some((x) => x.categoria === c));
+    if (added.length < missing.length) out.texto += `\n${describeParts(missing.filter((c) => !added.includes(c)))} não coube no orçamento de ${brl(f.max || 0)}. Se aumentar um pouco o valor, eu incluo.`;
+    return { intent: "setup_incluir", out };
+  }
+  return null;
+}
+// Etapa 36: "usar o mesmo gosto" e "esquece meu gosto" (só com conta).
+const SAME_TASTE = /\b(mesmo gosto|(igual|mesmo|mesma coisa|como) (d|n)a ultima vez|o de sempre|meu gosto salvo)\b/;
+const FORGET_TASTE = /\b(esquec\w*|apag\w*|limp\w*|remov\w*|nao guard\w*) (o |os |a |as )?(meu |meus |minha |minhas )?(gosto|gostos|preferencias?|historico de gosto)\b/;
+export function describeTaste(t) {
+  const parts = [];
+  if (t.genero) parts.push(`de ${t.genero.toLowerCase()}`);
+  if (t.artista) parts.push(`no estilo de ${t.artista}`);
+  if (t.som && !t.artista) parts.push(`com som ${t.som}`);
+  if (t.cor) parts.push(`em ${t.cor.toLowerCase()}`);
+  parts.push(t.max ? `até ${brl(t.max)}` : "sem limite de valor");
+  if (t.tenho?.length) parts.push(`sem ${describeParts(t.tenho).replace(/\b(a|o) /g, "")}, que você já tem`);
+  return parts.join(", ");
+}
+async function memoryAnswer(text, e, ctx, products, perfil, guest) {
+  const same = SAME_TASTE.test(text);
+  const forget = FORGET_TASTE.test(text);
+  if (!same && !forget) return null;
+  if (guest) return { intent: "memoria", out: { ...loginAnswer("eu lembrar do seu gosto entre uma visita e outra"), contexto: { ...ctx, aguardando: null } } };
+  if (!perfil) return null;
+  if (forget) {
+    await perfil.esquecer();
+    return { intent: "memoria_apagar", out: { texto: "Pronto, esqueci o gosto que eu tinha guardado. Nos próximos setups eu pergunto tudo de novo.", sugestoes: ["Montar setup pelo meu gosto"], contexto: { ...ctx, aguardando: null } } };
+  }
+  const saved = await perfil.carregar();
+  if (!saved) return { intent: "memoria", out: { texto: "Ainda não tenho um gosto seu guardado. Vamos montar o primeiro setup?", sugestoes: ["Montar setup pelo meu gosto"], contexto: { ...ctx, aguardando: null } } };
+  const fresh = { intent: null, filtros: {}, aguardando: null, perguntas: ["cor", "orcamento"], mostrados: [] };
+  const out = handleSetup(e, fresh, products, saved, `Partindo do seu gosto da última vez (${describeTaste(saved)}):`);
+  return { intent: "setup", out };
+}
 function reaction(text, e, ctx, products) {
   const shown = shownOf(ctx, products);
   if (PRICE_OBJECTION.test(text) && !/\bmais car/.test(text) && !e.produtos.length) {
@@ -612,7 +723,7 @@ const loginAnswer = (motivo) => ({
   sugestoes: ["Quero uma guitarra vintage", "Como funciona o frete?"],
 });
 
-export async function reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders = async () => [], alerts = async () => [], requests = async () => [], cupons = async () => defaultCoupons(), user } = {}) {
+export async function reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders = async () => [], alerts = async () => [], requests = async () => [], cupons = async () => defaultCoupons(), perfil, user } = {}) {
   const brands = [...new Set(products.map((p) => p.marca))];
   let ctx = sanitizeContext(contexto, brands);
   const page = sanitizePage({ pagina, carrinho, favoritos }, products);
@@ -639,8 +750,9 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
   const accepted = top.p >= THRESHOLD && top.coverage >= (top.intent === "fora_escopo" ? 0.2 : 0.34) && !INFO[top.intent] && top.intent !== "refinar";
   let intent;
   const guest = !user;
-  const first0 = early(text, mensagem, e, ctx, products, guest);
-  const react = first0 || reaction(text, e, ctx, products);
+  const memo = await memoryAnswer(text, e, ctx, products, perfil, guest);
+  const first0 = memo || early(text, mensagem, e, ctx, products, guest);
+  const react = first0 || setupEditAnswer(text, mensagem, e, ctx, products) || reaction(text, e, ctx, products);
   const action = react || (ctx.aguardando && slotAnswer ? null : special(text, e, ctx, page, products));
   // Gosto novo no meio de um setup ("quero em preto", "e no estilo do Hendrix?") remonta o setup.
   const tasteInSetup = ctx.intent === "setup" && !ctx.aguardando && (e.artista || e.som || e.cor) && !e.categoria && !e.produtos.length;
@@ -722,6 +834,17 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
       sugestoes: START,
       contexto: keep,
     };
+  // Etapa 36: memória do gosto. Setup montado para quem tem conta fica salvo; ao começar outro
+  // setup (ou na saudação), o assistente oferece partir do gosto da última vez.
+  if (perfil && out.contexto?.intent === "setup" && out.cards?.length) await perfil.salvar(out.contexto.filtros).catch(() => {});
+  const startingSetup = intent === "setup" && out.contexto?.aguardando === "genero" && ctx.intent !== "setup";
+  if (perfil && (startingSetup || intent === "saudacao")) {
+    const saved = await perfil.carregar().catch(() => null);
+    if (saved) {
+      out = { ...out, texto: `${intent === "saudacao" ? out.texto : out.texto.replace(/^Vamos montar! /, "")}\nDa última vez você montou um setup ${describeTaste(saved)}. Quer partir dele?`, sugestoes: ["Usar o mesmo gosto", ...(out.sugestoes || []).slice(0, 4)] };
+      if (intent === "setup") out.texto = `Vamos montar! ${out.texto}`;
+    }
+  }
   return {
     texto: out.texto,
     cards: out.cards || [],

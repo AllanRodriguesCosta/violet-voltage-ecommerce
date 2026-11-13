@@ -1,3 +1,9 @@
+# Fase 4, etapa 36 — 13/11/2026
+
+- `tests/stage36.test.js` (10): detecção de "já tenho", "só falta", trocar, manter, tirar, incluir e "por quê"; `buildSetup` sem as peças que o cliente tem (verba redistribuída), com peça travada e com peça excluída; conversas (troca só o amplificador e as outras peças ficam; mantém a guitarra + mais barato; já tenho guitarra e amplificador; tirar e incluir sem trazer de volta o que saiu pelo valor); "por que essa guitarra?" cita o artista; memória (salva, oferece na saudação e no início do setup, reaproveita, esquece, visitante recebe login); contexto só com categorias e IDs válidos; API (gosto salvo, na cópia de dados, apagado pelo assistente).
+- Suíte: 189/190 (`postgres.test.js` no CI, agora com `profiles`). Lint OK. Avaliação do assistente: 95,9% (sem mudança).
+- Navegador (`stage36-flows`, 8/8): chip "Troca o amplificador", "Por que essas peças?" com uma linha por peça, "mantém a guitarra" + "Mais barato", "já tenho uma guitarra", e numa nova sessão a saudação lembra o gosto e "Usar o mesmo gosto" monta o setup.
+
 # Fase 4, etapa 35 — 13/11/2026
 
 - `tests/stage35.test.js` (4): termo de busca normalizado e sem e-mail, telefone ou número de pedido; resumo (mais buscados, sem resultado, corrigidos, retenção de 90 dias); API pública `/buscas` grava só termo, resultados e data; resumo do painel com buscas, carrinhos salvos e frases do assistente; painel só para admin; HTML do painel com gráfico acessível; jobs do CI e configuração do Lighthouse.

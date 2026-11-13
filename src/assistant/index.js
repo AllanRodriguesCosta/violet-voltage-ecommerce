@@ -9,6 +9,8 @@ import { faqAnswer, brl } from "./faq.js";
 import { searchHelp, strongHelp } from "./help-search.js";
 import { sanitizeContext } from "./context.js";
 import { genreQuestion } from "../knowledge/genres.js";
+import { extractTaste, hasTaste, tasteIntro, genreFromTaste, variantFor, colorMatches, TASTE_CHIPS, COLOR_CHIPS } from "./taste.js";
+import { ENCOMENDA, ENCOMENDA_STATUS, parseCustom, looksCustom, requestLink } from "./custom-order.js";
 import { maxInstallments, delivery, FREE_SHIPPING_CENTS } from "../services/pricing.js";
 import {
   sanitizePage,
@@ -45,9 +47,9 @@ const INFO = {
 const CONVERSATION = ["saudacao", "ajuda", "agradecimento", "despedida", "setup", "fora_escopo"];
 const SETUP_WORDS = /setup|complet|comec|tudo|equipamento|mont|junt|kit para|kit de guitarra/;
 const SKIP = /\b(tanto faz|qualquer( um| uma)?|nao sei|sem preferencia|nao importa|pular|sem limite|sem orcamento)\b/;
-const FILTERS = ["categoria", "tipo", "genero", "estilo", "formato", "captacao", "tecnologia", "voicing", "uso", "nivel", "marca", "min", "max", "mao", "cordas", "captadores", "trastes"];
+const FILTERS = ["categoria", "tipo", "genero", "estilo", "formato", "captacao", "tecnologia", "voicing", "uso", "nivel", "marca", "min", "max", "mao", "cordas", "captadores", "trastes", "artista", "som", "cor"];
 const SPECIFIC = ["formato", "captacao", "tecnologia", "voicing", "tipo", "marca", "min", "max", "mao", "cordas", "captadores", "trastes"];
-const START = ["Quero uma guitarra vintage", "Montar um setup de rock", "Onde está meu pedido?", "Como funciona o frete?"];
+const START = ["Quero uma guitarra vintage", "Montar setup pelo meu gosto", "Onde está meu pedido?", "Como funciona o frete?"];
 const GENRE_CHIPS = {
   Vintage: ["Blues", "Blues rock", "Rock clássico", "Surf", "Jazz", "Tanto faz"],
   Moderno: ["Heavy metal", "Pop", "Indie", "Shoegaze", "Tanto faz"],
@@ -55,7 +57,8 @@ const GENRE_CHIPS = {
 };
 
 const link = (rotulo, href) => ({ tipo: "link", rotulo, href });
-const card = (p, genero, prefixo) => ({
+const FEM = { Preto: "preta", Branco: "branca", Vermelho: "vermelha", Amarelo: "amarela", Roxo: "roxa", Dourado: "dourada" };
+const card = (p, genero, prefixo, cor) => ({
   id: p.id,
   marca: p.marca,
   modelo: p.modelo,
@@ -63,7 +66,9 @@ const card = (p, genero, prefixo) => ({
   priceCents: p.priceCents,
   estoque: p.estoque,
   imageUrl: p.imageUrl || "",
-  motivo: [prefixo, reasonFor(p, genero)].filter(Boolean).join(" · "),
+  // Variação de cor pedida: o card abre a página do produto já nela.
+  ...(variantFor(p, cor) ? { cor: variantFor(p, cor) } : {}),
+  motivo: [prefixo, reasonFor(p, genero), colorMatches(p, cor) ? `cor ${cor.toLowerCase()}` : ""].filter(Boolean).join(" · "),
 });
 const parcels = (cents) => {
   const n = maxInstallments(cents);
@@ -104,11 +109,18 @@ function ask(slot, f, perguntas, intent) {
   if (slot === "categoria")
     return { texto: "Claro! O que você procura: guitarra, amplificador, pedal ou acessório?", sugestoes: ["Guitarra", "Amplificador", "Pedal", "Acessórios"], contexto };
   if (slot === "orcamento")
-    return { texto: "E qual é o orçamento total, mais ou menos?", sugestoes: ["Até R$ 3 mil", "Até R$ 6 mil", "Até R$ 10 mil", "Sem limite"], contexto };
-  const texto =
-    intent === "setup"
-      ? "Vamos montar! Para qual estilo musical é o setup?"
-      : genreQuestion[f.estilo] || "Para qual estilo musical? Assim eu indico o timbre certo.";
+    return hasTaste(f)
+      ? { texto: "Por último: quer um teto de valor ou monto só pelo seu gosto, sem limite?", sugestoes: ["Sem limite", "Até R$ 5 mil", "Até R$ 10 mil", "Até R$ 20 mil"], contexto }
+      : { texto: "E qual é o orçamento total, mais ou menos? Se preferir, eu monto só pelo seu gosto, sem limite.", sugestoes: ["Até R$ 3 mil", "Até R$ 6 mil", "Até R$ 10 mil", "Sem limite"], contexto };
+  if (slot === "cor")
+    return { texto: "Boa! E a cor da guitarra, tem preferência? Se o amplificador tiver opção de cor, eu uso a mesma.", sugestoes: COLOR_CHIPS, contexto };
+  if (intent === "setup")
+    return {
+      texto: "Vamos montar! Me conta do que você gosta: um estilo musical, um artista ou banda, ou como quer que soe (pesado, suave, espacial...). Não precisa de termo técnico.",
+      sugestoes: [...TASTE_CHIPS, "Tanto faz"],
+      contexto,
+    };
+  const texto = genreQuestion[f.estilo] || "Para qual estilo musical? Assim eu indico o timbre certo. Também vale citar um artista que você curte.";
   return { texto, sugestoes: GENRE_CHIPS[f.estilo] || GENRE_CHIPS.default, contexto };
 }
 
@@ -146,6 +158,8 @@ function handleRecommend(e, ctx, products, { refine = false } = {}) {
     for (const k of SPECIFIC) delete f[k];
   }
   for (const k of FILTERS) if (e[k] !== undefined) f[k] = e[k];
+  // Artista ou tipo de som sem gênero: o gênero vem do gosto (Slash → hard rock).
+  if (!f.genero && (f.artista || f.som)) f.genero = genreFromTaste(f);
   const perguntas = new Set(carry ? ctx.perguntas : []);
   if (ctx.aguardando && SKIP.test(e.texto)) perguntas.add(ctx.aguardando);
 
@@ -163,16 +177,16 @@ function handleRecommend(e, ctx, products, { refine = false } = {}) {
     if (f.genero) {
       const picks = ["Guitarras", "Amplificadores", "Pedais"].map((categoria) => recommend(products, { ...f, categoria }, { limit: 1 }).items[0]).filter(Boolean);
       return {
-        texto: `${genreIntro(f.genero, null, f.estilo)} Uma guitarra, um amplificador e um pedal que combinam:`,
-        cards: picks.map((p) => card(p, f.genero)),
-        sugestoes: [`Mais guitarras de ${f.genero}`, `Montar setup de ${f.genero}`, "E um pedal de overdrive?"],
+        texto: `${hasTaste(f) ? tasteIntro(f) : genreIntro(f.genero, null, f.estilo)} Uma guitarra, um amplificador e um pedal que combinam:`,
+        cards: picks.map((p) => card(p, f.genero, undefined, f.cor)),
+        sugestoes: hasTaste(f) ? ["Mais guitarras assim", "Montar setup completo", "E um pedal?"] : [`Mais guitarras de ${f.genero}`, `Montar setup de ${f.genero}`, "E um pedal de overdrive?"],
         acoes: [link("Ver tudo no catálogo", catalogLink(f))],
         contexto: { intent: "recomendar", filtros: f, aguardando: null, perguntas: [...perguntas], mostrados: picks.map((p) => p.id) },
       };
     }
     if (!perguntas.has("categoria") && !f.marca && !f.max && !f.min) return ask("categoria", f, perguntas, "recomendar");
   }
-  if (GROUP[f.categoria] && !f.genero && !perguntas.has("genero") && !SPECIFIC.some((k) => f[k]) && !refine) return ask("genero", f, perguntas, "recomendar");
+  if (GROUP[f.categoria] && !f.genero && !hasTaste(f) && !perguntas.has("genero") && !SPECIFIC.some((k) => f[k]) && !refine) return ask("genero", f, perguntas, "recomendar");
 
   const exclude = refine ? ctx.mostrados : [];
   // "Mais barato"/"mais caro" comparam com o que já foi mostrado nesta busca.
@@ -182,6 +196,13 @@ function handleRecommend(e, ctx, products, { refine = false } = {}) {
   if (refine && shownPrices.length && e.ordem === "desc") bound.min = Math.max(f.min || 0, Math.max(...shownPrices) + 1);
   let result = recommend(products, { ...f, ...bound }, { exclude, ordem: e.ordem });
   let lead;
+  // Cor pedida: só as peças daquela cor; sem nenhuma, avisa e mostra as outras.
+  if (f.cor && result.items.length) {
+    const colored = recommend(products, { ...f, ...bound }, { exclude, ordem: e.ordem, onlyColor: f.cor });
+    if (colored.items.length) result = colored;
+    else if (!refine) lead = `Não encontrei ${describe(f)} em ${f.cor.toLowerCase()} agora. Estas são as mais próximas do que você pediu:`;
+  }
+  const colorShown = f.cor && result.items.some((p) => colorMatches(p, f.cor));
   if (!result.items.length && !refine) {
     if (f.max || f.min) {
       const loose = { ...f };
@@ -214,11 +235,18 @@ function handleRecommend(e, ctx, products, { refine = false } = {}) {
             ? "As opções que mostrei já são as mais completas com esses critérios."
             : "Essas eram todas as opções com esses critérios."
         : `Não encontrei ${describe(f)} em estoque agora.`,
-      sugestoes: ["Quero uma guitarra", "Montar um setup", "Ver pedais"],
+      sugestoes: refine ? ["Quero uma guitarra", "Montar um setup", "Ver pedais"] : [`Encomendar ${describe(f)}`.slice(0, 80), "Quero uma guitarra", "Montar um setup"],
       acoes: [link("Ver o catálogo", catalogLink({ categoria: f.categoria }))],
       contexto,
     };
-  const intro = f.genero && GROUP[f.categoria] && !refine && !lead ? genreIntro(f.genero, f.categoria, f.estilo) : "";
+  // Artista ou som novo nesta mensagem: explica a escolha; só a cor: diz que filtrou por ela.
+  const intro = refine || lead
+    ? ""
+    : (e.artista || e.som) && hasTaste(f)
+      ? `${tasteIntro(f, { cor: false })}${colorShown ? ` Em ${f.cor.toLowerCase()}:` : ""}`
+      : colorShown
+        ? `Em ${f.cor.toLowerCase()}, `
+        : f.genero && GROUP[f.categoria] ? genreIntro(f.genero, f.categoria, f.estilo) : "";
   const texto =
     lead ||
     (refine
@@ -228,9 +256,10 @@ function handleRecommend(e, ctx, products, { refine = false } = {}) {
           ? "Opções mais completas:"
           : "Mais opções:"
       : intro
-        ? `${intro} Separei estas opções:`
+        ? /, $/.test(intro) ? `${intro}separei ${result.items.length === 1 ? "esta opção" : "estas opções"}:` : /:$/.test(intro) ? intro : `${intro} Separei estas opções:`
         : `Separei ${result.items.length === 1 ? "esta opção" : "estas opções"} de ${describe(f)}:`);
   const sugestoes = [];
+  if (f.cor && !colorShown && f.categoria === "Guitarras") sugestoes.push(`Encomendar guitarra ${FEM[f.cor] || f.cor.toLowerCase()}`);
   if (result.remaining) sugestoes.push("Outras opções");
   if (e.ordem !== "asc") sugestoes.push("Mais barato");
   if (f.genero && f.categoria === "Guitarras") sugestoes.push("E um amplificador?");
@@ -238,7 +267,7 @@ function handleRecommend(e, ctx, products, { refine = false } = {}) {
   if (f.genero && GROUP[f.categoria]) sugestoes.push(`Montar setup de ${f.genero}`);
   return {
     texto,
-    cards: result.items.map((p) => card(p, f.genero)),
+    cards: result.items.map((p) => card(p, f.genero, undefined, f.cor)),
     sugestoes: sugestoes.slice(0, 4),
     acoes: [link("Ver tudo no catálogo", catalogLink(f))],
     contexto,
@@ -250,14 +279,21 @@ function handleRecommend(e, ctx, products, { refine = false } = {}) {
 function handleSetup(e, ctx, products, override = {}, titulo, { alvo } = {}) {
   const continuing = ctx.intent === "setup" || ctx.intent === "recomendar";
   const f = {};
-  for (const k of ["genero", "estilo", "nivel", "uso", "max"]) {
+  for (const k of ["genero", "estilo", "nivel", "uso", "max", "artista", "som", "cor"]) {
     if (continuing && ctx.filtros[k] !== undefined) f[k] = ctx.filtros[k];
     if (e[k] !== undefined) f[k] = e[k];
   }
+  // Artista novo troca o gênero que veio do artista anterior.
+  if (e.artista && !e.genero) f.genero = genreFromTaste({ artista: e.artista });
+  else if (e.som && !e.genero && !f.artista && continuing && ctx.filtros.som !== e.som) f.genero = genreFromTaste({ som: e.som });
   Object.assign(f, override);
   const perguntas = new Set(ctx.intent === "setup" ? ctx.perguntas : []);
   if (ctx.aguardando && SKIP.test(e.texto)) perguntas.add(ctx.aguardando);
+  // Etapa 33: o setup pode partir do gosto (artista, tipo de som, cor) e não só do orçamento.
+  const taste = Boolean(f.artista || f.som);
+  if (!f.genero && taste) f.genero = genreFromTaste(f);
   if (!f.genero && !perguntas.has("genero")) return ask("genero", f, perguntas, "setup");
+  if (taste && !f.cor && !perguntas.has("cor")) return ask("cor", f, perguntas, "setup");
   if (!f.max && !perguntas.has("orcamento")) return ask("orcamento", f, perguntas, "setup");
   const { items, total } = buildSetup(products, alvo ? { ...f, max: alvo } : f);
   const dentro = !f.max || total <= f.max;
@@ -273,18 +309,26 @@ function handleSetup(e, ctx, products, override = {}, titulo, { alvo } = {}) {
         .map((x) => ` Se fizer questão do timbre clássico do estilo, ${x.rotulo === "Correia" ? "a" : "o"} ${x.rotulo.toLowerCase()} mais em conta para ${f.genero.toLowerCase()} é ${x.alternativa.marca} ${x.alternativa.modelo} (${brl(x.alternativa.priceCents)}).`)
         .join("")}`
     : "";
+  // Pelo gosto e sem limite: a guitarra mais próxima do original, com a alternativa mais em conta.
+  const guitar = items.find((x) => x.rotulo === "Guitarra")?.produto;
+  const cheaperGuitar =
+    taste && !f.max && !alvo && guitar
+      ? recommend(products, { categoria: "Guitarras", formato: guitar.ficha?.formato, genero: f.genero, artista: f.artista, som: f.som, cor: f.cor }, { limit: 50 }).items.find((p) => p.priceCents <= guitar.priceCents * 0.7)
+      : undefined;
   const texto = [
-    titulo || `Montei um setup${f.genero ? ` de ${f.genero.toLowerCase()}` : ""}${f.max ? ` para até ${brl(f.max)}` : ""}:`,
+    ...(taste && !titulo && !alvo ? [tasteIntro(f)] : []),
+    titulo || (taste ? `Montei um setup pelo seu gosto${f.max ? `, para até ${brl(f.max)}` : ""}:` : `Montei um setup${f.genero ? ` de ${f.genero.toLowerCase()}` : ""}${f.max ? ` para até ${brl(f.max)}` : ""}:`),
     ...lines,
     `Total: ${brl(total)}${parcels(total)}.${total >= FREE_SHIPPING_CENTS ? " A entrega padrão sai grátis." : ""}${dentro ? "" : ` Passou do seu orçamento de ${brl(f.max)}: é o setup mais acessível que consigo montar com o estoque de agora.`}`,
     ...(swapText ? [swapText] : []),
+    ...(cheaperGuitar ? [`Quer gastar menos? A ${cheaperGuitar.marca} ${cheaperGuitar.modelo} tem o mesmo formato por ${brl(cheaperGuitar.priceCents)}.`] : []),
   ].join("\n");
   // Kit pronto que cabe no orçamento: alternativa com desconto.
   const kit = f.max ? kitsWithin(products, f.max, f.genero).find((k) => k.price.precoCents < total) : null;
   return {
     texto: kit ? `${texto}\nOu comece pelo ${kit.kit.nome}: ${brl(kit.price.precoCents)} com ${kit.kit.descontoPct}% de desconto (${kit.kit.itens.length} itens).` : texto,
-    cards: items.map((x) => card(x.produto, f.genero, x.rotulo)),
-    sugestoes: ["Mais barato", "Mais completo", "Como funciona o frete?"],
+    cards: items.map((x) => card(x.produto, f.genero, x.rotulo, f.cor)),
+    sugestoes: taste ? ["Mais barato", "Quero em preto", "Outro artista", "Mais completo"].filter((c) => c !== `Quero em ${String(f.cor).toLowerCase()}`) : ["Mais barato", "Mais completo", "Pelo meu gosto", "Como funciona o frete?"],
     acoes: [
       { tipo: "carrinho", rotulo: "Adicionar tudo ao carrinho", itens: ids },
       ...(kit ? [{ tipo: "carrinho", rotulo: `Adicionar o ${kit.kit.nome}`, itens: kit.kit.itens }] : []),
@@ -403,6 +447,64 @@ function special(text, e, ctx, page, products) {
   return null;
 }
 
+// ---------- Etapa 33: encomendas, parcerias e gosto pessoal ----------
+const PARCERIA = /\b(parceri\w*|(sou|somos) (um |uma |o |a )?(fornecedor\w*|distribuidor\w*|fabricante\w*|representante\w*|importador\w*|lojista|revendedor\w*|luthier|dono de uma marca|de uma marca)|tenho uma (marca|fabrica|distribuidora|empresa) d\w+|quero (ser|virar|me tornar) (um |uma )?(fornecedor\w*|parceir\w*|revendedor\w*|distribuidor\w*)|fornecer (para|pra|a) (voces|loja|violet)|vender (meus|nossos|os meus|os nossos) produtos|(meus|nossos) produtos (na|para|pra) (loja|voces|violet)|representante comercial|seja um parceiro)\b/;
+const TASTE_START = /\b(pelo|pelos|por|de acordo com o|com base no|conforme o) (meu|meus) gostos?\b|^outro (artista|som|gosto)\b|^(quero )?trocar (o )?artista\b/;
+const FORMATO_DA_BASE = { "Les Paul (single cut)": "Single cut", "SG (double cut)": "Double cut", Stratocaster: "Strat", Telecaster: "Tele", "Offset (Jazzmaster/Jaguar)": "Offset", Semiacústica: "Semiacústica", Superstrat: "Superstrat" };
+function customAnswer(mensagem, products, guest) {
+  const parsed = parseCustom(mensagem);
+  const form = link("Abrir o formulário de encomenda", "/encomenda.html");
+  if (!parsed.itens.length && normalize(mensagem).split(" ").length <= 6)
+    return {
+      texto: "Claro! Fazemos encomendas de guitarras personalizadas, montadas pela nossa oficina parceira, e buscamos produtos que não estão no catálogo. Me conta o que você quer, por exemplo: “Les Paul com captadores Seymour Duncan e tarraxas Gotoh” ou “quero importar um pedal que vocês não têm”.",
+      sugestoes: ["Les Paul com captadores Seymour Duncan", "Strato com ponte Floyd Rose", "Minhas encomendas"],
+      acoes: [form],
+    };
+  const lines = parsed.itens.map(([k, v]) => `• ${k}: ${v}`);
+  const missing = parsed.tipo === "personalizado" ? ["Cor", "Escala", "Ponte"].filter((k) => !parsed.itens.some(([x]) => x === k)) : [];
+  const base = parsed.itens.find(([k]) => k === "Base")?.[1];
+  const formato = FORMATO_DA_BASE[base];
+  const near = formato ? recommend(products, { categoria: "Guitarras", formato }, { limit: 2 }).items : [];
+  const texto = [
+    parsed.tipo === "personalizado" ? "Dá para encomendar, sim! Entendi assim:" : "Podemos buscar esse produto para você. Entendi assim:",
+    ...(lines.length ? lines : [`• Pedido: ${String(mensagem).trim().slice(0, 160)}`]),
+    `${missing.length ? `Se quiser, diga também ${joinList(missing.map((m) => (m === "Cor" ? "a cor" : m === "Escala" ? "a madeira da escala" : "a ponte")))}; dá para completar no formulário. ` : ""}A equipe responde com orçamento e prazo em até 2 dias úteis, e o pagamento só acontece se você aprovar.${guest ? " Para enviar, você entra na conta (ou cria uma); o que você escreveu fica guardado." : ""}`,
+    ...(near.length ? ["Enquanto isso, a pronta entrega mais parecida:"] : []),
+  ].join("\n");
+  return {
+    texto,
+    cards: near.map((p) => card(p, undefined, "Pronta entrega")),
+    acoes: [link("Revisar e enviar a encomenda", requestLink(parsed, mensagem))],
+    sugestoes: ["Minhas encomendas", "Como funciona o frete?"],
+  };
+}
+function requestsAnswer(requests) {
+  const conta = link("Ver minhas encomendas", "/encomenda.html#minhas");
+  if (!requests.length)
+    return { texto: "Você ainda não fez nenhuma encomenda. Posso ajudar a descrever uma guitarra personalizada ou um produto que não está no catálogo.", sugestoes: ["Quero encomendar uma guitarra"], acoes: [link("Fazer uma encomenda", "/encomenda.html")] };
+  const sorted = [...requests].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  const lines = sorted.slice(0, 3).map((r) => `• ${r.codigo} · ${r.produto}: ${r.status}${r.resposta ? `. Resposta da loja: ${r.resposta.slice(0, 160)}` : ""}`);
+  return { texto: [`Suas encomendas mais recentes:`, ...lines].join("\n"), acoes: [conta], sugestoes: ["Quero encomendar outra", "Onde está meu pedido?"] };
+}
+const partnerAnswer = (e) => ({
+  texto: "Que bom ter você por aqui! Fornecedores, marcas, distribuidores e luthiers falam com a equipe comercial pela página de parceiros: lá você informa a empresa (com CNPJ), o tipo de produto e quem é o contato. A resposta chega pelo e-mail informado em até 5 dias úteis. Não precisa ter conta na loja.",
+  acoes: [link("Preencher a ficha de parceria", `/parceiros.html${e.categoria ? `?produto=${encodeURIComponent(e.categoria)}` : ""}`)],
+  sugestoes: [],
+});
+function early(text, mensagem, e, ctx, products, guest) {
+  if (PARCERIA.test(text)) return { intent: "parceria", out: partnerAnswer(e) };
+  // "Encomenda" também é o pacote do pedido: com palavra de entrega, é sobre o pedido.
+  const delivery = /\b(receb\w*|cheg\w*|entreg\w*|rastre\w*|correios?|transportador\w*|enviad\w*|saiu|despach\w*|extravi\w*|atrasad\w*|pacote)\b/.test(text);
+  if (delivery && !looksCustom(mensagem)) return null;
+  if (ENCOMENDA_STATUS.test(text)) return { intent: "encomenda_status" };
+  if (ENCOMENDA.test(text) || looksCustom(mensagem)) return { intent: "encomenda", out: customAnswer(mensagem, products, guest) };
+  if (TASTE_START.test(text)) {
+    const f = ctx.intent === "setup" && ctx.filtros.max ? { max: ctx.filtros.max } : {};
+    return { intent: "setup", out: ask("genero", f, new Set(ctx.filtros.max ? ["orcamento"] : []), "setup") };
+  }
+  return null;
+}
+
 // Reações à resposta anterior: achou caro, não gostou, gostou. Continuam a conversa em vez de
 // cair numa intenção genérica (ex.: "muito caro" não é agradecimento).
 const PRICE_OBJECTION = /\b(caro|cara|caros|caras|carissim\w*|salgad\w*|puxad\w*|pesad\w* (no|pro|para o) bolso|fora do (meu )?orcamento|acima do (meu )?orcamento|passou do (meu )?orcamento|nao (tenho|posso gastar|da pra gastar) (isso|tudo isso|esse valor)|nao cabe no (meu )?bolso|muito dinheiro)\b/;
@@ -500,14 +602,16 @@ function supportAnswer(orders, guest) {
     acoes: [link("Central de Ajuda", "/ajuda.html"), ...(guest ? [] : [link("Ajuda em Minha conta", "/minha-conta.html#ajuda")])],
   };
 }
-const LOGIN_NEEDED = { pedido_status: "ver seus pedidos", pedido_cancelar: "cancelar um pedido", historico: "sugerir pelo que você já comprou", troca_pedido: "pedir uma troca" };
+const LOGIN_NEEDED = { pedido_status: "ver seus pedidos", pedido_cancelar: "cancelar um pedido", historico: "sugerir pelo que você já comprou", troca_pedido: "pedir uma troca", encomenda_status: "ver suas encomendas" };
+// O botão leva ao login (ou cadastro) e volta para esta página; o navegador guarda a pergunta e
+// o assistente responde sozinho assim que a pessoa entra.
 const loginAnswer = (motivo) => ({
-  texto: `Para ${motivo}, entre na sua conta (ou crie uma, leva 1 minuto). Depois é só me perguntar de novo. Enquanto isso, posso indicar equipamentos e tirar dúvidas sem login.`,
+  texto: `Para ${motivo}, entre na sua conta (ou crie uma, leva 1 minuto). Assim que você entrar, eu continuo daqui com a sua pergunta. Enquanto isso, posso indicar equipamentos e tirar dúvidas sem login.`,
   acoes: [{ tipo: "login", rotulo: "Entrar ou criar conta", href: "/login.html" }],
   sugestoes: ["Quero uma guitarra vintage", "Como funciona o frete?"],
 });
 
-export async function reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders = async () => [], alerts = async () => [], user } = {}) {
+export async function reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders = async () => [], alerts = async () => [], requests = async () => [], user } = {}) {
   const brands = [...new Set(products.map((p) => p.marca))];
   let ctx = sanitizeContext(contexto, brands);
   const page = sanitizePage({ pagina, carrinho, favoritos }, products);
@@ -516,7 +620,14 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
   const top = ranking[0];
   const e = extract(mensagem, products);
   if (ctx.aguardando === "orcamento" && !e.max && !e.min) e.max = bareBudget(text);
-  const shopping = Boolean(e.categoria || e.tipo || e.genero || e.estilo || e.formato || e.captacao || e.tecnologia || e.voicing || e.marca || e.mao || e.cordas || e.captadores || e.trastes || e.produtos.length);
+  // Etapa 33: gosto pessoal. Tipo de som só conta quando o assunto é música ("site pesado" não é
+  // timbre); cor, quando fala de cor ou de equipamento, ou numa resposta curta durante a busca.
+  const words = text.split(" ").length;
+  const taste = extractTaste(mensagem, { aguardando: ctx.aguardando, temProduto: Boolean(e.categoria || e.formato) || (Boolean(ctx.intent) && words <= 4) });
+  e.artista = taste.artista;
+  if (taste.som && (ctx.aguardando || e.artista || e.categoria || e.formato || words <= 4 || /\b(som|timbre|tocar|toco|soar|soe|soando|musica|setup|banda|estilo)\b/.test(text))) e.som = taste.som;
+  e.cor = taste.cor;
+  const shopping = Boolean(e.categoria || e.tipo || e.genero || e.estilo || e.formato || e.captacao || e.tecnologia || e.voicing || e.marca || e.mao || e.cordas || e.captadores || e.trastes || e.produtos.length || e.artista || e.som || e.cor);
   const slotAnswer = shopping || e.min || e.max || e.estilo || e.uso || e.nivel || SKIP.test(text);
   const confirmed = (intent) => INFO[intent]?.test(text);
   const help = searchHelp(mensagem);
@@ -526,9 +637,13 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
   const accepted = top.p >= THRESHOLD && top.coverage >= (top.intent === "fora_escopo" ? 0.2 : 0.34) && !INFO[top.intent] && top.intent !== "refinar";
   let intent;
   const guest = !user;
-  const react = reaction(text, e, ctx, products);
+  const first0 = early(text, mensagem, e, ctx, products, guest);
+  const react = first0 || reaction(text, e, ctx, products);
   const action = react || (ctx.aguardando && slotAnswer ? null : special(text, e, ctx, page, products));
+  // Gosto novo no meio de um setup ("quero em preto", "e no estilo do Hendrix?") remonta o setup.
+  const tasteInSetup = ctx.intent === "setup" && !ctx.aguardando && (e.artista || e.som || e.cor) && !e.categoria && !e.produtos.length;
   if (react) intent = react.intent;
+  else if (tasteInSetup && !action) intent = "setup";
   else if (ctx.aguardando && slotAnswer && !(confirmed(top.intent) && top.p >= 0.5)) intent = ctx.intent || "recomendar";
   else if (action) intent = action.intent;
   else if (CONTACT.test(text) || (SUPPORT.test(text) && !shopping && !Object.values(INFO).some((re) => re.test(text)))) intent = "ajuda";
@@ -536,6 +651,7 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
   else if (GLOSSARY_Q.test(text) && strongHelp(help)) intent = "central_ajuda";
   else if (informative) intent = informative.intent;
   else if (top.intent === "setup" && top.p >= 0.35 && SETUP_WORDS.test(text)) intent = "setup";
+  else if (SETUP_WORDS.test(text) && (e.artista || e.som) && !e.categoria) intent = "setup";
   else if (top.intent === "refinar" && top.p >= 0.35 && !shopping) intent = ctx.intent ? "refinar" : "recomendar";
   else if (shopping) intent = "recomendar";
   else if (e.ordem && ctx.intent) intent = "refinar";
@@ -547,13 +663,28 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
   const keep = { ...ctx, aguardando: null };
   const first = String(user?.nome || "").split(" ")[0];
   let out;
-  if (react) out = react.out;
+  // Artista que a base não conhece: diz isso e pede uma descrição do som, sem inventar.
+  const unknownArtist = taste.desconhecido && !shopping && !react && !action && !INFO[intent] && !["pedido_status", "pedido_cancelar"].includes(intent);
+  if (unknownArtist) {
+    intent = "gosto_desconhecido";
+    out = {
+      texto: `Ainda não conheço o som de “${taste.desconhecido}”. Me conta como é: mais pesado, suave, espacial, dançante? Ou cite um artista parecido que eu monto a partir dele.`,
+      sugestoes: ["Pesado e intenso", "Suave e melódico", "Espacial, com eco", "Dançante, com groove", "Som do Slash"],
+      contexto: ctx.aguardando ? ctx : keep,
+    };
+  } else if (first0?.out) out = { ...first0.out, contexto: first0.out.contexto || keep };
+  else if (react && !first0) out = react.out;
   else if (action?.out) {
     // Produtos mostrados pela ação viram referência para "a primeira", "essa" e "adiciona tudo".
     const shown = (action.out.cards || []).map((c) => c.id);
     const replaces = ["comparar", "carrinho"].includes(intent);
     out = { ...action.out, contexto: replaces && shown.length ? { ...keep, intent: null, mostrados: shown } : keep };
   } else if (guest && LOGIN_NEEDED[intent]) out = { ...loginAnswer(LOGIN_NEEDED[intent]), contexto: keep };
+  else if (intent === "encomenda_status") {
+    // Sem encomenda feita, "minha encomenda" provavelmente é o pedido: responde sobre ele.
+    const mine = await requests();
+    out = !mine.length && (await orders()).length ? { ...(await handleOrders("pedido_status", text, orders)), contexto: keep } : { ...requestsAnswer(mine), contexto: keep };
+  }
   else if (guest && intent === "troca" && /\b(meu|minha|comprei|pedido)\b/.test(text)) out = { ...faqAnswer("troca", text), texto: `${faqAnswer("troca", text).texto} Para abrir a solicitação, entre na sua conta e use o comprovante do pedido.`, acoes: loginAnswer("").acoes, contexto: keep };
   else if (intent === "historico") out = { ...historyAnswer(await orders(), products), contexto: keep };
   else if (intent === "favoritos") out = { ...favoritesAnswer(page, guest ? [] : await alerts()), ...(guest ? { acoes: [{ tipo: "link", rotulo: "Abrir favoritos", href: "/favoritos.html" }, ...loginAnswer("").acoes] } : {}), contexto: keep };

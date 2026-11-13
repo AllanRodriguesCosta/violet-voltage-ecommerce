@@ -33,6 +33,7 @@ import { askGemini, limiter } from "../assistant/gemini.js";
 import { card as assistantCard } from "../assistant/actions.js";
 import { changePassword, exportData, deleteAccount, savePaymentPreference } from "../services/account.js";
 import { logMiss, missSummary, clearMisses } from "../services/assistant-log.js";
+import { createRequest, myRequests, publicRequest, adminRequest, answerRequest, createPartner, updatePartner, adminPartner } from "../services/requests.js";
 import { answeredQuestions, askQuestion, moderateQuestion, publicQuestion, adminQuestion } from "../services/questions.js";
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -374,6 +375,25 @@ export function apiRouter(storage, config) {
     const p = await product(req.params.id);
     res.status(201).json({ data: publicQuestion(await askQuestion(storage, req.user, p, req.body)) });
   });
+  // Etapa 33: encomendas (exigem conta) e fichas de parceria (públicas, limitadas por rede).
+  const requestLimit = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    limit: 10,
+    keyGenerator: (req) => (req.user ? `u:${req.user.id}` : `ip:${ipKeyGenerator(req.ip || "")}`),
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    handler: (_req, res) => res.status(429).json({ error: { message: "Muitos envios seguidos. Tente de novo mais tarde." } }),
+  });
+  r.get("/encomendas", authenticated, async (req, res) =>
+    res.set("Cache-Control", "no-store").json({ data: (await myRequests(storage, req.user)).map(publicRequest) }),
+  );
+  r.post("/encomendas", authenticated, requestLimit, async (req, res) =>
+    res.status(201).json({ data: publicRequest(await createRequest(storage, req.user, req.body)) }),
+  );
+  r.post("/parcerias", requestLimit, async (req, res) => {
+    const item = await createPartner(storage, req.body);
+    res.status(201).json({ data: { ok: true, protocolo: item ? `P-${item.rowKey.slice(0, 6).toUpperCase()}` : "P-000000" } });
+  });
   const sendImage = async (res, blobName) => {
     if (!blobName) throw new AppError(404, "Imagem não encontrada.");
     const image = await storage.blob(blobName);
@@ -461,7 +481,9 @@ export function apiRouter(storage, config) {
       .filter(Boolean)
       .sort((a, b) => b.avisos - a.avisos);
     const perguntasPendentes = (await storage.list("questions")).filter((q) => q.status === "pendente").length;
-    res.json({ data: { ...summary(p, c, o), procura, precoAvisos, perguntasPendentes } });
+    const encomendasAbertas = (await storage.list("requests")).filter((x) => ["Recebida", "Em análise"].includes(x.status)).length;
+    const parceriasNovas = (await storage.list("partners")).filter((x) => x.status === "Nova").length;
+    res.json({ data: { ...summary(p, c, o), procura, precoAvisos, perguntasPendentes, encomendasAbertas, parceriasNovas } });
   });
   r.post("/admin/products", async (req, res) => {
     const input = productInput(req.body);
@@ -602,6 +624,16 @@ export function apiRouter(storage, config) {
     const p = found && (await storage.getByRowKey("products", found.productId));
     res.json({ data: adminQuestion(await moderateQuestion(storage, req.params.id, req.body, p), p) });
   });
+  r.get("/admin/encomendas", async (_req, res) => {
+    const order = (x) => (["Recebida", "Em análise"].includes(x.status) ? 0 : 1);
+    res.json({ data: (await storage.list("requests")).sort((a, b) => order(a) - order(b) || b.createdAt.localeCompare(a.createdAt)).map(adminRequest) });
+  });
+  r.patch("/admin/encomendas/:id", async (req, res) => res.json({ data: adminRequest(await answerRequest(storage, req.params.id, req.body)) }));
+  r.get("/admin/parcerias", async (_req, res) => {
+    const order = { Nova: 0, "Em contato": 1, Aprovada: 2, Recusada: 3 };
+    res.json({ data: (await storage.list("partners")).sort((a, b) => order[a.status] - order[b.status] || b.createdAt.localeCompare(a.createdAt)).map(adminPartner) });
+  });
+  r.patch("/admin/parcerias/:id", async (req, res) => res.json({ data: adminPartner(await updatePartner(storage, req.params.id, req.body)) }));
   r.get("/admin/assistente", async (_req, res) => res.json({ data: await missSummary(storage) }));
   r.delete("/admin/assistente", async (_req, res) => {
     await clearMisses(storage);

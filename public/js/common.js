@@ -520,8 +520,8 @@ function footerHTML() {
   return `<footer class="footer"><div class="container footer-grid">
 <div class="footer-brand"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">${icon("bolt", { size: 20 })}</span><span class="brand-words">VIOLET VOLTAGE<small>TURN UP YOUR TONE</small></span></a><p>Seu próximo som começa aqui. Guitarras, efeitos, amplificadores e acessórios para cada etapa da sua jornada.</p></div>
 <nav aria-label="Loja"><h2>Loja</h2><a href="/catalogo.html">Todo o catálogo</a>${categories.slice(0, 3).map((c) => `<a href="${categoryLink(c)}">${c}</a>`).join("")}<a href="/kits.html">Kits com desconto</a><a href="/comparar.html">Comparar produtos</a></nav>
-<nav aria-label="Sua conta"><h2>Sua conta</h2><a href="/minha-conta.html">Minha conta</a><a href="/minha-conta.html#pedidos">Meus pedidos</a><a href="/favoritos.html">Favoritos</a><a href="/carrinho.html">Carrinho</a></nav>
-<nav aria-label="Atendimento"><h2>Atendimento</h2><a href="/ajuda.html">Central de ajuda</a><a href="/guias.html">Guias e glossário</a><a href="/ajuda.html#entregas">Entregas e prazos</a><a href="/ajuda.html#pagamentos">Pagamentos e cupons</a><a href="/ajuda.html#trocas">Trocas e devoluções</a><a href="/privacidade.html">Privacidade</a><a href="/termos.html">Termos de uso</a></nav>
+<nav aria-label="Sua conta"><h2>Sua conta</h2><a href="/minha-conta.html">Minha conta</a><a href="/minha-conta.html#pedidos">Meus pedidos</a><a href="/encomenda.html">Encomendas</a><a href="/favoritos.html">Favoritos</a><a href="/carrinho.html">Carrinho</a></nav>
+<nav aria-label="Atendimento"><h2>Atendimento</h2><a href="/ajuda.html">Central de ajuda</a><a href="/guias.html">Guias e glossário</a><a href="/ajuda.html#entregas">Entregas e prazos</a><a href="/ajuda.html#pagamentos">Pagamentos e cupons</a><a href="/ajuda.html#trocas">Trocas e devoluções</a><a href="/parceiros.html">Seja um parceiro</a><a href="/privacidade.html">Privacidade</a><a href="/termos.html">Termos de uso</a></nav>
 <div><h2>Formas de pagamento</h2><ul class="payment-list"><li>${icon("pix", { size: 18 })}Pix</li><li>${icon("card", { size: 18 })}Cartão de crédito</li><li>${icon("barcode", { size: 18 })}Boleto</li></ul></div>
 </div><div class="container footer-bottom"><p>Projeto acadêmico · © ${new Date().getFullYear()} Violet Voltage</p>${themeSwitchHTML("theme-footer", { compact: true })}<p>Feito com Node.js, Express e PostgreSQL.</p></div></footer>`;
 }
@@ -572,6 +572,7 @@ export const accountSections = [
   { id: "avisos", icon: "tag", label: "Avisos de estoque e preço", href: "/minha-conta.html#avisos", menu: true, nav: true },
   { id: "notificacoes", icon: "bell", label: "Notificações", href: "/minha-conta.html#notificacoes", menu: false, nav: true },
   { id: "favoritos", icon: "heart", label: "Favoritos", href: "/favoritos.html", menu: true, nav: false },
+  { id: "encomendas", icon: "wrench", label: "Encomendas", href: "/encomenda.html#minhas", menu: true, nav: false },
   { id: "ajuda", icon: "question", label: "Preciso de ajuda", href: "/minha-conta.html#ajuda", menu: true, nav: true },
 ];
 export const initials = (nome) =>

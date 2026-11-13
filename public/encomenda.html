@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Encomende uma guitarra personalizada ou um produto fora do catálogo na Violet Voltage." />
+    <meta name="theme-color" content="#120b19" />
+    <meta property="og:site_name" content="Violet Voltage" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content="Encomendas | Violet Voltage" />
+    <meta property="og:description" content="Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone." />
+    <title>Encomendas | Violet Voltage</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <script src="/js/theme-init.js"></script>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/ui.css" />
+    <script type="module" src="/js/app.js"></script>
+    <link rel="modulepreload" href="/js/common.js" />
+    <link rel="modulepreload" href="/js/icons.js" />
+    <link rel="modulepreload" href="/js/theme.js" />
+    <link rel="modulepreload" href="/js/drawer.js" />
+    <link rel="modulepreload" href="/js/components.js" />
+    <link rel="modulepreload" href="/js/pricing.js" />
+    <link rel="modulepreload" href="/js/motion.js" />
+    <link rel="modulepreload" href="/js/search.js" />
+    <link rel="modulepreload" href="/js/alerts.js" />
+    <link rel="modulepreload" href="/js/specs.js" />
+    <link rel="modulepreload" href="/js/compare.js" />
+    <link rel="modulepreload" href="/js/pages/request.js" />
+  </head>
+  <body>
+    <div id="header"></div>
+    <main id="main" tabindex="-1">
+      <div class="container page-wrap">
+        <nav class="breadcrumb" aria-label="Trilha de navegação"><a href="/">Início</a><span aria-hidden="true">/</span><span aria-current="page">Encomendas</span></nav>
+        <header class="page-head"><div><span class="eyebrow">Sob medida</span><h1 class="page-title">Encomendas e importação.</h1><p class="lead">Guitarra personalizada, montada pela nossa oficina parceira, ou um produto que não está no catálogo. A equipe responde com orçamento e prazo em até 2 dias úteis, e o pagamento só acontece se você aprovar.</p></div></header>
+        <div class="request-layout">
+          <section class="panel request-form-panel" aria-labelledby="request-title">
+            <h2 id="request-title">Nova encomenda</h2>
+            <p class="form-help" id="request-from-assistant" hidden>Preenchemos com o que você contou ao assistente. Confira e ajuste antes de enviar.</p>
+            <form id="request-form">
+              <fieldset><legend>O que você quer encomendar?</legend><div class="option-cards">
+                <label class="option-card"><input type="radio" name="tipo" value="personalizado" checked><span class="option-icon" data-icon="wrench" data-size="22"></span><span class="option-text"><strong>Guitarra personalizada</strong><small>Escolha a base e as peças: captadores, tarraxas, ponte, madeiras e cor.</small></span></label>
+                <label class="option-card"><input type="radio" name="tipo" value="importacao"><span class="option-icon" data-icon="package" data-size="22"></span><span class="option-text"><strong>Produto fora do catálogo</strong><small>Um modelo pronto que a loja não tem: buscamos com fornecedores e importadores.</small></span></label>
+              </div></fieldset>
+              <div class="field"><label for="request-produto">Produto ou base da guitarra</label><input id="request-produto" name="produto" type="text" required minlength="3" maxlength="120" placeholder="Ex.: Les Paul com captadores Seymour Duncan" /></div>
+              <div class="field"><label for="request-detalhes">Detalhes (opcional)</label><textarea id="request-detalhes" name="detalhes" rows="5" maxlength="1500" placeholder="Peças, cor, madeira da escala, ponte, referência de modelo ou link do fabricante."></textarea></div>
+              <div class="form-grid">
+                <div class="field"><label for="request-orcamento">Orçamento máximo em R$ (opcional)</label><input id="request-orcamento" name="orcamento" type="number" min="100" max="1000000" step="1" inputmode="numeric" /></div>
+                <div class="field"><label for="request-prazo">Prazo desejado</label><select id="request-prazo" name="prazo"><option>Sem pressa</option><option>Até 30 dias</option><option>Até 60 dias</option></select></div>
+                <div class="field"><label for="request-contato">Como prefere receber a resposta?</label><select id="request-contato" name="contato"><option>E-mail</option><option>WhatsApp</option><option>Telefone</option></select></div>
+                <div class="field" id="request-telefone-field" hidden><label for="request-telefone">Telefone com DDD</label><input id="request-telefone" name="telefone" type="tel" maxlength="20" autocomplete="tel" /></div>
+              </div>
+              <button type="submit">Enviar encomenda</button>
+              <p class="form-help" id="request-login-note" hidden>Para enviar, você entra na sua conta (ou cria uma). O que você escreveu fica guardado neste navegador.</p>
+            </form>
+          </section>
+          <aside class="request-aside">
+            <section class="panel"><h2>Como funciona</h2><ol class="steps-list"><li><strong>Você descreve</strong> o que quer, com o máximo de detalhes.</li><li><strong>A equipe responde</strong> com orçamento, prazo e alternativas, nas Notificações e pelo contato escolhido.</li><li><strong>Você aprova</strong> (ou não). Sem aprovação, nada é cobrado.</li></ol><p class="small muted">Prefere conversar? O assistente da loja ajuda a descrever a encomenda.</p></section>
+            <section class="panel" id="minhas" aria-labelledby="mine-title" hidden><h2 id="mine-title">Minhas encomendas</h2><div id="request-list"></div></section>
+          </aside>
+        </div>
+      </div>
+    </main>
+    <div id="footer"></div>
+  </body>
+</html>

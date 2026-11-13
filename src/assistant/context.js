@@ -2,6 +2,7 @@
 // só chaves conhecidas, valores das listas do esquema e limites de tamanho.
 import { GENEROS, ESTILOS, NIVEIS, USOS, SPEC_FIELDS } from "../../public/js/specs.js";
 import { categories } from "../utils/validation.js";
+import { ARTISTAS, SONS, CORES } from "./taste.js";
 
 const values = (key) => [...new Set(Object.values(SPEC_FIELDS).flat().filter((f) => f.key === key).flatMap((f) => f.values || []))];
 const ALLOWED = {
@@ -18,8 +19,12 @@ const ALLOWED = {
   mao: values("mao"),
   cordas: values("cordas"),
   captadores: values("captadores"),
+  // Etapa 33: gosto pessoal.
+  artista: ARTISTAS,
+  som: SONS,
+  cor: CORES,
 };
-export const SLOTS = ["categoria", "genero", "orcamento"];
+export const SLOTS = ["categoria", "genero", "orcamento", "cor"];
 const cents = (v) => (Number.isSafeInteger(v) && v > 0 && v <= 100_000_000 ? v : undefined);
 
 export function sanitizeContext(input, brands = []) {

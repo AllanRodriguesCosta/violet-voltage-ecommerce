@@ -2,7 +2,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import multer from "multer";
-import { rateLimit } from "express-rate-limit";
+import { rateLimit, ipKeyGenerator } from "express-rate-limit";
 import { randomUUID } from "node:crypto";
 import { auth, admin, safeCustomer, sessionUser } from "../middleware/auth.js";
 import {
@@ -269,14 +269,24 @@ export function apiRouter(storage, config) {
   const assistantLimit = rateLimit({
     windowMs: 5 * 60 * 1000,
     limit: 40,
-    keyGenerator: (req) => req.user.id,
+    // Cliente logado conta pelo ID; visitante, pelo endereço de rede.
+    keyGenerator: (req) => (req.user ? `u:${req.user.id}` : `ip:${ipKeyGenerator(req.ip || "")}`),
     standardHeaders: "draft-8",
     legacyHeaders: false,
     handler: (_req, res) =>
       res.status(429).json({ error: { message: "Muitas mensagens seguidas. Aguarde alguns minutos e tente de novo." } }),
   });
+  // Assistente aberto a visitantes: a sessão é opcional; pedidos, histórico e trocas pedem login.
+  const optionalUser = async (req, _res, next) => {
+    try {
+      req.user = (await sessionUser(storage, config, req.cookies.vv_session)) || null;
+    } catch {
+      req.user = null;
+    }
+    next();
+  };
   const geminiSlot = config.gemini ? limiter(config.gemini.perMinute) : () => false;
-  r.post("/assistente", authenticated, assistantLimit, async (req, res) => {
+  r.post("/assistente", optionalUser, assistantLimit, async (req, res) => {
     const mensagem = text(req.body?.mensagem, "mensagem", 1, 500);
     const contexto = req.body?.contexto;
     if (contexto !== undefined && JSON.stringify(contexto).length > 4000)
@@ -285,8 +295,8 @@ export function apiRouter(storage, config) {
     const { pagina, carrinho, favoritos } = req.body || {};
     if (JSON.stringify({ pagina, carrinho, favoritos }).length > 8000) throw new AppError(400, "Dados da página muito grandes.");
     const products = (await storage.list("products")).filter((p) => p.ativo).map(publicProduct);
-    const orders = async () => (await storage.listByPartition("orders", req.user.id)).map(publicOrder);
-    const alerts = async () => storage.listByPartition("alerts", req.user.id);
+    const orders = async () => (req.user ? (await storage.listByPartition("orders", req.user.id)).map(publicOrder) : []);
+    const alerts = async () => (req.user ? storage.listByPartition("alerts", req.user.id) : []);
     let answer = await reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders, alerts, user: req.user });
     if (!answer.entendeu) {
       await logMiss(storage, mensagem).catch(() => {});

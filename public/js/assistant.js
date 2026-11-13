@@ -69,7 +69,9 @@ function messageHTML(m, last) {
             ? `<button type="button" class="button small" data-assistant-cart="${esc(a.itens.join(","))}">${icon("bag", { size: 16 })}${esc(a.rotulo)}</button>`
             : a.tipo === "cupom"
               ? `<button type="button" class="button small" data-assistant-coupon="${esc(a.codigo)}">${icon("tag", { size: 16 })}${esc(a.rotulo)}</button>`
-              : `<a class="button secondary small" href="${esc(safeHref(a.href))}">${esc(a.rotulo)}</a>`,
+              : a.tipo === "login"
+                ? `<a class="button small" href="/login.html?next=${encodeURIComponent(location.pathname + location.search)}">${icon("user", { size: 16 })}${esc(a.rotulo)}</a>`
+                : `<a class="button secondary small" href="${esc(safeHref(a.href))}">${esc(a.rotulo)}</a>`,
         )
         .join("")}</div>`
     : "";
@@ -80,8 +82,9 @@ function messageHTML(m, last) {
 
 export function mountAssistant(user) {
   if (document.querySelector(".assistant-launcher")) return;
-  const first = String(user.nome || "").split(" ")[0];
-  const state = load(user.id) || { user: user.id, mensagens: [], contexto: undefined };
+  const first = String(user?.nome || "").split(" ")[0];
+  const owner = user?.id || "visitante";
+  const state = load(owner) || { user: owner, mensagens: [], contexto: undefined };
   document.body.insertAdjacentHTML(
     "beforeend",
     `<button type="button" class="assistant-launcher" aria-expanded="false" aria-controls="assistant-panel">${icon("chat", { size: 22 })}<span class="assistant-launcher-label">Assistente</span></button>
@@ -101,7 +104,7 @@ export function mountAssistant(user) {
 
   const greeting = () => ({
     de: "assistente",
-    texto: `Oi${first ? `, ${first}` : ""}! Posso indicar e comparar equipamentos, responder sobre a ficha do produto que você está vendo, conferir o que falta no carrinho, montar um setup, explicar termos e contar em que etapa está seu pedido.`,
+    texto: `Oi${first ? `, ${first}` : ""}! Posso indicar e comparar equipamentos, responder sobre a ficha do produto que você está vendo, conferir o que falta no carrinho, montar um setup e explicar termos${user ? " e contar em que etapa está seu pedido" : ". Para ver pedidos ou pedir trocas, é só entrar na sua conta"}.`,
     sugestoes: startChips(),
   });
   function render() {

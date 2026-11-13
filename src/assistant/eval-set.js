@@ -133,6 +133,9 @@ export const evalSet = [
   ["algum favorito baixou de preço?", "favoritos"],
   ["tem guitarra para canhoto?", "recomendar", { mao: "Canhoto" }],
   ["quero uma guitarra de sete cordas", "recomendar", { cordas: "7 cordas" }],
+  // Etapa 26: reações à resposta anterior
+  ["muito caro", "objecao_preco"],
+  ["achei salgado demais", "objecao_preco"],
 ];
 
 // Conversas com várias mensagens: cada passo traz a intenção e um trecho esperado na resposta.
@@ -158,6 +161,23 @@ export const dialogs = [
       ["quantos trastes tem essa?", "ficha", /Trastes: 24/, { pagina: { tipo: "produto", id: "demo-036" } }],
       ["compara com a jackson js32", "comparar", /lado a lado/, { pagina: { tipo: "produto", id: "demo-036" } }],
       ["adiciona a segunda no carrinho", "adicionar", /Confirma\? Jackson JS32 Dinky/, { pagina: { tipo: "produto", id: "demo-036" } }],
+    ],
+  },
+  {
+    nome: "setup caro: versão mais em conta e orçamento informado",
+    passos: [
+      ["monta um setup de rock clássico até 5 mil", "setup", /Total:/],
+      ["muito caro", "objecao_preco", /mais em conta/],
+      ["Até R$ 3.000", "setup", /até R\$\s3\.000/],
+    ],
+  },
+  {
+    nome: "recomendação: não gostei, achei caro e valor solto",
+    passos: [
+      ["quero um pedal de overdrive", "recomendar", /overdrive/i],
+      ["não gostei", "objecao", /Outras opções|opções/],
+      ["achei caro", "objecao_preco", /em conta|acessíveis/],
+      ["800", "recomendar", /Até R\$\s800/],
     ],
   },
 ];

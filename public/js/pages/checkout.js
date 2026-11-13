@@ -4,6 +4,7 @@ import { emptyState, errorState } from "../components.js";
 import { cartData, prefs, fetchQuote, totalsHTML } from "./cart.js";
 import { installmentValue } from "../pricing.js";
 import { formatAddress } from "../address.js";
+import { cepDigits, cepFromText } from "../regions.js";
 
 const payments = [
   ["pix", "pix", "Pix", "Aprovação imediata após o pagamento"],
@@ -42,10 +43,12 @@ export default async function checkout(session) {
   const saved = user.enderecos || [];
   const legacy = (user.endereco || "").trim();
   const choices = [
-    ...saved.map((a) => ({ id: a.id, title: a.apelido || "Endereço", text: formatAddress(a), main: a.principal })),
-    ...(legacy && !saved.some((a) => formatAddress(a) === legacy) ? [{ id: "cadastro", title: "Endereço do cadastro", text: legacy }] : []),
+    ...saved.map((a) => ({ id: a.id, title: a.apelido || "Endereço", text: formatAddress(a), main: a.principal, cep: cepDigits(a.cep) })),
+    ...(legacy && !saved.some((a) => formatAddress(a) === legacy) ? [{ id: "cadastro", title: "Endereço do cadastro", text: legacy, cep: cepFromText(legacy) }] : []),
   ];
   state.endereco = choices[0]?.id || "novo";
+  // Etapa 34: o frete segue a região do CEP do endereço escolhido (ou digitado).
+  const currentCep = () => (state.entrega === "retirada" ? null : state.endereco === "novo" ? cepFromText(address.value) || prefs.cep : choices.find((c) => c.id === state.endereco)?.cep || prefs.cep);
   function renderAddress() {
     const pickup = state.entrega === "retirada";
     const box = $("#address-choices");
@@ -98,7 +101,7 @@ export default async function checkout(session) {
     submit.disabled = true;
     const tryCoupon = coupon === undefined ? state.cupom : coupon;
     try {
-      state.quote = await fetchQuote(state.entrega, tryCoupon);
+      state.quote = await fetchQuote(state.entrega, tryCoupon, currentCep());
       state.cupom = state.quote.cupom?.codigo || "";
       prefs.coupon = state.cupom;
       renderOptions();
@@ -108,7 +111,7 @@ export default async function checkout(session) {
     } catch (error) {
       if (error.field === "cupom") {
         if (!coupon) prefs.coupon = state.cupom = "";
-        state.quote = await fetchQuote(state.entrega, state.cupom);
+        state.quote = await fetchQuote(state.entrega, state.cupom, currentCep());
         renderOptions();
         renderCoupon(error.message);
         renderSummary();
@@ -136,6 +139,16 @@ export default async function checkout(session) {
       state.endereco = t.value;
       renderAddress();
       if (t.value === "novo") address.focus();
+      else refresh();
+    }
+  });
+  // Endereço digitado: ao sair do campo, recalcula o frete se o CEP mudou de região.
+  let typedCep = null;
+  address.addEventListener("blur", () => {
+    const cep = cepFromText(address.value);
+    if (cep && cep !== typedCep) {
+      typedCep = cep;
+      refresh();
     }
   });
   form.addEventListener("click", (event) => {
@@ -160,6 +173,7 @@ export default async function checkout(session) {
     const order = await send("/orders", {
       endereco: pickup ? "Retirada na loja" : state.endereco === "novo" ? address.value : choices.find((c) => c.id === state.endereco).text,
       entrega: state.entrega,
+      ...(currentCep() ? { cep: currentCep() } : {}),
       pagamento: state.pagamento,
       ...(state.pagamento === "cartao" ? { parcelas: state.parcelas } : {}),
       ...(state.cupom ? { cupom: state.cupom } : {}),

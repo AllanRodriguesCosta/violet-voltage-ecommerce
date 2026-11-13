@@ -1,3 +1,4 @@
+import { createCartSync } from "./cart-sync.js";
 import { icon } from "./icons.js";
 import { themeSwitchHTML } from "./theme.js";
 import { specText } from "./specs.js";
@@ -246,7 +247,18 @@ export function setCart(items) {
   localStorage.setItem("vv_cart", JSON.stringify(items));
   updateCounts();
   emit("vv:cart", items);
+  cartSync.changed(items);
 }
+// Etapa 34: com login, o carrinho também fica salvo na conta (outro aparelho e lembrete).
+const cartSync = createCartSync({
+  request: (path, body, method) => (body === undefined ? api(path) : send(path, body, method)),
+  read: () => getCart(),
+  write: (items) => {
+    localStorage.setItem("vv_cart", JSON.stringify(items));
+    updateCounts();
+    emit("vv:cart", items);
+  },
+});
 export const cartQuantity = () =>
   getCart().reduce((sum, item) => sum + item.quantidade, 0);
 function updateCounts() {
@@ -594,6 +606,7 @@ export function safeNext(next) {
 export async function logout() {
   try {
     await send("/auth/logout", {});
+    cartSync.stop();
   } catch (error) {
     toast(error.message, { type: "error" });
     return;
@@ -715,6 +728,7 @@ async function loadShell() {
     document.querySelectorAll(".admin-link").forEach((a) => (a.hidden = user.role !== "admin"));
     document.querySelector(".notif-link").hidden = false;
     setNotificationCount(user.naoLidas || 0);
+    cartSync.start(user);
   } catch {
     user = undefined;
     toast("Não foi possível verificar sua sessão.", { type: "error" });

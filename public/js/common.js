@@ -14,6 +14,20 @@ export const money = (cents) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
     cents / 100,
   );
+// Galeria por cor (etapa 29): fotos da cor escolhida, ou todas quando o produto não tem cores.
+export function photosOf(product, cor) {
+  const fotos = Array.isArray(product?.fotos) && product.fotos.length ? product.fotos : null;
+  if (!fotos) return [{ url: productImage(product), cor: null, vista: "frente" }];
+  const colored = cor ? fotos.filter((f) => f.cor === cor) : [];
+  return colored.length ? colored : fotos.filter((f) => f.cor === fotos[0].cor);
+}
+export const colorNames = (product) => (Array.isArray(product?.cores) ? product.cores.map((c) => c.nome) : []);
+// Cor válida do item (a escolhida, se o produto tiver; senão a padrão) e a foto dela.
+export const itemColor = (product, cor) => {
+  const names = colorNames(product);
+  return names.length ? (names.includes(cor) ? cor : names[0]) : null;
+};
+export const itemImage = (product, cor) => photosOf(product, itemColor(product, cor))[0].url;
 export function productImage(product) {
   if (product?.blobName) {
     return (
@@ -220,7 +234,8 @@ export function getCart() {
           )
           .map((i) => {
             const servicos = Array.isArray(i.servicos) ? [...new Set(i.servicos.filter((s) => ["regulagem", "cordas", "garantia"].includes(s)))] : [];
-            return servicos.length ? { id: i.id, quantidade: i.quantidade, servicos } : { id: i.id, quantidade: i.quantidade };
+            const cor = typeof i.cor === "string" && i.cor.length <= 30 ? { cor: i.cor } : {};
+            return servicos.length ? { id: i.id, quantidade: i.quantidade, ...cor, servicos } : { id: i.id, quantidade: i.quantidade, ...cor };
           })
       : [];
   } catch {
@@ -249,7 +264,7 @@ function updateCounts() {
     el.hidden = wishes === 0;
   });
 }
-export function addCart(product, quantity = 1, { notify = true, source } = {}) {
+export function addCart(product, quantity = 1, { notify = true, source, cor } = {}) {
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
     toast("Informe uma quantidade inteira entre 1 e 99.", { type: "error" });
     return false;
@@ -260,8 +275,13 @@ export function addCart(product, quantity = 1, { notify = true, source } = {}) {
     toast("Quantidade maior que o estoque disponível.", { type: "error" });
     return false;
   }
-  if (current) current.quantidade += quantity;
-  else cart.push({ id: product.id, quantidade: quantity });
+  // Uma linha por produto: escolher outra cor troca a cor da linha (e o aviso diz isso).
+  const chosen = cor && colorNames(product).includes(cor) ? cor : undefined;
+  const recolored = Boolean(current && chosen && itemColor(product, current.cor) !== chosen);
+  if (current) {
+    current.quantidade += quantity;
+    if (chosen) current.cor = chosen;
+  } else cart.push({ id: product.id, quantidade: quantity, ...(chosen ? { cor: chosen } : {}) });
   try {
     setCart(cart);
   } catch {
@@ -271,7 +291,7 @@ export function addCart(product, quantity = 1, { notify = true, source } = {}) {
     );
     return false;
   }
-  if (notify) emit("vv:cart-added", { product, quantity, source });
+  if (notify) emit("vv:cart-added", { product, quantity, source, cor: chosen, recolored });
   return true;
 }
 

@@ -1,5 +1,5 @@
 import { icon } from "./icons.js";
-import { money, escapeHtml as esc, productImage } from "./common.js";
+import { money, escapeHtml as esc, productImage, itemImage } from "./common.js";
 
 // Espelho das regras do servidor (teste garante paridade com src/services/orders.js).
 export const statuses = ["Recebido", "Em preparação", "Enviado", "Concluído", "Cancelado"];
@@ -78,9 +78,9 @@ export function orderCardHTML(order, { products = [], admin = false, customer, r
   const count = items.reduce((s, i) => s + i.quantidade, 0);
   const next = allowedNext(order.status);
   return `<article class="order-card" data-order-id="${esc(order.id)}"><header class="order-card-head"><div><strong>Pedido #${esc(orderNumber(order))}</strong><small>${new Date(order.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}${customer ? ` · ${esc(customer)}` : ""}</small></div><span class="status status-${statusClass(order.status)}">${esc(order.status)}</span></header>
-<div class="order-thumbs">${items.slice(0, 4).map((i) => `<img src="${esc(productImage(byId.get(i.id) || { categoria: "" }))}" alt="${esc(i.nome)}" width="52" height="52" title="${esc(i.nome)}">`).join("")}${items.length > 4 ? `<span>+${items.length - 4}</span>` : ""}<p><strong>${money(order.totalCents)}</strong><small>${count} ${count === 1 ? "item" : "itens"} · ${esc(paymentLabels[order.pagamento] || order.pagamento)}${order.parcelas > 1 ? ` em ${order.parcelas}x` : ""}</small></p></div>
+<div class="order-thumbs">${items.slice(0, 4).map((i) => `<img src="${esc(byId.get(i.id) ? itemImage(byId.get(i.id), i.cor) : productImage({ categoria: "" }))}" alt="${esc(i.nome)}" width="52" height="52" title="${esc(i.nome)}">`).join("")}${items.length > 4 ? `<span>+${items.length - 4}</span>` : ""}<p><strong>${money(order.totalCents)}</strong><small>${count} ${count === 1 ? "item" : "itens"} · ${esc(paymentLabels[order.pagamento] || order.pagamento)}${order.parcelas > 1 ? ` em ${order.parcelas}x` : ""}</small></p></div>
 ${timelineHTML(order)}${trackingHTML(order)}
-<details class="order-details"><summary>Detalhes do pedido ${icon("chevronDown", { size: 16 })}</summary><ul class="order-items">${items.map((i) => `<li><span>${i.quantidade} × ${esc(i.nome)}${(i.servicos || []).map((s) => `<small class="order-service">+ ${esc(s.nome)}</small>`).join("")}</span><strong>${money((i.priceCents + (i.servicos || []).reduce((t, s) => t + s.priceCents, 0)) * i.quantidade)}</strong></li>`).join("")}</ul><dl class="order-facts">${totalsFactsHTML(order)}<div><dt>Entrega</dt><dd>${esc(deliveryLabels[order.entrega] || order.entrega)}</dd></div><div class="wide"><dt>Endereço</dt><dd>${esc(order.endereco)}</dd></div><div class="wide"><dt>Número completo</dt><dd>${esc(order.id)}</dd></div></dl></details>
+<details class="order-details"><summary>Detalhes do pedido ${icon("chevronDown", { size: 16 })}</summary><ul class="order-items">${items.map((i) => `<li><span>${i.quantidade} × ${esc(i.nome)}${i.cor ? `<small class="order-service">Cor: ${esc(i.cor)}</small>` : ""}${(i.servicos || []).map((s) => `<small class="order-service">+ ${esc(s.nome)}</small>`).join("")}</span><strong>${money((i.priceCents + (i.servicos || []).reduce((t, s) => t + s.priceCents, 0)) * i.quantidade)}</strong></li>`).join("")}</ul><dl class="order-facts">${totalsFactsHTML(order)}<div><dt>Entrega</dt><dd>${esc(deliveryLabels[order.entrega] || order.entrega)}</dd></div><div class="wide"><dt>Endereço</dt><dd>${esc(order.endereco)}</dd></div><div class="wide"><dt>Número completo</dt><dd>${esc(order.id)}</dd></div></dl></details>
 ${exchangeNoteHTML(order, admin)}${readonly ? "" : `<footer class="order-actions">${
     admin
       ? next.length

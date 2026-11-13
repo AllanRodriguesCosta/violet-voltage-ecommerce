@@ -5,6 +5,8 @@ import {
   catalogProducts,
   money,
   productImage,
+  photosOf,
+  itemColor,
   escapeHtml as esc,
   addCart,
   bindForm,
@@ -55,7 +57,7 @@ function installmentsTable(total) {
     .map((n) => `<tr><th scope="row">${n}x</th><td>${money(installmentValue(total, n))}</td><td>sem juros</td></tr>`)
     .join("")}</tbody></table></details>`;
 }
-function zoom(frame, image, name) {
+function zoom(frame, name, { swiped = () => false } = {}) {
   const fine = matchMedia("(hover: hover) and (pointer: fine)");
   frame.addEventListener("mousemove", (event) => {
     if (!fine.matches) return;
@@ -68,13 +70,18 @@ function zoom(frame, image, name) {
   const box = document.createElement("dialog");
   box.className = "lightbox";
   box.setAttribute("aria-label", `Imagem ampliada de ${name}`);
-  box.innerHTML = `<img src="${esc(image)}" alt="${esc(name)}"><button type="button" class="icon-button" data-close aria-label="Fechar imagem">${icon("close")}</button>`;
+  box.innerHTML = `<img src="" alt="${esc(name)}"><button type="button" class="icon-button" data-close aria-label="Fechar imagem">${icon("close")}</button>`;
   document.body.append(box);
   box.addEventListener("click", (event) => {
     if (event.target === box || event.target.closest("[data-close]")) box.close();
   });
   frame.addEventListener("click", () => {
+    if (swiped()) return;
     frame.classList.remove("is-zooming");
+    // Abre a foto que está na tela (a galeria pode ter trocado de vista ou de cor).
+    const current = frame.querySelector("img");
+    box.querySelector("img").src = current.currentSrc || current.src;
+    box.querySelector("img").alt = current.alt;
     box.showModal();
   });
 }
@@ -203,6 +210,94 @@ function specsHTML(p) {
     .join("");
 }
 
+// Galeria: nomes das vistas (as fotos de amplificador vêm de frente, de cima e de trás).
+const VISTAS = { frente: "frente", topo: "painel de controles", costas: "traseira" };
+const photoAlt = (name, cor, foto) => [name, cor && `cor ${cor.toLowerCase()}`, foto?.vista && foto.vista !== "frente" && `vista: ${VISTAS[foto.vista] || foto.vista}`].filter(Boolean).join(", ");
+function colorPickerHTML(colors, current) {
+  return `<fieldset class="color-picker"><legend>Cor: <strong data-color-name>${esc(current)}</strong></legend><div class="swatches">${colors
+    .map(
+      (c) =>
+        `<label class="swatch" title="${esc(c.nome)}"><input type="radio" name="cor" value="${esc(c.nome)}"${c.nome === current ? " checked" : ""}><span class="swatch-dot" data-hex="${esc(c.hex)}" aria-hidden="true"></span><span class="sr-only">${esc(c.nome)}</span></label>`,
+    )
+    .join("")}</div></fieldset>`;
+}
+// Carrossel: setas sobre a foto, miniaturas, arrastar no celular e setas do teclado na foto.
+// Trocar a cor troca o conjunto de fotos e volta para a primeira.
+function mountGallery(container, p, name, view, photos) {
+  const frame = container.querySelector(".zoom-frame");
+  const img = frame.querySelector("img");
+  const thumbs = container.querySelector(".gallery-thumbs");
+  const count = container.querySelector(".gallery-count");
+  const navs = container.querySelectorAll("[data-gallery-step]");
+  const listeners = [];
+  let swipedAt = 0;
+  const status = container.querySelector("[data-gallery-status]");
+  const show = (index, announce = true) => {
+    const list = photos();
+    view.index = (index + list.length) % list.length;
+    const foto = list[view.index];
+    img.src = foto.url;
+    img.alt = photoAlt(name, view.cor, foto);
+    count.textContent = `${view.index + 1}/${list.length}`;
+    thumbs.querySelectorAll("button").forEach((b, i) => b.setAttribute("aria-current", String(i === view.index)));
+    // Leitor de tela: avisa a foto (e a cor) que entrou, sem roubar o foco.
+    if (announce) status.textContent = `${view.cor ? `Cor ${view.cor}. ` : ""}Foto ${view.index + 1} de ${list.length}: ${VISTAS[foto.vista] || "produto"}.`;
+  };
+  const renderThumbs = () => {
+    const list = photos();
+    const many = list.length > 1;
+    thumbs.hidden = !many;
+    count.hidden = !many;
+    navs.forEach((b) => (b.hidden = !many));
+    thumbs.innerHTML = many
+      ? list
+          .map(
+            (f, i) =>
+              `<button type="button" class="gallery-thumb" data-thumb="${i}" aria-label="Foto ${i + 1} de ${list.length}: ${esc(VISTAS[f.vista] || "produto")}" aria-current="${i === view.index}"><img src="${esc(f.url)}" alt="" width="72" height="72" loading="lazy"></button>`,
+          )
+          .join("")
+      : "";
+    thumbs.querySelectorAll("[data-thumb]").forEach((b) => b.addEventListener("click", () => show(Number(b.dataset.thumb))));
+  };
+  navs.forEach((b) => b.addEventListener("click", () => show(view.index + Number(b.dataset.galleryStep))));
+  frame.addEventListener("keydown", (event) => {
+    if (photos().length < 2 || !["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+    event.preventDefault();
+    show(view.index + (event.key === "ArrowRight" ? 1 : -1));
+  });
+  let start = null;
+  frame.addEventListener("pointerdown", (event) => {
+    if (event.pointerType !== "mouse") start = { x: event.clientX, y: event.clientY };
+  });
+  frame.addEventListener("pointerup", (event) => {
+    if (!start) return;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    start = null;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) && photos().length > 1) {
+      swipedAt = Date.now();
+      show(view.index + (dx < 0 ? 1 : -1));
+    }
+  });
+  const picker = container.querySelector(".color-picker");
+  picker?.querySelectorAll(".swatch-dot").forEach((dot) => dot.style.setProperty("--swatch", dot.dataset.hex));
+  picker?.addEventListener("change", (event) => {
+    if (event.target.name !== "cor") return;
+    view.cor = event.target.value;
+    picker.querySelector("[data-color-name]").textContent = view.cor;
+    const url = new URL(location.href);
+    url.searchParams.set("cor", view.cor);
+    history.replaceState(history.state, "", url);
+    view.index = 0;
+    renderThumbs();
+    show(0);
+    listeners.forEach((fn) => fn(view.cor));
+  });
+  renderThumbs();
+  show(0, false);
+  return { swiped: () => Date.now() - swipedAt < 400, onColor: (fn) => listeners.push(fn) };
+}
+
 export default async function detail() {
   const container = document.querySelector("#product-detail");
   const id = new URLSearchParams(location.search).get("id") || "";
@@ -211,7 +306,11 @@ export default async function detail() {
     const name = `${p.marca} ${p.modelo}`;
     const stock = stockState(p);
     const wished = isWished(p.id);
-    const image = productImage(p);
+    // Galeria (etapa 29): fotos da cor escolhida (?cor= no endereço mantém a escolha ao compartilhar).
+    const colors = Array.isArray(p.cores) && p.cores.length > 1 ? p.cores : [];
+    const view = { cor: itemColor(p, new URLSearchParams(location.search).get("cor")), index: 0 };
+    const photos = () => photosOf(p, view.cor);
+    const image = photos()[0].url || productImage(p);
     const max = Math.min(99, p.estoque);
     document.title = `${name} | Violet Voltage`;
     document.querySelector('meta[name="description"]')?.setAttribute("content", `${name}: ${p.descricao}`.slice(0, 160));
@@ -219,8 +318,8 @@ export default async function detail() {
     document.querySelector("#crumb-current").textContent = p.modelo;
     container.className = "detail-grid";
     container.removeAttribute("aria-busy");
-    container.innerHTML = `<div class="detail-media"><button type="button" class="zoom-frame" aria-label="Ampliar imagem de ${esc(name)}"><img class="detail-image" src="${esc(image)}" alt="${esc(name)}" width="640" height="640"></button><span class="zoom-hint">${icon("zoom", { size: 16 })}<span class="hint-fine">Passe o cursor para ampliar ou clique para tela cheia</span><span class="hint-touch">Toque para ampliar</span></span><button type="button" class="wish-button" data-wish="${esc(p.id)}" data-name="${esc(name)}" aria-pressed="${wished}" aria-label="${esc(wishLabel(name, wished))}">${icon("heart")}</button></div>
-<section class="detail-info" data-name="${esc(name)}"><span class="eyebrow">${esc(p.categoria)} · ${esc(p.marca)}</span><h1>${esc(p.modelo)}</h1><p class="detail-price">${money(p.priceCents)}</p>${installmentText(p.priceCents) ? `<p class="detail-installments">${installmentText(p.priceCents)}</p>` : ""}${installmentsTable(p.priceCents)}<p class="stock-pill stock-${stock.key}">${icon(stock.key === "out" ? "clock" : "check", { size: 16 })}${stock.key === "out" ? "Produto esgotado" : stock.key === "low" ? `Últimas unidades: ${p.estoque} em estoque` : `${p.estoque} unidades em estoque`}</p><p class="lead">${esc(p.descricao)}</p>
+    container.innerHTML = `<div class="detail-gallery"><div class="detail-media"><button type="button" class="zoom-frame" aria-label="Ampliar imagem de ${esc(name)}"><img class="detail-image" src="${esc(image)}" alt="${esc(photoAlt(name, view.cor, photos()[0]))}" width="640" height="640"></button><span class="zoom-hint">${icon("zoom", { size: 16 })}<span class="hint-fine">Passe o cursor para ampliar ou clique para tela cheia</span><span class="hint-touch">Toque para ampliar</span></span><button type="button" class="gallery-nav gallery-prev" data-gallery-step="-1" aria-label="Foto anterior" hidden>${icon("chevronLeft", { size: 22 })}</button><button type="button" class="gallery-nav gallery-next" data-gallery-step="1" aria-label="Próxima foto" hidden>${icon("chevronRight", { size: 22 })}</button><span class="gallery-count" aria-hidden="true" hidden></span><button type="button" class="wish-button" data-wish="${esc(p.id)}" data-name="${esc(name)}" aria-pressed="${wished}" aria-label="${esc(wishLabel(name, wished))}">${icon("heart")}</button></div><div class="gallery-thumbs" role="group" aria-label="Fotos de ${esc(name)}" hidden></div><p class="sr-only" aria-live="polite" data-gallery-status></p></div>
+<section class="detail-info" data-name="${esc(name)}"><span class="eyebrow">${esc(p.categoria)} · ${esc(p.marca)}</span><h1>${esc(p.modelo)}</h1><p class="detail-price">${money(p.priceCents)}</p>${installmentText(p.priceCents) ? `<p class="detail-installments">${installmentText(p.priceCents)}</p>` : ""}${installmentsTable(p.priceCents)}<p class="stock-pill stock-${stock.key}">${icon(stock.key === "out" ? "clock" : "check", { size: 16 })}${stock.key === "out" ? "Produto esgotado" : stock.key === "low" ? `Últimas unidades: ${p.estoque} em estoque` : `${p.estoque} unidades em estoque`}</p>${colors.length ? colorPickerHTML(colors, view.cor) : ""}<p class="lead">${esc(p.descricao)}</p>
 ${p.estoque ? `<form id="add-product" class="buy-box"><div class="quantity-field"><label for="quantidade">Quantidade</label><div class="stepper stepper-lg" role="group" aria-label="Quantidade"><button type="button" data-qty="-1" aria-label="Diminuir quantidade"${p.estoque ? "" : " disabled"}>${icon("minus", { size: 18 })}</button><input id="quantidade" name="quantidade" type="number" value="1" min="1" max="${max}" inputmode="numeric" required${p.estoque ? "" : " disabled"}><button type="button" data-qty="1" aria-label="Aumentar quantidade"${p.estoque > 1 ? "" : " disabled"}>${icon("plus", { size: 18 })}</button></div></div><div class="buy-actions"><button type="submit"${p.estoque ? "" : " disabled"}>${icon("bag", { size: 18 })}Adicionar ao carrinho</button><button type="button" class="secondary" data-buy-now${p.estoque ? "" : " disabled"}>Comprar agora</button></div></form>` : `<div class="buy-box buy-box-out">${alertButtonHTML(p)}<p class="small muted">Sem estoque agora. Ative o aviso e acompanhe em Minha conta.</p></div>`}
 <p class="cart-feedback" role="status"></p>
 <ul class="perk-list delivery-list">${Object.entries(delivery).map(([key, d]) => `<li>${icon(key === "retirada" ? "store" : "truck", { size: 18 })}<span><strong>${d.label}</strong><small>${d.prazo}</small></span><span class="option-price">${(key === "padrao" && p.priceCents >= FREE_SHIPPING_CENTS) || !shipping[key] ? "Grátis" : money(shipping[key])}</span></li>`).join("")}<li>${icon("refresh", { size: 18 })}<span><strong>Troca em até 7 dias</strong><small>Após o recebimento</small></span></li>${servicesFor(p).length ? `<li>${icon("wrench", { size: 18 })}<span><strong>${serviceSummary(p)}</strong><small>A partir de ${money(Math.min(...servicesFor(p).map((x) => x.priceCents)))}, escolha no carrinho</small></span></li>` : ""}</ul><p class="small muted">Frete grátis na entrega padrão para compras a partir de ${money(FREE_SHIPPING_CENTS)}.</p>
@@ -228,7 +327,8 @@ ${p.estoque ? `<form id="add-product" class="buy-box"><div class="quantity-field
 <section class="product-specs"><h2>Sobre este equipamento</h2><dl><div><dt>Marca</dt><dd>${esc(p.marca)}</dd></div><div><dt>Modelo</dt><dd>${esc(p.modelo)}</dd></div><div><dt>Categoria</dt><dd>${esc(p.categoria)}</dd></div>${specsHTML(p)}<div><dt>Código</dt><dd>${esc(p.id)}</dd></div></dl></section></section>`;
     pushRecent(p.id);
     structuredData(p, name);
-    zoom(container.querySelector(".zoom-frame"), image, name);
+    const gallery = mountGallery(container, p, name, view, photos);
+    zoom(container.querySelector(".zoom-frame"), name, { swiped: gallery.swiped });
     container.querySelector("[data-wish]").addEventListener("click", (event) => handleWish(event.currentTarget.dataset.wish));
     container.querySelector("[data-share]").addEventListener("click", () => share(name));
     const form = container.querySelector("#add-product");
@@ -249,17 +349,21 @@ ${p.estoque ? `<form id="add-product" class="buy-box"><div class="quantity-field
     if (form) syncSteps();
     const feedback = container.querySelector(".cart-feedback");
     if (form) bindForm(form, (data) => {
-      if (addCart(p, Number(data.quantidade), { source: container.querySelector(".detail-image") })) feedback.innerHTML = 'Equipamento adicionado. <a href="/carrinho.html">Ver meu carrinho</a>';
+      if (addCart(p, Number(data.quantidade), { source: container.querySelector(".detail-image"), cor: view.cor || undefined }))
+        feedback.innerHTML = `Equipamento adicionado${view.cor ? ` na cor ${esc(view.cor)}` : ""}. <a href="/carrinho.html">Ver meu carrinho</a>`;
       else feedback.textContent = "Não foi possível adicionar. Confira a quantidade e a mensagem exibida.";
     });
     container.querySelector("[data-buy-now]")?.addEventListener("click", () => {
       if (!validateForm(form)) return;
-      if (addCart(p, Number(qty.value), { notify: false })) location.href = "/checkout.html";
+      if (addCart(p, Number(qty.value), { notify: false, cor: view.cor || undefined })) location.href = "/checkout.html";
     });
     // Barra de compra fixa no celular quando o botão principal sai da tela.
     const bar = document.querySelector("#sticky-buy");
     bar.innerHTML = `<img src="${esc(image)}" alt="" width="44" height="44"><span><strong>${esc(p.modelo)}</strong><small>${p.estoque ? money(p.priceCents) : "Esgotado"}</small></span>${p.estoque ? `<button type="button" data-bar-add>${icon("bag", { size: 18 })}Adicionar</button>` : alertButtonHTML(p, { short: true, className: "" })}`;
-    bar.querySelector("[data-bar-add]")?.addEventListener("click", () => addCart(p, 1, { source: bar.querySelector("img") }));
+    bar.querySelector("[data-bar-add]")?.addEventListener("click", () => addCart(p, 1, { source: bar.querySelector("img"), cor: view.cor || undefined }));
+    gallery.onColor(() => {
+      bar.querySelector("img").src = photos()[0].url;
+    });
     let ticking = false;
     const syncBar = () => {
       ticking = false;

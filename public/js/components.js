@@ -38,13 +38,18 @@ export const productUrl = (p) => `/produto.html?id=${encodeURIComponent(p.id)}`;
 export function wishLabel(name, wished) {
   return wished ? `Remover ${name} dos favoritos` : `Salvar ${name} nos favoritos`;
 }
+// Cores do produto no cartão: bolinhas e "3 cores" (a escolha é feita na página do produto).
+const colorDotsHTML = (p) =>
+  Array.isArray(p.cores) && p.cores.length > 1
+    ? `<p class="card-colors"><span class="card-dots" aria-hidden="true">${p.cores.map((c) => `<span class="card-dot" style="--swatch:${/^#[0-9a-f]{6}$/i.test(c.hex) ? c.hex : "#888888"}"></span>`).join("")}</span>${p.cores.length} cores</p>`
+    : "";
 export function productCard(p, index = 0) {
   const stock = stockState(p);
   const name = `${p.marca} ${p.modelo}`;
   const wished = isWished(p.id);
   return `<article class="product-card${stock.key === "out" ? " is-out" : ""}" style="--i:${index % 12}">
 <div class="product-media"><img src="${esc(productImage(p))}" alt="" loading="lazy" decoding="async" width="480" height="480"><div class="product-badges"><span class="badge badge-category">${esc(p.categoria)}</span>${stock.key === "in" ? "" : `<span class="badge badge-${stock.key}">${stock.label}</span>`}</div><button type="button" class="wish-button" data-wish="${esc(p.id)}" aria-pressed="${wished}" aria-label="${esc(wishLabel(name, wished))}">${icon("heart")}</button><button type="button" class="quick-button" data-quick="${esc(p.id)}" aria-label="Visualização rápida de ${esc(name)}">${icon("eye", { size: 18 })}<span>Ver rápido</span></button></div>
-<div class="product-body"><span class="product-brand">${esc(p.marca)}</span><h3 class="product-title"><a href="${productUrl(p)}"><span class="sr-only">${esc(p.marca)} </span>${esc(p.modelo)}</a></h3><p class="product-price">${money(p.priceCents)}</p>${installmentText(p.priceCents) ? `<p class="product-installments">${installmentText(p.priceCents)}</p>` : ""}${compareButtonHTML(p)}${stock.key === "out" ? alertButtonHTML(p, { short: true, className: "button secondary add-button" }) : `<button type="button" class="button add-button" data-add="${esc(p.id)}" aria-label="Adicionar ${esc(name)} ao carrinho">${icon("bag", { size: 18 })}<span>Adicionar</span></button>`}</div>
+<div class="product-body"><span class="product-brand">${esc(p.marca)}</span><h3 class="product-title"><a href="${productUrl(p)}"><span class="sr-only">${esc(p.marca)} </span>${esc(p.modelo)}</a></h3><p class="product-price">${money(p.priceCents)}</p>${installmentText(p.priceCents) ? `<p class="product-installments">${installmentText(p.priceCents)}</p>` : ""}${colorDotsHTML(p)}${compareButtonHTML(p)}${stock.key === "out" ? alertButtonHTML(p, { short: true, className: "button secondary add-button" }) : `<button type="button" class="button add-button" data-add="${esc(p.id)}" aria-label="Adicionar ${esc(name)} ao carrinho">${icon("bag", { size: 18 })}<span>Adicionar</span></button>`}</div>
 </article>`;
 }
 export const skeletonCards = (count = 6) =>

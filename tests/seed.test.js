@@ -15,7 +15,7 @@ import { seedFixture, fixturePng } from "./helpers/seed-fixture.js";
 
 test("catálogo seed: IDs sequenciais únicos, arquivos e modelos únicos, preços e estoques", () => {
   assert.equal(ORIGINAL_SEED_COUNT, 22);
-  assert.ok(N >= 60 && N <= 80, `catálogo com ${N} produtos`);
+  assert.ok(N >= 60 && N <= 90, `catálogo com ${N} produtos`);
   assert.equal(new Set(seedProducts.map((p) => p.file)).size, N);
   assert.equal(new Set(seedProducts.map((p) => p.modelo)).size, N, "modelo identifica a ficha");
   assert.deepEqual(
@@ -41,7 +41,7 @@ test("catálogo seed: IDs sequenciais únicos, arquivos e modelos únicos, preç
     Guitarras: 17,
     Amplificadores: 10,
     Pedais: 15,
-    Cabos: 3,
+    Cabos: 4,
     Correias: 3,
     Acessórios: 10,
   });

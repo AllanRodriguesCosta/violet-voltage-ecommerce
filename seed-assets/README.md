@@ -16,7 +16,7 @@ $env:PORT='3000'
 npm run seed
 ```
 
-O comando lê e confere todas as imagens, carrega os 80 produtos e faz uma chamada a `storage.upload` por imagem, com MIME `image/png`. Em memória, os arquivos ficam no adaptador, e o mesmo processo abre a loja em `http://localhost:3000`. Dados e imagens desaparecem ao parar o servidor. Não execute `npm start` em outro processo esperando compartilhar essa memória.
+O comando lê e confere todas as imagens, carrega os 81 produtos e faz uma chamada a `storage.upload` por imagem, com MIME `image/png`. Em memória, os arquivos ficam no adaptador, e o mesmo processo abre a loja em `http://localhost:3000`. Dados e imagens desaparecem ao parar o servidor. Não execute `npm start` em outro processo esperando compartilhar essa memória.
 
 ## Executar no PostgreSQL
 
@@ -50,4 +50,13 @@ Os dados ficam no schema privado `violet_voltage`; imagens são bytes na tabela 
 - Os SVGs originais de `public/assets` continuam disponíveis como fallback de produtos sem imagem. Os produtos desta carga usam os PNGs enviados ao armazenamento.
 
 Os testes automatizados geram suas próprias imagens temporárias, sem precisar incluir os PNGs privados no repositório.
+
+## Galeria e cores (etapa 29)
+
+Além da foto principal, os amplificadores podem ter fotos extras numa pasta com o nome da foto principal (sem o `.png`):
+
+- sem cores: `amplificadores/boss-katana-50-mkii/topo.png` e `.../costas.png`;
+- com cores: o nome começa pela cor, como `amplificadores/vox-ac30c2/roxo-frente.png`, `.../roxo-topo.png`, `.../preto-costas.png`. A frente da primeira cor é a foto principal.
+
+As cores (nome e tom da bolinha) e as vistas de cada modelo estão em `src/services/seed-gallery.js`. As fotos extras são opcionais: se faltar alguma, o seed continua, o produto entra com as que existirem e o comando lista as que faltaram. `npm run fotos:conferir` também mostra quantas extras estão prontas.
 

@@ -30,6 +30,12 @@ export function calculate(items, products) {
         throw new AppError(400, "Serviço indisponível para este item.");
       return { id, nome: SERVICES[id].nome, priceCents: servicePrice(id, p) };
     });
+    // Cor: só as do produto. Sem escolha (ou com uma cor que saiu de linha), vale a cor padrão,
+    // a mesma que o carrinho mostra (itemColor em public/js/common.js).
+    const cores = Array.isArray(p.cores) ? p.cores.map((c) => c.nome) : [];
+    if (item.cor !== undefined && item.cor !== null && (typeof item.cor !== "string" || item.cor.length > 30))
+      throw new AppError(400, "Cor inválida.");
+    const cor = cores.length ? (cores.includes(item.cor) ? item.cor : cores[0]) : undefined;
     return {
       id: p.rowKey,
       nome: `${p.marca} ${p.modelo}`,
@@ -37,6 +43,7 @@ export function calculate(items, products) {
       modelo: p.modelo,
       quantidade,
       priceCents: p.priceCents,
+      ...(cor ? { cor } : {}),
       ...(servicos.length ? { servicos } : {}),
     };
   });

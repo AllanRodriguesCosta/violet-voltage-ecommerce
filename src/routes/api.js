@@ -372,10 +372,9 @@ export function apiRouter(storage, config) {
     const p = await product(req.params.id);
     res.status(201).json({ data: publicQuestion(await askQuestion(storage, req.user, p, req.body)) });
   });
-  r.get("/images/:id", async (req, res) => {
-    const p = await product(req.params.id);
-    if (!p.blobName) throw new AppError(404, "Imagem não encontrada.");
-    const image = await storage.blob(p.blobName);
+  const sendImage = async (res, blobName) => {
+    if (!blobName) throw new AppError(404, "Imagem não encontrada.");
+    const image = await storage.blob(blobName);
     if (!image) throw new AppError(404, "Imagem não encontrada.");
     res
       .set({
@@ -384,6 +383,13 @@ export function apiRouter(storage, config) {
         "X-Content-Type-Options": "nosniff",
       })
       .send(image.buffer);
+  };
+  r.get("/images/:id", async (req, res) => sendImage(res, (await product(req.params.id)).blobName));
+  // Fotos da galeria (outras vistas e cores), pela posição.
+  r.get("/images/:id/:n", async (req, res) => {
+    const p = await product(req.params.id);
+    const n = /^\d{1,2}$/.test(req.params.n) ? Number(req.params.n) : -1;
+    await sendImage(res, Array.isArray(p.fotos) ? p.fotos[n]?.blobName : undefined);
   });
   // Cotação pública: mesmo cálculo do pedido, sem gravar nada.
   r.post("/checkout/quote", async (req, res) => {
@@ -518,10 +524,13 @@ export function apiRouter(storage, config) {
       }[req.file.mimetype];
       const name = `${p.rowKey}/${randomUUID()}.${ext}`;
       await storage.upload(name, req.file.buffer, req.file.mimetype);
+      const imageUrl = `/api/images/${p.rowKey}?v=${randomUUID()}`;
       const next = {
         ...p,
         blobName: name,
-        imageUrl: `/api/images/${p.rowKey}?v=${randomUUID()}`,
+        imageUrl,
+        // A foto principal também é a primeira da galeria.
+        ...(Array.isArray(p.fotos) && p.fotos.length ? { fotos: [{ ...p.fotos[0], blobName: name, url: imageUrl }, ...p.fotos.slice(1)] } : {}),
         updatedAt: new Date().toISOString(),
       };
       try {

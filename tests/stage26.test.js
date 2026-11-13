@@ -25,7 +25,7 @@ test("achou caro no setup: versão mais barata, pergunta o orçamento e ajusta",
   assert.equal(cheaper.contexto.aguardando, "orcamento");
   const fit = await say("2500");
   assert.equal(fit.intencao, "setup");
-  assert.ok(total(fit) <= 250000 || /Passou do orçamento/.test(fit.texto));
+  assert.ok(total(fit) <= 250000 || /Passou do seu orçamento/.test(fit.texto));
   const again = await say("achei caro, tenho até 2 mil");
   assert.equal(again.intencao, "objecao_preco");
   assert.match(again.texto, /até R\$\s2\.000/);

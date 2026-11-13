@@ -17,6 +17,11 @@ ATUALIZACAO 13/11/2026
   marcada no checkout; guarda so metodo e parcelas, nunca dados de cartao.
   Nada muda no banco: o campo "pagamento" fica dentro do JSON do cliente,
   sem migracao.
+- Etapa 28 (PR #24): assistente. "ajuda"/"socorro"/"tive um problema" abrem
+  uma triagem de atendimento com botoes; setup respeita o orcamento antes do
+  genero (troca a peca por outra de perfil diferente e explica); "mais
+  barato" sempre sai mais barato ou avisa que chegou no minimo. So codigo do
+  assistente: nada muda no banco nem no deploy.
 - Ao testar o site no ar (T08), confira tambem: o menu "Ola" no computador,
   o menu lateral no celular e "Sair" voltando para o inicio.
 

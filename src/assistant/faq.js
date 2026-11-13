@@ -16,6 +16,11 @@ export function faqAnswer(intent, text) {
       acoes: [link("Entregas e prazos", "/ajuda.html#entregas")],
     };
   }
+  if (intent === "pagamento" && /problema|erro|deu errado|nao (passou|foi|aprov|consig|funcion)|recusad|falh|cobrad|duas vezes/.test(text))
+    return {
+      texto: "Vamos resolver! O pedido só é registrado quando aparece a tela de confirmação; se ela não apareceu, nada foi finalizado e você pode tentar de novo pelo carrinho, que guarda os itens. Confira se escolheu Pix, cartão ou boleto e, no cartão, o número de parcelas. Se o pedido já aparece em Minha conta, em Meus pedidos, ele está registrado com a forma de pagamento escolhida.",
+      acoes: [link("Meus pedidos", "/minha-conta.html#pedidos"), link("Pagamentos", "/ajuda.html#pagamentos")],
+    };
   if (intent === "pagamento")
     return {
       texto: `Aceitamos Pix, cartão de crédito e boleto. No cartão, o pedido pode ser parcelado em até ${MAX_INSTALLMENTS}x sem juros, com parcela mínima de ${brl(MIN_INSTALLMENT_CENTS)}; as opções aparecem no checkout conforme o total.`,
@@ -33,11 +38,16 @@ export function faqAnswer(intent, text) {
     };
   if (intent === "conta") {
     const conta = link("Minha conta", "/minha-conta.html");
+    if (/\b(entrar|entro|acessar|acesso|logar|login)\b/.test(text) && !/senha (nova|atual)|trocar|mudar|alterar/.test(text))
+      return {
+        texto: "Confira se o e-mail está escrito igual ao do cadastro e se a senha está certa (atenção ao Caps Lock). Depois de muitas tentativas erradas, o acesso fica bloqueado por 15 minutos por segurança. A recuperação de senha por e-mail ainda não está disponível: se perdeu a senha, crie uma conta com outro e-mail.",
+        acoes: [link("Entrar", "/login.html"), link("Criar conta", "/cadastro.html")],
+      };
     if (/senha/.test(text)) return { texto: "A recuperação de senha ainda não está disponível. Se perdeu o acesso, crie uma conta com outro e-mail.", acoes: [link("Criar conta", "/cadastro.html")] };
-    if (/e-?mail/.test(text)) return { texto: "O e-mail de acesso não pode ser alterado. Nome e telefone mudam em Minha conta, na seção Meus dados.", acoes: [conta] };
+    if (/e-?mail/.test(text)) return { texto: "O e-mail de acesso não pode ser alterado. Nome e telefone mudam em Minha conta, na seção Dados e segurança.", acoes: [conta] };
     if (/endereco/.test(text)) return { texto: "Em Minha conta você salva até 5 endereços de entrega, edita e escolhe o principal, que já vem marcado no checkout.", acoes: [conta] };
     if (/favorit/.test(text)) return { texto: "Os favoritos ficam salvos neste navegador. Em outro aparelho ou navegador, a lista começa vazia.", acoes: [link("Meus favoritos", "/favoritos.html")] };
-    return { texto: "Seus dados ficam em Minha conta, na seção Meus dados. O e-mail de acesso não pode ser alterado.", acoes: [conta] };
+    return { texto: "Seus dados ficam em Minha conta, na seção Dados e segurança. O e-mail de acesso não pode ser alterado.", acoes: [conta] };
   }
   return null;
 }

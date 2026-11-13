@@ -458,5 +458,32 @@ instrumento usado na troca fica de fora.
       assistente.
 - [x] "Sair" encerra a sessão e apaga a conversa do assistente guardada na aba.
 
+### 28. Assistente: pedido de ajuda e setup que respeita o orçamento
+
+- [x] "Ajuda", "socorro", "help", "tive um problema", "quero falar com o
+      atendimento": em vez de explicar o que o assistente faz, pergunta o que
+      aconteceu e oferece os assuntos mais comuns em botões (onde está o
+      pedido, troca, problema com o pagamento, não consigo entrar na conta,
+      indicação de equipamento), com link para a Central de Ajuda. Logado, já
+      cita o pedido em andamento. "O que você faz?" continua com a apresentação.
+- [x] Respostas novas: problema no pagamento (passo a passo: tela de
+      confirmação, carrinho guardado, conferir em Meus pedidos) e problema para
+      entrar na conta (e-mail, Caps Lock, bloqueio de 15 minutos, recuperação
+      ainda indisponível).
+- [x] Monte seu setup com orçamento primeiro: quando nenhuma peça do gênero
+      cabe, o assistente escolhe uma peça de outro perfil que caiba, explica a
+      troca ("não é dos mais típicos de rock clássico, mas atende bem") e
+      mostra a opção do gênero que ficou de fora, com o preço. Só depois tira
+      pedal e correia, que voltam se sobrar dinheiro.
+- [x] "Mais barato" e "muito caro" sempre entregam um setup mais barato de
+      verdade (tenta uns 20% a menos e, se o estoque não permitir, qualquer
+      economia) ou avisam que aquele já é o mínimo, com montador e kits como
+      saída; quando pedal ou correia saem para economizar, o assistente avisa.
+      O aviso de orçamento estourado usa o valor que o cliente disse, não um
+      teto interno.
+- [x] "Quero falar com o suporte/atendente" abre a triagem mesmo com a palavra
+      "suporte" (que também é um produto); "tem suporte de chão?" continua
+      sendo busca de produto.
+
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

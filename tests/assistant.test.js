@@ -206,7 +206,10 @@ test("API do assistente: só logado, valida mensagem e contexto, isola pedidos e
     return { status: r.status, body: await r.json(), cookie: r.headers.get("set-cookie")?.split(";")[0] };
   };
   const register = async (email) => (await call("/auth/register", { body: { nome: "Cliente Chat", email, senha: randomBytes(12).toString("hex") } })).cookie;
-  assert.equal((await call("/assistente", { body: { mensagem: "oi" } })).status, 401);
+  // Visitante usa o assistente; pedidos pedem login (etapa 26).
+  const visitor = await call("/assistente", { body: { mensagem: "onde está meu pedido?" } });
+  assert.equal(visitor.status, 200);
+  assert.equal(visitor.body.data.acoes[0].tipo, "login");
   const ana = await register("ana-chat@teste.test");
   const bia = await register("bia-chat@teste.test");
   await storage.create("orders", { partitionKey: "outra-pessoa", rowKey: "pedido-de-outra-1", status: "Recebido", itens: "[]", totalCents: 1, createdAt: new Date().toISOString() });

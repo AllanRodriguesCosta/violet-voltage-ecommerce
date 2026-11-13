@@ -14,6 +14,7 @@ const tables = Object.freeze({
   partners: "violet_voltage.partners",
   carts: "violet_voltage.carts",
   searches: "violet_voltage.searches",
+  profiles: "violet_voltage.profiles",
   coupons: "violet_voltage.coupons",
 });
 

@@ -594,5 +594,29 @@ Para ensaiar e demonstrar sem gastar crédito. Visão geral:
       é respondida sozinha.
 - [x] Encomendas entram na cópia dos dados e na exclusão da conta (LGPD).
 
+### 34. Cupons no painel, frete por região, carrinho na conta e estoque por cor
+
+- [x] **Cupons gerenciados no painel** (aba Cupons): criar cupom de porcentagem, valor fixo ou
+      frete grátis, com compra mínima, desconto máximo, validade, limite de usos e "um uso por
+      cliente". Os três cupons padrão continuam valendo sem cadastro e podem ser desativados ou
+      limitados. Desativado, vencido ou esgotado sai do checkout, da ajuda e do assistente na
+      hora (`src/services/coupons.js`, tabela `coupons`). Uso contado a cada pedido.
+- [x] **Frete por região do CEP** (`public/js/regions.js`, o mesmo arquivo no navegador e no
+      servidor): o primeiro dígito do CEP define a região, com fator sobre o frete base e dias a
+      mais no prazo. Carrinho tem "Calcular frete pelo CEP"; o checkout usa o CEP do endereço
+      escolhido (o CEP dentro do endereço vale mais que o enviado à parte). Sem CEP, valem os
+      valores de São Paulo. Frete grátis acima do mínimo vale para todo o país.
+- [x] **Carrinho salvo na conta** (`/api/cart`, tabela `carts`): com login, o carrinho é
+      espelhado na conta e aparece em outro aparelho (junta uma vez por sessão: itens diferentes
+      somam, o mesmo item fica com a maior quantidade). O pedido limpa o carrinho salvo.
+- [x] **Lembrete de carrinho esquecido**: itens parados há 24 h, sem pedido depois, viram uma
+      notificação "Você deixou itens no carrinho" (uma vez por versão do carrinho).
+- [x] **Estoque por cor** (opcional): no painel, produtos com cores mostram um campo por cor; a
+      soma não passa do total. A página do produto avisa "Esgotado na cor X" e bloqueia a compra
+      nessa cor; o checkout recusa e baixa o estoque da cor; cancelar devolve.
+- [x] Correção: "como está minha encomenda?" no site agora recebe as encomendas do cliente (a
+      rota do assistente não as repassava). Lista de cupons não escreve mais "r$ 30".
+- [x] Carrinho salvo entra na cópia dos dados e some na exclusão da conta (LGPD).
+
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

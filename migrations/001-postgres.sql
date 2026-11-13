@@ -85,5 +85,21 @@ CREATE TABLE IF NOT EXISTS violet_voltage.partners (
   version text NOT NULL,
   CHECK (data->>'rowKey' = row_key AND data->>'partitionKey' = partition_key)
 );
+-- Etapa 34+: coupons.
+CREATE TABLE IF NOT EXISTS violet_voltage.coupons (
+  partition_key text NOT NULL,
+  row_key text PRIMARY KEY,
+  data jsonb NOT NULL CHECK (jsonb_typeof(data) = 'object'),
+  version text NOT NULL,
+  CHECK (data->>'rowKey' = row_key AND data->>'partitionKey' = partition_key)
+);
+-- Etapa 34+: carts.
+CREATE TABLE IF NOT EXISTS violet_voltage.carts (
+  partition_key text NOT NULL,
+  row_key text PRIMARY KEY,
+  data jsonb NOT NULL CHECK (jsonb_typeof(data) = 'object'),
+  version text NOT NULL,
+  CHECK (data->>'rowKey' = row_key AND data->>'partitionKey' = partition_key)
+);
 REVOKE ALL ON ALL TABLES IN SCHEMA violet_voltage FROM PUBLIC;
 COMMIT;

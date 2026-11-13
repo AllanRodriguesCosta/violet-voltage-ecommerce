@@ -367,6 +367,91 @@ function special(text, e, ctx, page, products) {
   return null;
 }
 
+// Reações à resposta anterior: achou caro, não gostou, gostou. Continuam a conversa em vez de
+// cair numa intenção genérica (ex.: "muito caro" não é agradecimento).
+const PRICE_OBJECTION = /\b(caro|cara|caros|caras|carissim\w*|salgad\w*|puxad\w*|pesad\w* (no|pro|para o) bolso|fora do (meu )?orcamento|acima do (meu )?orcamento|passou do (meu )?orcamento|nao (tenho|posso gastar|da pra gastar) (isso|tudo isso|esse valor)|nao cabe no (meu )?bolso|muito dinheiro)\b/;
+const DISLIKE = /\b(nao gostei|nao curti|nao era isso|nao e (bem )?isso|nao me agradou|feia|feio|nao combina comigo|tem outra|outra opcao|outras opcoes|mostra outr[ao]s?)\b/;
+const LIKE = /^(gostei|adorei|curti|amei|essa (e|eh|ficou) (boa|otima|perfeita)|essa ai|show de bola|perfeita|perfeito)(!|\.|\s|$)/;
+const BUDGET_CHIPS = ["Até R$ 1.500", "Até R$ 3.000", "Até R$ 5.000"];
+function shownOf(ctx, products) {
+  return ctx.mostrados.map((id) => products.find((p) => p.id === id)).filter(Boolean);
+}
+function reaction(text, e, ctx, products) {
+  const shown = shownOf(ctx, products);
+  if (PRICE_OBJECTION.test(text) && !/\bmais car/.test(text) && !e.produtos.length) {
+    if (ctx.intent === "setup" && shown.length) {
+      const total = shown.reduce((s, p) => s + p.priceCents, 0);
+      const max = e.max || Math.floor(total * 0.75);
+      const out = handleSetup(e, ctx, products, { max }, e.max ? `Sem problema! Ajustei o setup para caber em até ${brl(e.max)}:` : "Entendi, ficou acima do que você queria. Troquei algumas peças por opções mais em conta:");
+      const newTotal = (out.cards || []).reduce((s, c) => s + c.priceCents, 0);
+      const saved = total - newTotal;
+      out.texto += `${saved > 0 ? `\nSão ${brl(saved)} a menos que o anterior.` : ""}${e.max ? "" : " Se me disser quanto quer gastar no total, eu ajusto certinho."} No cartão, dá para parcelar em até 10x sem juros.`;
+      out.sugestoes = e.max ? ["Ainda está caro", "Quais kits vocês têm?", "Como funciona o frete?"] : BUDGET_CHIPS;
+      if (!e.max) out.contexto = { ...out.contexto, aguardando: "orcamento" };
+      return { intent: "objecao_preco", out };
+    }
+    if (ctx.intent === "recomendar" && shown.length) {
+      const out = e.max ? handleRecommend(e, ctx, products) : handleRecommend({ ...e, ordem: "asc" }, ctx, products, { refine: true });
+      const empty = !(out.cards || []).length;
+      const cheapest = Math.min(...shown.map((p) => p.priceCents));
+      out.texto = empty
+        ? `Essas já são as opções mais acessíveis com esses critérios (a partir de ${brl(cheapest)}${parcels(cheapest)}). Se me disser quanto quer gastar, procuro alternativas, como outro estilo ou um kit com desconto.`
+        : `Entendi! ${e.max ? `Até ${brl(e.max)}, estas cabem:` : "Separei opções mais em conta:"}${e.max ? "" : " Se me disser um valor máximo, eu filtro por ele."}`;
+      out.sugestoes = e.max ? ["Outras opções", "Quais kits vocês têm?"] : BUDGET_CHIPS;
+      if (!e.max) out.contexto = { ...out.contexto, aguardando: "orcamento" };
+      return { intent: "objecao_preco", out };
+    }
+    return {
+      intent: "objecao_preco",
+      out: {
+        texto: "Entendo, equipamento pesa no bolso. Me diz o que você procura e quanto quer gastar que eu acho opções que cabem. Dicas: os kits têm até 10% de desconto, o cartão parcela em até 10x sem juros e o cupom PRIMEIROACORDE dá R$ 30 na primeira compra a partir de R$ 200.",
+        sugestoes: ["Guitarra até R$ 1.500", "Setup completo até R$ 3.000", "Quais kits vocês têm?"],
+        acoes: [{ tipo: "link", rotulo: "Ver os kits com desconto", href: "/kits.html" }],
+        contexto: { ...ctx, aguardando: null },
+      },
+    };
+  }
+  if (DISLIKE.test(text) && shown.length && !e.categoria && !e.produtos.length) {
+    if (ctx.intent === "setup")
+      return {
+        intent: "objecao",
+        out: {
+          texto: "Sem problema! Me diz o que não agradou (o estilo, uma das peças ou o valor) que eu ajusto. Se preferir escolher peça por peça, abra o setup no montador.",
+          sugestoes: ["Muito caro", "Quero outro estilo", "Mais completo"],
+          acoes: [{ tipo: "link", rotulo: "Ajustar no Monte seu setup", href: `/setup.html?itens=${ctx.mostrados.join(",")}` }],
+          contexto: { ...ctx, aguardando: null },
+        },
+      };
+    const out = handleRecommend(e, ctx, products, { refine: true });
+    if ((out.cards || []).length) out.texto = `Sem problema! Outras opções: ${out.texto === "Mais opções:" ? "" : out.texto}`.trim();
+    out.sugestoes = ["Mais barato", "Outro estilo", "Montar um setup"];
+    return { intent: "objecao", out };
+  }
+  if (LIKE.test(text) && shown.length && (ctx.intent === "recomendar" || ctx.intent === "setup")) {
+    if (ctx.intent === "setup")
+      return { intent: "aprovacao", out: { texto: "Que bom que curtiu o setup! Toque em “Adicionar tudo ao carrinho” ou me peça para trocar alguma peça.", sugestoes: ["Adiciona tudo no carrinho", "Mais barato"], contexto: { ...ctx, aguardando: null } } };
+    if (shown.length === 1) return { intent: "aprovacao", out: { ...addAnswer(shown), texto: `Boa escolha! ${addAnswer(shown).texto}`, contexto: { ...ctx, aguardando: null } } };
+    return {
+      intent: "aprovacao",
+      out: { texto: "Boa! Qual delas você quer levar?", sugestoes: ["Adicionar a primeira", "Adicionar a segunda", "Comparar as duas primeiras"], contexto: { ...ctx, aguardando: null } },
+    };
+  }
+  return null;
+}
+// "2500", "2 mil", "R$ 3.000" sozinho quando o assistente pediu o orçamento.
+function bareBudget(text) {
+  const m = text.match(/^\D{0,20}?(\d{1,3}(?:\.\d{3})+|\d+)(?:,\d{2})?\s*(mil|k)?\s*(reais|conto|pila)?\D{0,10}$/);
+  if (!m) return undefined;
+  const value = Number(m[1].replace(/\./g, "")) * (m[2] ? 1000 : 1);
+  return value >= 50 && value <= 1_000_000 ? value * 100 : undefined;
+}
+const LOGIN_NEEDED = { pedido_status: "ver seus pedidos", pedido_cancelar: "cancelar um pedido", historico: "sugerir pelo que você já comprou", troca_pedido: "pedir uma troca" };
+const loginAnswer = (motivo) => ({
+  texto: `Para ${motivo}, entre na sua conta (ou crie uma, leva 1 minuto). Depois é só me perguntar de novo. Enquanto isso, posso indicar equipamentos e tirar dúvidas sem login.`,
+  acoes: [{ tipo: "login", rotulo: "Entrar ou criar conta", href: "/login.html" }],
+  sugestoes: ["Quero uma guitarra vintage", "Como funciona o frete?"],
+});
+
 export async function reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders = async () => [], alerts = async () => [], user } = {}) {
   const brands = [...new Set(products.map((p) => p.marca))];
   let ctx = sanitizeContext(contexto, brands);
@@ -375,6 +460,7 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
   const ranking = classify(model, mensagem);
   const top = ranking[0];
   const e = extract(mensagem, products);
+  if (ctx.aguardando === "orcamento" && !e.max && !e.min) e.max = bareBudget(text);
   const shopping = Boolean(e.categoria || e.tipo || e.genero || e.estilo || e.formato || e.captacao || e.tecnologia || e.voicing || e.marca || e.mao || e.cordas || e.captadores || e.trastes || e.produtos.length);
   const slotAnswer = shopping || e.min || e.max || e.estilo || e.uso || e.nivel || SKIP.test(text);
   const confirmed = (intent) => INFO[intent]?.test(text);
@@ -384,8 +470,11 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
 
   const accepted = top.p >= THRESHOLD && top.coverage >= (top.intent === "fora_escopo" ? 0.2 : 0.34) && !INFO[top.intent] && top.intent !== "refinar";
   let intent;
-  const action = ctx.aguardando && slotAnswer ? null : special(text, e, ctx, page, products);
-  if (ctx.aguardando && slotAnswer && !(confirmed(top.intent) && top.p >= 0.5)) intent = ctx.intent || "recomendar";
+  const guest = !user;
+  const react = reaction(text, e, ctx, products);
+  const action = react || (ctx.aguardando && slotAnswer ? null : special(text, e, ctx, page, products));
+  if (react) intent = react.intent;
+  else if (ctx.aguardando && slotAnswer && !(confirmed(top.intent) && top.p >= 0.5)) intent = ctx.intent || "recomendar";
   else if (action) intent = action.intent;
   else if (GLOSSARY_Q.test(text) && strongHelp(help)) intent = "central_ajuda";
   else if (informative) intent = informative.intent;
@@ -393,6 +482,7 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
   else if (top.intent === "refinar" && top.p >= 0.35 && !shopping) intent = ctx.intent ? "refinar" : "recomendar";
   else if (shopping) intent = "recomendar";
   else if (e.ordem && ctx.intent) intent = "refinar";
+  else if ((e.max || e.min) && ctx.intent) intent = ctx.intent;
   else if (strongHelp(help) && !(accepted && CONVERSATION.includes(top.intent))) intent = "central_ajuda";
   else if (accepted) intent = top.intent;
   else intent = "nao_entendi";
@@ -400,15 +490,21 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
   const keep = { ...ctx, aguardando: null };
   const first = String(user?.nome || "").split(" ")[0];
   let out;
-  if (action?.out) {
+  if (react) out = react.out;
+  else if (action?.out) {
     // Produtos mostrados pela ação viram referência para "a primeira", "essa" e "adiciona tudo".
     const shown = (action.out.cards || []).map((c) => c.id);
     const replaces = ["comparar", "carrinho"].includes(intent);
     out = { ...action.out, contexto: replaces && shown.length ? { ...keep, intent: null, mostrados: shown } : keep };
-  } else if (intent === "historico") out = { ...historyAnswer(await orders(), products), contexto: keep };
-  else if (intent === "favoritos") out = { ...favoritesAnswer(page, await alerts()), contexto: keep };
+  } else if (guest && LOGIN_NEEDED[intent]) out = { ...loginAnswer(LOGIN_NEEDED[intent]), contexto: keep };
+  else if (guest && intent === "troca" && /\b(meu|minha|comprei|pedido)\b/.test(text)) out = { ...faqAnswer("troca", text), texto: `${faqAnswer("troca", text).texto} Para abrir a solicitação, entre na sua conta e use o comprovante do pedido.`, acoes: loginAnswer("").acoes, contexto: keep };
+  else if (intent === "historico") out = { ...historyAnswer(await orders(), products), contexto: keep };
+  else if (intent === "favoritos") out = { ...favoritesAnswer(page, guest ? [] : await alerts()), ...(guest ? { acoes: [{ tipo: "link", rotulo: "Abrir favoritos", href: "/favoritos.html" }, ...loginAnswer("").acoes] } : {}), contexto: keep };
   else if (intent === "troca" && !/senha/.test(text) && exchangeAnswer(await orders())) out = { ...exchangeAnswer(await orders()), contexto: keep };
-  else if (intent === "recomendar") out = handleRecommend(e, ctx, products);
+  else if (intent === "recomendar") {
+    out = handleRecommend(e, ctx, products);
+    if (ctx.aguardando === "orcamento" && e.max && out.cards?.length && out.cards.every((c) => c.priceCents <= e.max)) out.texto = `Até ${brl(e.max)}, estas cabem:`;
+  }
   else if (intent === "refinar") {
     if (ctx.intent === "setup") {
       const total = ctx.mostrados.map((id) => products.find((p) => p.id === id)?.priceCents || 0).reduce((a, b) => a + b, 0);
@@ -421,9 +517,10 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
     out = { ...helpAnswer(help.entry), contexto: keep };
   else if (INFO[intent]) out = { ...faqAnswer(intent, text), sugestoes: START.slice(0, 3), contexto: keep };
   else if (intent === "saudacao")
-    out = { texto: `Oi${first ? `, ${first}` : ""}! Sou o assistente da Violet Voltage. Posso indicar equipamentos pelo seu estilo, montar um setup, contar em que etapa está seu pedido e tirar dúvidas sobre frete, pagamento e trocas. Por onde começamos?`, sugestoes: START, contexto: keep };
+    out = { texto: `Oi${first ? `, ${first}` : ""}! Sou o assistente da Violet Voltage. Posso indicar equipamentos pelo seu estilo, montar um setup, comparar produtos e tirar dúvidas sobre frete, pagamento e trocas${guest ? "" : ", e contar em que etapa está seu pedido"}. Por onde começamos?`, sugestoes: START, contexto: keep };
   else if (intent === "ajuda")
     out = { texto: "Eu entendo frases como “quero uma guitarra vintage para blues até 5 mil”, “monta um setup de rock”, “onde está meu pedido?” ou “aceita pix?”. Indico só o que existe na loja, com preço e estoque de agora; nada é comprado sem você clicar.", sugestoes: START, contexto: keep };
+  else if (intent === "agradecimento" && !/obrigad|valeu|brigad|agradec|ajudou|vlw|thanks/.test(text)) out = { texto: "Certo! Quer que eu ajuste alguma coisa? Posso procurar opções mais em conta, outro estilo ou montar um setup.", sugestoes: ["Mais barato", "Outras opções", "Montar um setup"], contexto: keep };
   else if (intent === "agradecimento") out = { texto: "Por nada! Se precisar de mais alguma coisa, é só chamar.", sugestoes: START.slice(0, 2), contexto: keep };
   else if (intent === "despedida") out = { texto: "Até mais! Bons ensaios.", sugestoes: [], contexto: keep };
   else if (intent === "fora_escopo")

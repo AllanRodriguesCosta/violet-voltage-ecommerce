@@ -3,6 +3,12 @@ VIOLET VOLTAGE - CONTEXTO PARA O CODEX (O QUE MUDOU EM 12/11/2026)
 
 Ultima atualizacao: 12/11/2026, depois do PR #20 (main 62dcdc2, CI verde).
 
+ATUALIZACAO 13/11/2026
+----------------------
+- Etapa 26 (PR #22): assistente aberto a visitantes (login so para pedidos,
+  historico, trocas e avisos de preco) e reacoes como "muito caro", "nao
+  gostei" e orcamento solto. Ver docs/ROADMAP.md, Fase 4.
+
 LEIA PRIMEIRO
 -------------
 - Este arquivo resume tudo o que o Copilot entregou em 12/11/2026 (etapas 17

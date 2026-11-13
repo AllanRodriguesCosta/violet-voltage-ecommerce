@@ -26,9 +26,10 @@ carrinho" dependem de um clique.
 | Histórico e favoritos (etapa 24) | "algo com base no que eu comprei", "meus favoritos baixaram de preço?" | O que completa as compras e itens do mesmo estilo; preço de hoje contra o do aviso |
 | Glossário (etapa 24) | "o que é humbucker?", "diferença entre fuzz e overdrive" | Definição do glossário com link para o termo e para o guia |
 | Troca (etapa 24) | "quero trocar o pedal que comprei" | Se há pedido no prazo, o caminho para "Solicitar troca" no comprovante |
+| Reações (etapa 26) | "muito caro", "achei caro, tenho 2 mil", "não gostei", "gostei" | Setup ou opções mais em conta, pergunta o orçamento e aceita valor solto ("2500"); outras opções; oferta de adicionar ao carrinho |
 | Filtros novos (etapa 24) | "guitarra canhota", "de 7 cordas", "com captador ativo", "com 24 trastes" | Recomendação com esses filtros e link para o catálogo filtrado |
 
-Disponível só para quem está logado (botão "Assistente" no canto da tela).
+Disponível para todos, inclusive visitantes (botão "Assistente" no canto da tela). Pedidos, sugestões pelo histórico, aviso de preço dos favoritos e trocas respondem com um botão "Entrar ou criar conta", que volta para a mesma página depois do login (etapa 26).
 
 ## Como funciona
 
@@ -99,7 +100,7 @@ contexto da conversa (vem do navegador, revalidado) ─────────�
 
 ## Segurança e limites
 
-- `POST /api/assistente`: só para quem está logado. Mensagem de 1 a 500
+- `POST /api/assistente`: aberto a visitantes (sessão opcional; limite por usuário ou, sem login, por endereço de rede). Mensagem de 1 a 500
   caracteres, contexto até 4 KB e 40 mensagens a cada 5 minutos por usuário.
 - Pedidos lidos só da partição do próprio cliente.
 - Links de resposta só para caminhos internos; o navegador também confere.
@@ -125,9 +126,9 @@ Resultado em 12/11/2026, depois da etapa 24 (assistente que age):
 
 | Medida | Resultado |
 | --- | --- |
-| Intenção (116 frases fora do treino) | 94,8% |
+| Intenção (118 frases fora do treino, etapa 26) | 94,9% |
 | Entidades (48 campos) | 100% |
-| Conversas de várias mensagens | 3 de 3 |
+| Conversas de várias mensagens | 5 de 5 |
 
 Na etapa 24 entraram 20 frases de ações (glossário, comparação, ficha, adicionar,
 cupom, carrinho, histórico, favoritos e filtros novos), algumas com a página do

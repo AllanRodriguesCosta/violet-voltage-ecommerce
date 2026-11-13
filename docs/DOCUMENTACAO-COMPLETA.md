@@ -37,7 +37,7 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/services/account.js` | Troca de senha, cópia dos dados e exclusão da conta pelo cliente |
 | `src/knowledge/genres.js` | Base de conhecimento musical por gênero, usada pelo assistente |
 | `src/assistant/` | Assistente de compras: pré-processamento, classificador Naive Bayes, entidades, recomendação, setup, dúvidas, contexto e avaliação ([ASSISTENTE.md](ASSISTENTE.md)) |
-| `public/js/assistant.js` | Painel do assistente (só para quem está logado) |
+| `public/js/assistant.js` | Painel do assistente (aberto a visitantes desde a etapa 26) |
 | `scripts/assistant-eval.js` | `npm run agente:eval`: acerto por intenção em frases fora do treino |
 | `src/repositories/factory.js`, `postgres.js` | Seleção de backend e persistência PostgreSQL |
 | `src/repositories/memory.js` | Armazenamento volátil de desenvolvimento e testes |
@@ -340,7 +340,7 @@ Apresentação: [demonstração](DEMONSTRACAO.md). Evidências: [validação](..
 
 Fase 3 (assistente de compras), decidida em 12/11/2026: sem custo, motor
 híbrido (PLN local sempre ativa e Gemini gratuito opcional, com retorno à PLN
-local), só para usuários logados, um agente unificado para recomendação, dúvidas
+local), inicialmente só para usuários logados e, desde a etapa 26, aberto a visitantes, um agente unificado para recomendação, dúvidas
 da loja, pedidos e setup. Etapas 17 (ficha técnica e base de conhecimento), 18
 (catálogo ampliado) e 19 (assistente com PLN local, ver
 [ASSISTENTE.md](ASSISTENTE.md)) e 20 (conta, privacidade e Central de Ajuda)

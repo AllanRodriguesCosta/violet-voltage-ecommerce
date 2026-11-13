@@ -48,7 +48,8 @@ function strengthMeter(input) {
 }
 export default function authentication() {
   const next = new URLSearchParams(location.search).get("next");
-  const safe = allowed.includes(next) || /^\/produto\.html\?id=[A-Za-z0-9-]{1,100}$/.test(next || "");
+  // Volta para qualquer página interna da loja (sem outro domínio nem login/cadastro de novo).
+  const safe = allowed.includes(next) || (/^\/(?!\/)(?:[a-z0-9-]+\.html)?(?:\?[\w=&%.,+-]{0,200})?$/i.test(next || "") && !/^\/(login|cadastro)\.html/.test(next));
   const target = safe ? next : "/minha-conta.html";
   if (safe)
     document.querySelectorAll('.auth-bottom a[href="/cadastro.html"], .auth-bottom a[href="/login.html"]').forEach((a) => a.setAttribute("href", `${a.getAttribute("href")}?next=${encodeURIComponent(next)}`));

@@ -52,6 +52,20 @@ export function productInput(body) {
     ...fichaInput(categoria, body.ficha),
   };
 }
+// Etapa 34: estoque por cor. Recebe { "Preto": 3, "Roxo": null }; null ou vazio tira o controle.
+export function colorStockInput(cores, value, total) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new AppError(400, "Estoque por cor inválido.", "estoqueCores");
+  const next = cores.map((c) => {
+    const raw = value[c.nome];
+    const rest = { ...c };
+    delete rest.estoque;
+    if (raw === undefined || raw === null || raw === "") return rest;
+    return { ...rest, estoque: integer(raw, `estoque da cor ${c.nome}`, 0, 100000) };
+  });
+  const sum = next.reduce((s, c) => s + (c.estoque ?? 0), 0);
+  if (sum > total) throw new AppError(400, "A soma do estoque das cores passa do estoque total.", "estoqueCores");
+  return next;
+}
 // Ficha técnica opcional: ausente preserva a atual; null limpa.
 function fichaInput(categoria, value) {
   if (value === undefined) return {};

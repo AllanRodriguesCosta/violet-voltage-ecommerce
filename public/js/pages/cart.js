@@ -20,6 +20,7 @@ import { maxInstallments, installmentValue } from "../pricing.js";
 import { cartAdvice } from "../compat.js";
 import { kitProgress, kitPrice } from "../kits.js";
 import { servicesFor, servicePrice, SERVICES } from "../services.js";
+import { cepDigits, formatCep } from "../regions.js";
 
 export async function cartData() {
   const cart = getCart();
@@ -47,6 +48,13 @@ export const prefs = {
   set coupon(value) {
     try { value ? localStorage.setItem("vv_coupon", value) : localStorage.removeItem("vv_coupon"); } catch { /* opcional */ }
   },
+  // Etapa 34: CEP para calcular o frete por região (só os 8 dígitos).
+  get cep() {
+    try { return cepDigits(localStorage.getItem("vv_cep")) || ""; } catch { return ""; }
+  },
+  set cep(value) {
+    try { cepDigits(value) ? localStorage.setItem("vv_cep", cepDigits(value)) : localStorage.removeItem("vv_cep"); } catch { /* opcional */ }
+  },
   get delivery() {
     try { return localStorage.getItem("vv_delivery") || "padrao"; } catch { return "padrao"; }
   },
@@ -54,8 +62,8 @@ export const prefs = {
     try { localStorage.setItem("vv_delivery", value); } catch { /* opcional */ }
   },
 };
-export const fetchQuote = (entrega, cupom) =>
-  send("/checkout/quote", { items: getCart(), entrega, ...(cupom ? { cupom } : {}) });
+export const fetchQuote = (entrega, cupom, cep = prefs.cep) =>
+  send("/checkout/quote", { items: getCart(), entrega, ...(cupom ? { cupom } : {}), ...(cepDigits(cep) ? { cep: cepDigits(cep) } : {}) });
 // Cor do item no carrinho: dá para trocar ali mesmo, sem voltar à página do produto.
 function colorHTML(p, item) {
   const names = colorNames(p);
@@ -92,6 +100,7 @@ export default async function cartPage() {
   let delivery = prefs.delivery;
   let coupon = prefs.coupon;
   let couponError = "";
+  let cepError = "";
   let products = [];
   function save(items, message, extra) {
     const previous = getCart();
@@ -129,7 +138,7 @@ export default async function cartPage() {
       }
     }
     const options = quote?.entregas || [];
-    aside.innerHTML = `<h2>Resumo do pedido</h2>${options.length ? `<fieldset class="ship-estimate"><legend>Entrega</legend>${options.map((o) => `<label class="option-line"><input type="radio" name="estimate" value="${o.id}"${o.id === delivery ? " checked" : ""}><span><strong>${esc(o.label)}</strong><small>${esc(o.prazo)}</small></span><span class="option-price">${o.priceCents ? money(o.priceCents) : "Grátis"}</span></label>`).join("")}</fieldset>` : ""}
+    aside.innerHTML = `<h2>Resumo do pedido</h2><form class="cep-form" novalidate><label for="cart-cep">Calcular frete pelo CEP</label><div class="coupon-row"><input id="cart-cep" name="cep" inputmode="numeric" autocomplete="postal-code" maxlength="9" placeholder="00000-000" value="${esc(formatCep(prefs.cep))}"${cepError ? ' aria-invalid="true" aria-describedby="cep-error"' : ""}><button type="submit" class="secondary">Calcular</button></div>${cepError ? `<p class="field-error" id="cep-error" role="alert">${esc(cepError)}</p>` : quote?.regiao ? `<p class="form-help">Entrega para ${esc(quote.regiao.nome)}.</p>` : '<p class="form-help">Sem CEP, mostramos o frete para o estado de São Paulo.</p>'}</form>${options.length ? `<fieldset class="ship-estimate"><legend>Entrega</legend>${options.map((o) => `<label class="option-line"><input type="radio" name="estimate" value="${o.id}"${o.id === delivery ? " checked" : ""}><span><strong>${esc(o.label)}</strong><small>${esc(o.prazo)}</small></span><span class="option-price">${o.priceCents ? money(o.priceCents) : "Grátis"}</span></label>`).join("")}</fieldset>` : ""}
 <form class="coupon-form" novalidate><label for="cart-coupon">Cupom de desconto</label>${quote?.cupom ? `<div class="coupon-applied">${icon("tag", { size: 18 })}<span><strong>${esc(quote.cupom.codigo)}</strong><small>${esc(quote.cupom.descricao)}</small></span><button type="button" class="text-button" data-remove-coupon>Remover</button></div>` : `<div class="coupon-row"><input id="cart-coupon" name="cupom" maxlength="30" autocomplete="off" placeholder="Ex.: VOLTAGE10" value=""${couponError ? ' aria-invalid="true" aria-describedby="coupon-error"' : ""}><button type="submit" class="secondary">Aplicar</button></div>${couponError ? `<p class="field-error" id="coupon-error" role="alert">${esc(couponError)}</p>` : ""}`}</form>
 <div class="totals">${totalsHTML(quote || base)}</div>${invalid ? '<p class="field-error">Ajuste os itens indisponíveis para continuar.</p>' : ""}
 <a class="button full" href="/checkout.html"${invalid ? ' aria-disabled="true"' : ""}>Finalizar compra ${icon("arrowRight", { size: 18 })}</a><a class="button secondary full" href="/catalogo.html">Continuar comprando</a><p class="secure-note">${icon("shield", { size: 16 })}Preços, estoque e descontos são conferidos novamente ao confirmar.</p>`;
@@ -144,6 +153,17 @@ export default async function cartPage() {
         summary(items);
       }),
     );
+    aside.querySelector(".cep-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const value = event.target.elements.cep.value;
+      if (value.trim() && !cepDigits(value)) {
+        cepError = "Informe os 8 dígitos do CEP, como 01310-100.";
+      } else {
+        cepError = "";
+        prefs.cep = value;
+      }
+      summary(items).then(() => aside.querySelector("#cart-cep")?.focus());
+    });
     aside.querySelector(".coupon-form").addEventListener("submit", async (event) => {
       event.preventDefault();
       const value = event.target.elements.cupom?.value.trim();

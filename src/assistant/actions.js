@@ -192,11 +192,14 @@ export function addAnswer(items) {
 }
 
 // Cupom: "aplica o cupom VOLTAGE10".
-export function couponAnswer(text) {
-  const code = Object.keys(coupons).find((c) => text.includes(c.toLowerCase()));
-  if (!code) return null;
+// list: cupons válidos agora (etapa 34, painel); sem lista, os cupons padrão.
+export const defaultCoupons = () => Object.entries(coupons).map(([codigo, c]) => ({ codigo, descricao: c.description, validoAte: null }));
+export function couponAnswer(text, list = defaultCoupons()) {
+  const found = list.find((c) => new RegExp(`\\b${c.codigo.toLowerCase()}\\b`).test(text));
+  if (!found) return null;
+  const code = found.codigo;
   return {
-    texto: `${code}: ${coupons[code].description}. Toque para deixar o cupom aplicado no carrinho; o valor é conferido de novo no checkout.`,
+    texto: `${code}: ${found.descricao}. Toque para deixar o cupom aplicado no carrinho; o valor é conferido de novo no checkout.`,
     acoes: [{ tipo: "cupom", rotulo: `Aplicar ${code}`, codigo: code }],
     sugestoes: ["O que falta no meu carrinho?"],
   };

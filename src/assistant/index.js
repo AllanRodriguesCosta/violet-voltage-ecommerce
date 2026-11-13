@@ -24,6 +24,7 @@ import {
   specAnswer,
   addAnswer,
   couponAnswer,
+  defaultCoupons,
   cartAnswer,
   kitsWithin,
   historyAnswer,
@@ -416,7 +417,7 @@ function special(text, e, ctx, page, products) {
     if (terms.length && !e.produtos.length) return { intent: "glossario", out: glossaryAnswer(terms[0], /diferenca|\bou\b|\be\b/.test(text) ? terms[1] : null) };
   }
   if (COUPON_APPLY.test(text)) {
-    const out = couponAnswer(text);
+    const out = couponAnswer(text, page.cupons);
     if (out) return { intent: "cupom_aplicar", out };
   }
   const found = () => targets(text, e, ctx, page, products);
@@ -611,10 +612,11 @@ const loginAnswer = (motivo) => ({
   sugestoes: ["Quero uma guitarra vintage", "Como funciona o frete?"],
 });
 
-export async function reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders = async () => [], alerts = async () => [], requests = async () => [], user } = {}) {
+export async function reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders = async () => [], alerts = async () => [], requests = async () => [], cupons = async () => defaultCoupons(), user } = {}) {
   const brands = [...new Set(products.map((p) => p.marca))];
   let ctx = sanitizeContext(contexto, brands);
   const page = sanitizePage({ pagina, carrinho, favoritos }, products);
+  page.cupons = await cupons();
   const text = normalize(mensagem);
   const ranking = classify(model, mensagem);
   const top = ranking[0];
@@ -703,7 +705,7 @@ export async function reply({ mensagem, contexto, pagina, carrinho, favoritos },
   else if (intent === "pedido_status" || intent === "pedido_cancelar") out = { ...(await handleOrders(intent, text, orders)), contexto: keep };
   else if (intent === "central_ajuda" || (intent === "conta" && strongHelp(help)))
     out = { ...helpAnswer(help.entry), contexto: keep };
-  else if (INFO[intent]) out = { ...faqAnswer(intent, text), sugestoes: START.slice(0, 3), contexto: keep };
+  else if (INFO[intent]) out = { ...faqAnswer(intent, text, page.cupons), sugestoes: START.slice(0, 3), contexto: keep };
   else if (intent === "saudacao")
     out = { texto: `Oi${first ? `, ${first}` : ""}! Sou o assistente da Violet Voltage. Posso indicar equipamentos pelo seu estilo, montar um setup, comparar produtos e tirar dúvidas sobre frete, pagamento e trocas${guest ? "" : ", e contar em que etapa está seu pedido"}. Por onde começamos?`, sugestoes: START, contexto: keep };
   else if (intent === "ajuda" && !ABOUT_BOT.test(text)) out = { ...supportAnswer(guest ? [] : await orders(), guest), contexto: keep };

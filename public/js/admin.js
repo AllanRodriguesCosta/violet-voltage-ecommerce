@@ -164,6 +164,56 @@ export async function adminPage(user) {
       wireSearch(filterRows);
       return;
     }
+    // Etapa 34: cupons. Os padrão podem ser desativados ou limitados; novos têm validade e limite.
+    if (tab === "coupons") {
+      items = await api("/admin/cupons");
+      const typeLabel = { percent: "Porcentagem", fixed: "Valor fixo", shipping: "Frete grátis" };
+      const valueText = (c) => (c.type === "percent" ? `${c.value}%${c.maxCents ? ` (até ${money(c.maxCents)})` : ""}` : c.type === "fixed" ? money(c.value) : "Frete");
+      const badge = { Ativo: "badge-in", Desativado: "badge-out", Expirado: "badge-out", Esgotado: "badge-low" };
+      const render = () => {
+        const q = normalize(panel.querySelector("#admin-search")?.value || "");
+        panel.querySelector("#coupon-rows").innerHTML = items
+          .filter((c) => !q || normalize(`${c.codigo} ${c.description}`).includes(q))
+          .map((c) => `<tr><th scope="row">${esc(c.codigo)}${c.padrao ? ' <span class="badge">padrão</span>' : ""}</th><td>${esc(c.description)}</td><td>${typeLabel[c.type]} · ${valueText(c)}${c.minCents ? `<br><small class="muted">mínimo ${money(c.minCents)}</small>` : ""}</td><td>${c.usos || 0}${c.limiteUsos ? ` / ${c.limiteUsos}` : ""}${c.umPorCliente ? '<br><small class="muted">1 por cliente</small>' : ""}</td><td>${c.validoAte ? new Date(`${c.validoAte}T12:00:00Z`).toLocaleDateString("pt-BR", { timeZone: "UTC" }) : "Sem validade"}</td><td><span class="badge ${badge[c.situacao]}">${c.situacao}</span></td><td><button type="button" class="text-button" data-coupon-toggle="${esc(c.codigo)}" data-on="${c.ativo !== false}">${c.ativo !== false ? "Desativar" : "Ativar"}</button></td></tr>`)
+          .join("");
+      };
+      panel.innerHTML = `${toolbar("Cupons", "")}<p class="form-help">O cupom é conferido de novo no checkout. Desativar, vencer ou atingir o limite tira o cupom do carrinho, da ajuda e do assistente na hora.</p><div class="table-wrap"><table><thead><tr><th>Código</th><th>Descrição</th><th>Desconto</th><th>Usos</th><th>Validade</th><th>Situação</th><th><span class="sr-only">Ações</span></th></tr></thead><tbody id="coupon-rows"></tbody></table></div>
+<form class="admin-form panel" id="coupon-form" novalidate><h3>Novo cupom</h3><div class="form-grid"><div class="field"><label for="cp-codigo">Código</label><input id="cp-codigo" name="codigo" required maxlength="30" pattern="[A-Za-z0-9]{3,30}" autocomplete="off"></div><div class="field"><label for="cp-type">Tipo</label><select id="cp-type" name="type"><option value="percent">Porcentagem</option><option value="fixed">Valor fixo</option><option value="shipping">Frete grátis</option></select></div><div class="field"><label for="cp-value">Valor (% ou R$)</label><input id="cp-value" name="valor" type="number" min="1" step="1"></div><div class="field"><label for="cp-min">Compra mínima (R$)</label><input id="cp-min" name="minimo" type="number" min="1" step="1"></div><div class="field"><label for="cp-max">Desconto máximo (R$)</label><input id="cp-max" name="maximo" type="number" min="1" step="1"></div><div class="field"><label for="cp-validade">Válido até</label><input id="cp-validade" name="validoAte" type="date"></div><div class="field"><label for="cp-limite">Limite de usos</label><input id="cp-limite" name="limiteUsos" type="number" min="1" step="1"></div><div class="field field-wide"><label for="cp-desc">Descrição para o cliente</label><input id="cp-desc" name="description" required minlength="3" maxlength="120"></div><label class="check"><input type="checkbox" name="umPorCliente"><span>Um uso por cliente</span></label></div><div class="row"><button type="submit">Criar cupom</button></div></form>`;
+      const form = panel.querySelector("#coupon-form");
+      bindForm(form, async (data) => {
+        const reais = (v) => (v === "" || v === undefined ? null : Math.round(Number(v) * 100));
+        const created = await send("/admin/cupons", {
+          codigo: data.codigo,
+          type: data.type,
+          value: data.type === "percent" ? Number(data.valor) : data.type === "fixed" ? reais(data.valor) : null,
+          minCents: reais(data.minimo),
+          maxCents: data.type === "percent" ? reais(data.maximo) : null,
+          validoAte: data.validoAte || null,
+          limiteUsos: data.limiteUsos ? Number(data.limiteUsos) : null,
+          description: data.description,
+          umPorCliente: form.elements.umPorCliente.checked,
+        });
+        items = [...items, created];
+        form.reset();
+        toast(`Cupom ${created.codigo} criado.`, { type: "success" });
+        render();
+      });
+      panel.querySelector("#coupon-rows").addEventListener("click", async (event) => {
+        const b = event.target.closest("[data-coupon-toggle]");
+        if (!b) return;
+        try {
+          const updated = await send(`/admin/cupons/${encodeURIComponent(b.dataset.couponToggle)}`, { ativo: b.dataset.on !== "true" }, "PATCH");
+          items = items.map((c) => (c.codigo === updated.codigo ? updated : c));
+          toast(`Cupom ${updated.codigo} ${updated.ativo ? "ativado" : "desativado"}.`, { type: "success" });
+          render();
+        } catch (e) {
+          toast(e.message, { type: "error" });
+        }
+      });
+      render();
+      wireSearch(render);
+      return;
+    }
     // Etapa 33: encomendas (resposta avisa o cliente) e fichas de parceria.
     if (tab === "requests") {
       items = await api("/admin/encomendas");
@@ -365,7 +415,7 @@ export async function adminPage(user) {
   function edit(item = {}) {
     const editor = document.querySelector("#editor");
     const product = tab === "products";
-    editor.innerHTML = `<form class="admin-form" id="record-form"><h3>${item.id ? "Editar" : "Cadastrar"} ${product ? "produto" : "cliente"}</h3><div class="form-grid">${product ? `${field("marca", "Marca", item.marca, "text", 'required maxlength="200"')}${field("modelo", "Modelo", item.modelo, "text", 'required maxlength="200"')}<div class="field"><label for="edit-categoria">Categoria</label><select id="edit-categoria" name="categoria">${categories.map((c) => `<option${c === item.categoria ? " selected" : ""}>${c}</option>`).join("")}</select></div>${field("preco", "Preço (R$)", item.priceCents ? (item.priceCents / 100).toFixed(2) : "", "number", 'required min="0.01" max="1000000" step="0.01"')}${field("estoque", "Estoque", item.estoque ?? 0, "number", 'required min="0" max="100000" step="1"')}<div class="field span-two"><label for="edit-descricao">Descrição</label><textarea id="edit-descricao" name="descricao" required minlength="10" maxlength="4000">${esc(item.descricao || "")}</textarea></div><div class="span-two" id="edit-specs">${specsEditor(item.categoria || categories[0], item.ficha)}</div>` : `${field("nome", "Nome completo", item.nome, "text", 'required minlength="2" maxlength="200"')}${field("email", "E-mail", item.email, "email", item.id ? "readonly" : 'required maxlength="200"')}${field("telefone", "Telefone", item.telefone, "tel", 'maxlength="30"')}${field("endereco", "Endereço", item.endereco, "text", 'maxlength="500"')}${item.id ? "" : field("senha", "Senha inicial (10 a 72 caracteres)", "", "password", 'required minlength="10" maxlength="72" autocomplete="new-password"')}`}</div><div class="row"><button type="submit">Salvar ${product ? "produto" : "cliente"}</button><button type="button" id="cancel-edit" class="secondary">Cancelar</button></div></form>`;
+    editor.innerHTML = `<form class="admin-form" id="record-form"><h3>${item.id ? "Editar" : "Cadastrar"} ${product ? "produto" : "cliente"}</h3><div class="form-grid">${product ? `${field("marca", "Marca", item.marca, "text", 'required maxlength="200"')}${field("modelo", "Modelo", item.modelo, "text", 'required maxlength="200"')}<div class="field"><label for="edit-categoria">Categoria</label><select id="edit-categoria" name="categoria">${categories.map((c) => `<option${c === item.categoria ? " selected" : ""}>${c}</option>`).join("")}</select></div>${field("preco", "Preço (R$)", item.priceCents ? (item.priceCents / 100).toFixed(2) : "", "number", 'required min="0.01" max="1000000" step="0.01"')}${field("estoque", "Estoque", item.estoque ?? 0, "number", 'required min="0" max="100000" step="1"')}${Array.isArray(item.cores) && item.cores.length ? `<fieldset class="field field-wide color-stock-editor"><legend>Estoque por cor (opcional)</legend><p class="form-help">Deixe em branco para não controlar por cor. A soma não pode passar do estoque total.</p><div class="form-grid">${item.cores.map((c, i) => `<div class="field"><label for="cor-estoque-${i}">${esc(c.nome)}</label><input id="cor-estoque-${i}" type="number" min="0" max="100000" step="1" data-color-stock="${esc(c.nome)}" value="${Number.isInteger(c.estoque) ? c.estoque : ""}"></div>`).join("")}</div></fieldset>` : ""}${""}<div class="field span-two"><label for="edit-descricao">Descrição</label><textarea id="edit-descricao" name="descricao" required minlength="10" maxlength="4000">${esc(item.descricao || "")}</textarea></div><div class="span-two" id="edit-specs">${specsEditor(item.categoria || categories[0], item.ficha)}</div>` : `${field("nome", "Nome completo", item.nome, "text", 'required minlength="2" maxlength="200"')}${field("email", "E-mail", item.email, "email", item.id ? "readonly" : 'required maxlength="200"')}${field("telefone", "Telefone", item.telefone, "tel", 'maxlength="30"')}${field("endereco", "Endereço", item.endereco, "text", 'maxlength="500"')}${item.id ? "" : field("senha", "Senha inicial (10 a 72 caracteres)", "", "password", 'required minlength="10" maxlength="72" autocomplete="new-password"')}`}</div><div class="row"><button type="submit">Salvar ${product ? "produto" : "cliente"}</button><button type="button" id="cancel-edit" class="secondary">Cancelar</button></div></form>`;
     document.querySelector("#cancel-edit").onclick = () => (editor.innerHTML = "");
     const form = document.querySelector("#record-form");
     form.querySelector("input").focus();
@@ -379,6 +429,8 @@ export async function adminPage(user) {
         data.estoque = Number(data.estoque);
         for (const key of Object.keys(data)) if (key.startsWith("ficha.")) delete data[key];
         data.ficha = readSpecs(form, data.categoria);
+        const colorInputs = [...form.querySelectorAll("[data-color-stock]")];
+        if (colorInputs.length) data.estoqueCores = Object.fromEntries(colorInputs.map((el) => [el.dataset.colorStock, el.value === "" ? null : Number(el.value)]));
       }
       await send(`/admin/${tab}${item.id ? `/${item.id}` : ""}`, data, item.id ? "PATCH" : "POST");
       toast("Registro salvo.", { type: "success" });

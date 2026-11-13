@@ -1,6 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { AppError, integer, text } from "../utils/validation.js";
 import { quote, installments, shipping } from "./pricing.js";
+import { activeRules, checkCustomerUse, countUse } from "./coupons.js";
+// O CEP do próprio endereço vale mais que o enviado à parte (não dá para pagar frete de outra região).
+import { cepFromText, cepDigits } from "../../public/js/regions.js";
+import { clearCart } from "./carts.js";
 import { SERVICES, servicePrice } from "../../public/js/services.js";
 export { shipping };
 // IDs pedidos pelo cliente, para buscar só os produtos necessários.
@@ -36,6 +40,10 @@ export function calculate(items, products) {
     if (item.cor !== undefined && item.cor !== null && (typeof item.cor !== "string" || item.cor.length > 30))
       throw new AppError(400, "Cor inválida.");
     const cor = cores.length ? (cores.includes(item.cor) ? item.cor : cores[0]) : undefined;
+    // Etapa 34: estoque por cor (opcional). Sem número na cor, vale só o estoque total.
+    const corInfo = cor && p.cores.find((c) => c.nome === cor);
+    if (corInfo && Number.isInteger(corInfo.estoque) && corInfo.estoque < quantidade)
+      throw new AppError(409, corInfo.estoque ? `Só ${corInfo.estoque} ${corInfo.estoque === 1 ? "unidade" : "unidades"} na cor ${cor}.` : `${p.marca} ${p.modelo} está esgotado na cor ${cor}.`);
     return {
       id: p.rowKey,
       nome: `${p.marca} ${p.modelo}`,
@@ -47,6 +55,13 @@ export function calculate(items, products) {
       ...(servicos.length ? { servicos } : {}),
     };
   });
+}
+// Baixa (sinal -1) ou devolve (+1) o estoque total e, se houver, o da cor.
+export function adjustStock(p, item, sign) {
+  const next = { ...p, estoque: p.estoque + sign * item.quantidade };
+  if (item.cor && Array.isArray(p.cores) && p.cores.some((c) => c.nome === item.cor && Number.isInteger(c.estoque)))
+    next.cores = p.cores.map((c) => (c.nome === item.cor && Number.isInteger(c.estoque) ? { ...c, estoque: Math.max(0, c.estoque + sign * item.quantidade) } : c));
+  return next;
 }
 // Serializa mutações de estoque no único processo do serviço; ETags detectam escritores externos.
 let tail = Promise.resolve();
@@ -73,7 +88,9 @@ export async function placeOrder(storage, user, body) {
     const endereco = text(body.endereco, "endereco", 5, 500);
     const products = await storage.getManyByRowKeys("products", itemIds(body.items));
     const items = calculate(body.items, products);
-    const totals = quote(items, { entrega: body.entrega, cupom: body.cupom });
+    const rules = await activeRules(storage);
+    const totals = quote(items, { entrega: body.entrega, cupom: body.cupom, cep: body.entrega === "retirada" ? null : cepFromText(endereco) || cepDigits(body.cep), rules });
+    await checkCustomerUse(storage, user, totals.cupom?.codigo, rules);
     const parcelas = installments(body.pagamento, body.parcelas, totals.totalCents);
     const createdAt = new Date().toISOString();
     const order = {
@@ -101,30 +118,25 @@ export async function placeOrder(storage, user, body) {
     try {
       for (const item of items) {
         const p = products.find((p) => p.rowKey === item.id);
-        await storage.save(
-          "products",
-          { ...p, estoque: p.estoque - item.quantidade },
-          p.etag,
-        );
-        changed.push({ p, quantidade: item.quantidade });
+        await storage.save("products", adjustStock(p, item, -1), p.etag);
+        changed.push({ p, item });
       }
       await storage.create("orders", order);
+      // Uso do cupom e carrinho da conta: falhar aqui não desfaz o pedido já gravado.
+      await countUse(storage, order.cupom).catch(() => console.error("Falha ao contar uso do cupom."));
+      await clearCart(storage, user.id).catch(() => {});
       return order;
     } catch (error) {
       // PostgreSQL reverte estoque e pedido juntos, sem compensação manual.
       if (storage.inTransaction) throw error;
-      for (const { p, quantidade } of changed) {
+      for (const { p, item } of changed) {
         try {
           const current = await storage.get(
             "products",
             p.partitionKey,
             p.rowKey,
           );
-          await storage.save(
-            "products",
-            { ...current, estoque: current.estoque + quantidade },
-            current.etag,
-          );
+          await storage.save("products", adjustStock(current, item, 1), current.etag);
         } catch {
           console.error(
             "Falha na compensação de estoque; revisão administrativa necessária.",

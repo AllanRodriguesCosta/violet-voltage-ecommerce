@@ -5,14 +5,19 @@ import { shipping, delivery, FREE_SHIPPING_CENTS, MAX_INSTALLMENTS, MIN_INSTALLM
 export const brl = (cents) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
 const link = (rotulo, href) => ({ tipo: "link", rotulo, href });
 
-export function faqAnswer(intent, text) {
+// "R$ 30" continua com R maiúsculo; "Frete grátis" vira "frete grátis".
+const lowerFirst = (t) => (/^[A-ZÀ-Ú][a-zà-ú]/.test(t) ? t.charAt(0).toLowerCase() + t.slice(1) : t);
+const dateBR = (d) => new Date(`${d}T12:00:00Z`).toLocaleDateString("pt-BR", { timeZone: "UTC" });
+// cupons: lista dos cupons válidos agora (painel, etapa 34); sem lista, os cupons padrão.
+const defaultList = () => Object.entries(coupons).map(([codigo, c]) => ({ codigo, descricao: c.description, validoAte: null }));
+export function faqAnswer(intent, text, cupons = defaultList()) {
   if (intent === "entrega") {
     if (/retir/.test(text))
       return { texto: `A retirada na loja não tem custo e fica disponível em 1 dia útil. Leve um documento com foto e o número do pedido, que aparece na confirmação e em Minha conta.`, acoes: [link("Entregas e retirada", "/ajuda.html#entregas")] };
     if (/grat|gratuit|free/.test(text))
       return { texto: `A entrega padrão fica grátis quando os produtos somam ${brl(FREE_SHIPPING_CENTS)} ou mais. O carrinho mostra quanto falta. Com o cupom FRETEVOLT, a entrega padrão ou a expressa também sai grátis.`, acoes: [link("Ver o carrinho", "/carrinho.html")] };
     return {
-      texto: `Entregamos de três jeitos: ${delivery.padrao.label.toLowerCase()} em ${delivery.padrao.prazo} (${brl(shipping.padrao)}), ${delivery.expressa.label.toLowerCase()} em ${delivery.expressa.prazo} (${brl(shipping.expressa)}) e retirada na loja sem custo, disponível em 1 dia útil. A entrega padrão é grátis a partir de ${brl(FREE_SHIPPING_CENTS)} em produtos.`,
+      texto: `Entregamos de três jeitos: ${delivery.padrao.label.toLowerCase()} em ${delivery.padrao.prazo} (${brl(shipping.padrao)}), ${delivery.expressa.label.toLowerCase()} em ${delivery.expressa.prazo} (${brl(shipping.expressa)}) e retirada na loja sem custo, disponível em 1 dia útil. A entrega padrão é grátis a partir de ${brl(FREE_SHIPPING_CENTS)} em produtos. Esses valores são para o estado de São Paulo; em outras regiões o frete e o prazo mudam pelo CEP, que você informa no carrinho.`,
       acoes: [link("Entregas e prazos", "/ajuda.html#entregas")],
     };
   }
@@ -28,7 +33,9 @@ export function faqAnswer(intent, text) {
     };
   if (intent === "cupom")
     return {
-      texto: `Cupons ativos: ${Object.entries(coupons).map(([code, c]) => `${code} (${c.description.charAt(0).toLowerCase()}${c.description.slice(1)})`).join("; ")}. Digite o código no carrinho ou no checkout; vale um cupom por pedido.`,
+      texto: cupons.length
+        ? `Cupons ativos: ${cupons.map((c) => `${c.codigo} (${lowerFirst(c.descricao)}${c.validoAte ? `, até ${dateBR(c.validoAte)}` : ""})`).join("; ")}. Digite o código no carrinho ou no checkout; vale um cupom por pedido.`
+        : "No momento não há cupom ativo. Mesmo assim, a entrega padrão é grátis a partir do valor mínimo e os kits completos têm desconto automático.",
       acoes: [link("Ir para o carrinho", "/carrinho.html")],
     };
   if (intent === "troca")

@@ -42,12 +42,13 @@ export async function savePaymentPreference(storage, user, body = {}) {
 }
 
 export async function exportData(storage, user) {
-  const [orders, alerts, notifications, questions, requests] = await Promise.all([
+  const [orders, alerts, notifications, questions, requests, carts] = await Promise.all([
     storage.listByPartition("orders", user.id),
     storage.listByPartition("alerts", user.id),
     storage.listByPartition("notifications", user.id),
     storage.list("questions"),
     storage.listByPartition("requests", user.id),
+    storage.listByPartition("carts", user.id),
   ]);
   const conta = safeCustomer(user);
   delete conta.role;
@@ -63,7 +64,8 @@ export async function exportData(storage, user) {
       .map((q) => ({ produto: q.productId, pergunta: q.pergunta, resposta: q.resposta || null, situacao: q.status, criadaEm: q.createdAt })),
     encomendas: requests.map((r) => ({ tipo: r.tipo, produto: r.produto, detalhes: r.detalhes, contato: r.contato, telefone: r.telefone || null, situacao: r.status, resposta: r.resposta || null, criadaEm: r.createdAt })),
     notificacoes: notifications.map(publicNotification),
-    armazenadoNoNavegador: "Carrinho, favoritos, vistos recentemente, buscas recentes, tema e conversa do assistente ficam só no seu navegador e não fazem parte desta cópia.",
+    carrinhoSalvo: carts[0] ? { itens: carts[0].itens, atualizadoEm: carts[0].updatedAt } : null,
+    armazenadoNoNavegador: "Favoritos, vistos recentemente, buscas recentes, tema e conversa do assistente ficam só no seu navegador e não fazem parte desta cópia.",
   };
 }
 
@@ -76,7 +78,7 @@ export async function deleteAccount(storage, user, body = {}) {
   const open = orders.filter((o) => IN_PROGRESS.includes(o.status)).length;
   if (open)
     throw new AppError(409, `Você tem ${open} ${open === 1 ? "pedido em andamento" : "pedidos em andamento"}. Aguarde a conclusão ou cancele antes de excluir a conta.`);
-  for (const table of ["alerts", "notifications", "requests"])
+  for (const table of ["alerts", "notifications", "requests", "carts"])
     for (const item of await storage.listByPartition(table, user.id)) await storage.remove(table, item.partitionKey, item.rowKey);
   // Perguntas: as pendentes somem; as respondidas ficam na página do produto sem o nome.
   for (const q of (await storage.list("questions")).filter((x) => x.customerId === user.id)) {

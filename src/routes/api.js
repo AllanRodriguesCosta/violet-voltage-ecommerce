@@ -11,9 +11,13 @@ import {
   text,
   productInput,
   profileInput,
+  colorStockInput,
 } from "../utils/validation.js";
 import { placeOrder, exclusive, calculate, itemIds } from "../services/checkout.js";
 import { quote, deliveryOptions } from "../services/pricing.js";
+import { activeRules, activeList, allCoupons, createCoupon, updateCoupon, publicCoupon, checkCustomerUse } from "../services/coupons.js";
+import { getSavedCart, saveCart, remindAbandoned } from "../services/carts.js";
+import { cepDigits } from "../../public/js/regions.js";
 import { updateOrderStatus, summary, requestExchange, answerExchange, exchangeWindow } from "../services/orders.js";
 import { addressInput, saveAddress, removeAddress } from "../services/addresses.js";
 import {
@@ -303,7 +307,10 @@ export function apiRouter(storage, config) {
     const products = (await storage.list("products")).filter((p) => p.ativo).map(publicProduct);
     const orders = async () => (req.user ? (await storage.listByPartition("orders", req.user.id)).map(publicOrder) : []);
     const alerts = async () => (req.user ? storage.listByPartition("alerts", req.user.id) : []);
-    let answer = await reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders, alerts, user: req.user });
+    const cupons = () => activeList(storage);
+    // Correção da etapa 33: "como está minha encomenda?" precisa das encomendas do cliente.
+    const requests = async () => (req.user ? (await myRequests(storage, req.user)).map(publicRequest) : []);
+    let answer = await reply({ mensagem, contexto, pagina, carrinho, favoritos }, { products, orders, alerts, cupons, requests, user: req.user });
     if (!answer.entendeu) {
       await logMiss(storage, mensagem).catch(() => {});
       // Só o que a PLN local não entendeu vai ao Gemini (sem nome, e-mail ou pedido).
@@ -321,9 +328,14 @@ export function apiRouter(storage, config) {
     res.json({ data: answer });
   });
   // Notificações da conta: últimas 30 e contagem de não lidas.
-  r.get("/notifications", authenticated, async (req, res) =>
-    res.set("Cache-Control", "no-store").json({ data: await listNotifications(storage, req.user.id) }),
-  );
+  r.get("/notifications", authenticated, async (req, res) => {
+    // Etapa 34: lembrete de carrinho esquecido, criado na primeira consulta depois de 24 h.
+    await remindAbandoned(storage, req.user).catch(() => {});
+    res.set("Cache-Control", "no-store").json({ data: await listNotifications(storage, req.user.id) });
+  });
+  // Etapa 34: carrinho espelhado na conta (outro aparelho e lembrete).
+  r.get("/cart", authenticated, async (req, res) => res.set("Cache-Control", "no-store").json({ data: await getSavedCart(storage, req.user) }));
+  r.put("/cart", authenticated, async (req, res) => res.json({ data: await saveCart(storage, req.user, req.body?.itens) }));
   r.post("/notifications/read", authenticated, async (req, res) =>
     res.json({ data: { naoLidas: await markRead(storage, req.user.id, req.body?.ids) } }),
   );
@@ -414,17 +426,21 @@ export function apiRouter(storage, config) {
     await sendImage(res, Array.isArray(p.fotos) ? p.fotos[n]?.blobName : undefined);
   });
   // Cotação pública: mesmo cálculo do pedido, sem gravar nada.
-  r.post("/checkout/quote", async (req, res) => {
+  // Etapa 34: cupons do painel (validade, limite, uso único) e frete pela região do CEP.
+  r.post("/checkout/quote", optionalUser, async (req, res) => {
     const items = calculate(
       req.body.items,
       await storage.getManyByRowKeys("products", itemIds(req.body.items)),
     );
-    const totals = quote(items, { entrega: req.body.entrega || "padrao", cupom: req.body.cupom });
+    const cep = cepDigits(req.body.cep);
+    const rules = await activeRules(storage);
+    const totals = quote(items, { entrega: req.body.entrega || "padrao", cupom: req.body.cupom, cep, rules });
+    await checkCustomerUse(storage, req.user, totals.cupom?.codigo, rules);
     res.json({
       data: {
         ...totals,
         items: items.map((i) => ({ ...i, totalCents: i.priceCents * i.quantidade })),
-        entregas: deliveryOptions(totals.subtotalCents),
+        entregas: deliveryOptions(totals.subtotalCents, cep),
       },
     });
   });
@@ -510,6 +526,8 @@ export function apiRouter(storage, config) {
         const input = productInput(req.body);
         /* PartitionKey permanece estável para preservar identidade em edições de categoria. */ const next =
           { ...p, ...input, updatedAt: new Date().toISOString() };
+        // Etapa 34: estoque por cor (opcional; vazio = sem controle por cor).
+        if (req.body.estoqueCores !== undefined && Array.isArray(p.cores)) next.cores = colorStockInput(p.cores, req.body.estoqueCores, next.estoque);
         const apply = async (scoped) => {
           await scoped.save("products", next, p.etag);
           // Reposição de item esgotado notifica quem pediu "Avise-me", na mesma transação.
@@ -629,6 +647,9 @@ export function apiRouter(storage, config) {
     res.json({ data: (await storage.list("requests")).sort((a, b) => order(a) - order(b) || b.createdAt.localeCompare(a.createdAt)).map(adminRequest) });
   });
   r.patch("/admin/encomendas/:id", async (req, res) => res.json({ data: adminRequest(await answerRequest(storage, req.params.id, req.body)) }));
+  r.get("/admin/cupons", async (_req, res) => res.json({ data: (await allCoupons(storage)).map(publicCoupon) }));
+  r.post("/admin/cupons", async (req, res) => res.status(201).json({ data: publicCoupon(await createCoupon(storage, req.body || {})) }));
+  r.patch("/admin/cupons/:code", async (req, res) => res.json({ data: publicCoupon(await updateCoupon(storage, req.params.code, req.body || {})) }));
   r.get("/admin/parcerias", async (_req, res) => {
     const order = { Nova: 0, "Em contato": 1, Aprovada: 2, Recusada: 3 };
     res.json({ data: (await storage.list("partners")).sort((a, b) => order[a.status] - order[b.status] || b.createdAt.localeCompare(a.createdAt)).map(adminPartner) });

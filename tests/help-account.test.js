@@ -26,7 +26,7 @@ test("Central de Ajuda: a página publicada corresponde à fonte única", async 
   const text = helpEntries.map((e) => e.resposta).join(" ");
   assert.match(text, /R\$ 999,00/);
   assert.match(text, /10x sem juros, com parcela mínima de R\$ 50,00/);
-  assert.match(text, /VOLTAGE10.*PRIMEIROACORDE.*FRETEVOLT/);
+  assert.match(text, /pergunte ao assistente quais estão ativos agora/);
   for (const topic of ["Como troco minha senha?", "Como baixo uma cópia dos meus dados?", "Como excluo minha conta?", "Como funciona o assistente?", "O que é o Monte seu setup?"])
     assert.ok(helpEntries.some((e) => e.pergunta === topic), topic);
 });

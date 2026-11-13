@@ -1,7 +1,7 @@
 // Central de ajuda: fonte única das perguntas e respostas. A página ajuda.html é gerada a
 // partir daqui e o assistente busca nela; valores de frete, parcelas e cupons vêm das
 // mesmas regras do checkout. tests/help.test.js confere que a página está em dia.
-import { shipping, delivery, FREE_SHIPPING_CENTS, MAX_INSTALLMENTS, MIN_INSTALLMENT_CENTS, coupons } from "../services/pricing.js";
+import { shipping, delivery, FREE_SHIPPING_CENTS, MAX_INSTALLMENTS, MIN_INSTALLMENT_CENTS } from "../services/pricing.js";
 
 const brl = (cents) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100).replace(/\s/g, " ");
 const conta = { rotulo: "Ir para Minha conta", href: "/minha-conta.html" };
@@ -25,7 +25,7 @@ export const helpGroups = [
     titulo: "Entregas e retirada",
     chip: "Entregas",
     itens: [
-      { pergunta: "Quais são as formas de entrega e os prazos?", resposta: `${delivery.padrao.label} em ${delivery.padrao.prazo} (${brl(shipping.padrao)}), ${delivery.expressa.label.toLowerCase()} em ${delivery.expressa.prazo} (${brl(shipping.expressa)}) e retirada na loja sem custo, disponível em 1 dia útil.`, termos: "frete prazo envio expressa demora chega" },
+      { pergunta: "Quais são as formas de entrega e os prazos?", resposta: `${delivery.padrao.label} em ${delivery.padrao.prazo} (${brl(shipping.padrao)}), ${delivery.expressa.label.toLowerCase()} em ${delivery.expressa.prazo} (${brl(shipping.expressa)}) e retirada na loja sem custo, disponível em 1 dia útil. Esses valores são para o estado de São Paulo; para outras regiões o frete e o prazo mudam conforme o CEP, que você informa no carrinho ou no checkout.`, termos: "frete prazo envio expressa demora chega cep regiao" },
       { pergunta: "Como funciona o frete grátis?", resposta: `A entrega padrão fica grátis quando os produtos somam ${brl(FREE_SHIPPING_CENTS)} ou mais. O minicarrinho e o carrinho mostram quanto falta.`, termos: "gratis gratuito frete" },
       { pergunta: "O que levo para retirar na loja?", resposta: "Um documento com foto e o número do pedido, que aparece na confirmação e em Minha conta.", termos: "retirada retirar documento buscar pessoalmente" },
       { pergunta: "Posso salvar mais de um endereço?", resposta: "Sim, até 5 endereços de entrega em Minha conta. O endereço principal já vem escolhido no checkout, e o CEP preenche o estado sozinho.", link: conta, termos: "endereço endereços cadastrar cadastrado cep entrega casa trabalho" },
@@ -38,7 +38,7 @@ export const helpGroups = [
     itens: [
       { pergunta: "Quais formas de pagamento são aceitas?", resposta: "Pix, cartão de crédito e boleto. A escolha é feita no checkout.", termos: "pix boleto cartão pagar" },
       { pergunta: "Como funciona o parcelamento?", resposta: `No cartão de crédito, em até ${MAX_INSTALLMENTS}x sem juros, com parcela mínima de ${brl(MIN_INSTALLMENT_CENTS)}. As opções aparecem no checkout de acordo com o total do pedido.`, termos: "parcelas parcelar juros vezes" },
-      { pergunta: "Como uso um cupom de desconto?", resposta: `Digite o código no carrinho ou no checkout. Cupons ativos: ${Object.entries(coupons).map(([code, c]) => `${code} (${c.description.charAt(0).toLowerCase()}${c.description.slice(1)})`).join(", ")}. Vale um cupom por pedido.`, termos: "cupom desconto código promoção" },
+      { pergunta: "Como uso um cupom de desconto?", resposta: "Digite o código no carrinho ou no checkout; vale um cupom por pedido. Os cupons mudam com as campanhas (alguns têm validade, limite de usos ou valem uma vez por cliente): pergunte ao assistente quais estão ativos agora. O desconto é conferido de novo ao confirmar o pedido.", termos: "cupom desconto código promoção" },
       { pergunta: "O preço muda depois que eu coloco no carrinho?", resposta: "Preço e estoque são conferidos novamente ao confirmar o pedido. Se algo mudar, o checkout avisa antes de concluir.", termos: "preço muda mudar carrinho alteração valor fechar finalizar compra" },
     ],
   },

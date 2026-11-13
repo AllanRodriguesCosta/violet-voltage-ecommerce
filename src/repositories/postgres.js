@@ -12,6 +12,8 @@ const tables = Object.freeze({
   assistantLog: "violet_voltage.assistant_log",
   requests: "violet_voltage.requests",
   partners: "violet_voltage.partners",
+  carts: "violet_voltage.carts",
+  coupons: "violet_voltage.coupons",
 });
 
 export function databaseOptions(config) {

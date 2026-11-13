@@ -1,5 +1,6 @@
 import { AppError, integer } from "../utils/validation.js";
 import { kitDiscounts } from "../../public/js/kits.js";
+import { regionFor, regionalPrice, regionalPrazo } from "../../public/js/regions.js";
 
 // Regras comerciais únicas para cotação e pedido. Valores em centavos.
 export const shipping = { padrao: 2500, expressa: 4500, retirada: 0 };
@@ -28,31 +29,36 @@ export function couponCode(value) {
   if (!/^[A-Z0-9]{3,30}$/.test(code)) throw new AppError(400, "Cupom inválido ou expirado.", "cupom");
   return code;
 }
+// Frete base de uma forma de entrega, ajustado pela região do CEP (etapa 34).
+export const freightFor = (entrega, cep) => regionalPrice(shipping[entrega], regionFor(cep));
 // items: itens já validados por calculate(), com priceCents do servidor.
-export function quote(items, { entrega, cupom } = {}) {
+// rules: cupons válidos agora (src/services/coupons.js); sem eles valem os cupons padrão.
+export function quote(items, { entrega, cupom, cep, rules = coupons } = {}) {
   if (!Object.hasOwn(shipping, entrega)) throw new AppError(400, "Forma de entrega inválida.", "entrega");
+  const region = regionFor(cep);
   const subtotalCents = items.reduce((sum, i) => sum + i.priceCents * i.quantidade, 0);
   // Kits completos no carrinho ganham desconto automático; o cupom vale sobre o restante.
   const { kits, descontoKitsCents } = kitDiscounts(items);
   const baseCents = subtotalCents - descontoKitsCents;
   const servicosCents = items.reduce((sum, i) => sum + (i.servicos || []).reduce((t, s) => t + s.priceCents, 0) * i.quantidade, 0);
   const freteGratis = entrega === "padrao" && subtotalCents >= FREE_SHIPPING_CENTS;
-  let freteCents = freteGratis ? 0 : shipping[entrega];
+  let freteCents = freteGratis ? 0 : regionalPrice(shipping[entrega], region);
   let descontoCents = 0;
   let applied = null;
   const code = couponCode(cupom);
   if (code) {
-    const rule = coupons[code];
+    const rule = Object.hasOwn(rules, code) ? rules[code] : null;
     if (!rule) throw new AppError(400, "Cupom inválido ou expirado.", "cupom");
     if (rule.minCents && subtotalCents < rule.minCents)
       throw new AppError(400, `Este cupom vale para compras a partir de ${brl(rule.minCents)}.`, "cupom");
     if (rule.type === "percent")
-      descontoCents = Math.min(Math.round((baseCents * rule.value) / 100), rule.maxCents);
+      descontoCents = Math.min(Math.round((baseCents * rule.value) / 100), rule.maxCents || Infinity);
     else if (rule.type === "fixed") descontoCents = Math.min(rule.value, baseCents);
+    else if (rule.type !== "shipping") throw new AppError(400, "Cupom inválido ou expirado.", "cupom");
     else if (freteCents === 0)
       throw new AppError(400, "O frete desta compra já é grátis.", "cupom");
     else freteCents = 0;
-    applied = { codigo: code, descricao: rule.description };
+    applied = { codigo: code, descricao: rule.description || rule.descricao };
   }
   const totalCents = baseCents + servicosCents + freteCents - descontoCents;
   return {
@@ -66,6 +72,7 @@ export function quote(items, { entrega, cupom } = {}) {
     freteGratis,
     faltaFreteGratisCents: Math.max(0, FREE_SHIPPING_CENTS - subtotalCents),
     cupom: applied,
+    regiao: region ? { id: region.id, nome: region.nome } : null,
     parcelasMax: maxInstallments(totalCents),
   };
 }
@@ -73,10 +80,12 @@ export function installments(pagamento, value, totalCents) {
   if (pagamento !== "cartao" || value === undefined || value === null) return 1;
   return integer(value, "parcelas", 1, maxInstallments(totalCents));
 }
-export function deliveryOptions(subtotalCents) {
+export function deliveryOptions(subtotalCents, cep) {
+  const region = regionFor(cep);
   return Object.entries(delivery).map(([id, info]) => ({
     id,
     ...info,
-    priceCents: id === "padrao" && subtotalCents >= FREE_SHIPPING_CENTS ? 0 : shipping[id],
+    prazo: regionalPrazo(id, region) || info.prazo,
+    priceCents: id === "padrao" && subtotalCents >= FREE_SHIPPING_CENTS ? 0 : regionalPrice(shipping[id], region),
   }));
 }

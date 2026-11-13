@@ -217,9 +217,9 @@ function colorPickerHTML(colors, current) {
   return `<fieldset class="color-picker"><legend>Cor: <strong data-color-name>${esc(current)}</strong></legend><div class="swatches">${colors
     .map(
       (c) =>
-        `<label class="swatch" title="${esc(c.nome)}"><input type="radio" name="cor" value="${esc(c.nome)}"${c.nome === current ? " checked" : ""}><span class="swatch-dot" data-hex="${esc(c.hex)}" aria-hidden="true"></span><span class="sr-only">${esc(c.nome)}</span></label>`,
+        `<label class="swatch${c.estoque === 0 ? " is-out" : ""}" title="${esc(c.nome)}${c.estoque === 0 ? " (esgotado)" : ""}"><input type="radio" name="cor" value="${esc(c.nome)}"${c.nome === current ? " checked" : ""}><span class="swatch-dot" data-hex="${esc(c.hex)}" aria-hidden="true"></span><span class="sr-only">${esc(c.nome)}${c.estoque === 0 ? " (esgotado)" : ""}</span></label>`,
     )
-    .join("")}</div></fieldset>`;
+    .join("")}</div><p class="small color-stock" data-color-stock aria-live="polite"></p></fieldset>`;
 }
 // Carrossel: setas sobre a foto, miniaturas, arrastar no celular e setas do teclado na foto.
 // Trocar a cor troca o conjunto de fotos e volta para a primeira.
@@ -347,6 +347,23 @@ ${p.estoque ? `<form id="add-product" class="buy-box"><div class="quantity-field
     );
     qty?.addEventListener("input", syncSteps);
     if (form) syncSteps();
+    // Etapa 34: estoque por cor (quando a loja informa). Cor esgotada não entra no carrinho.
+    const colorStock = () => {
+      const c = (p.cores || []).find((x) => x.nome === view.cor);
+      return c && Number.isInteger(c.estoque) ? c.estoque : null;
+    };
+    const syncColor = () => {
+      const n = colorStock();
+      const note = container.querySelector("[data-color-stock]");
+      if (note) note.textContent = n === null ? "" : n === 0 ? `Esgotado na cor ${view.cor}. Escolha outra cor ou ative o Avise-me.` : n <= 5 ? `Últimas unidades na cor ${view.cor}: ${n}.` : "";
+      container.querySelectorAll('#add-product [type="submit"], [data-buy-now], [data-bar-add]').forEach((b) => (b.disabled = n === 0));
+      if (qty && n) {
+        qty.max = Math.min(max, n);
+        if (Number(qty.value) > n) qty.value = n;
+      }
+    };
+    gallery.onColor(syncColor);
+    syncColor();
     const feedback = container.querySelector(".cart-feedback");
     if (form) bindForm(form, (data) => {
       if (addCart(p, Number(data.quantidade), { source: container.querySelector(".detail-image"), cor: view.cor || undefined }))

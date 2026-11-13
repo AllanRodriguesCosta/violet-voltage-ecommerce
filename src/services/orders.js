@@ -1,6 +1,6 @@
 import { randomInt } from "node:crypto";
 import { AppError } from "../utils/validation.js";
-import { exclusive } from "./checkout.js";
+import { exclusive, adjustStock } from "./checkout.js";
 import { notify, orderNotice, restockAlerts } from "./notifications.js";
 
 export const statuses = ["Recebido", "Em preparação", "Enviado", "Concluído", "Cancelado"];
@@ -42,11 +42,11 @@ export async function updateOrderStatus(storage, orderId, status, options = {}) 
       for (const item of items) {
         const p = products.find((x) => x.rowKey === item.id);
         if (!p) continue;
-        const restocked = { ...p, estoque: p.estoque + item.quantidade };
+        const restocked = adjustStock(p, item, 1);
         await storage.save("products", restocked, p.etag);
         // Item que estava esgotado volta ao estoque: avisa quem pediu "Avise-me".
         if (p.estoque === 0) await restockAlerts(storage, restocked);
-        p.estoque += item.quantidade;
+        Object.assign(p, restocked);
       }
       next.estoqueDevolvido = true;
     }

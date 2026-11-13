@@ -94,7 +94,8 @@ Na primeira subida o catálogo é criado a partir das fotos em `seed-assets/cata
 uma conta de administrador local, defina `ADMIN_EMAIL`, `ADMIN_PASSWORD` (12+ caracteres) e
 `ADMIN_NAME` no terminal antes do `npm run lb:docker`; sem isso, a loja sobe sem administrador.
 O CI do GitHub roda esse mesmo Compose a cada PR e confere que as 3 cópias respondem e que, com
-uma parada, as outras 2 continuam sem erro.
+uma parada, as outras 2 seguem respondendo sem erro. O Nginx pode levar alguns segundos para notar a
+cópia parada.
 
 ## 5. Nível 3: Azure for Students (a entrega)
 

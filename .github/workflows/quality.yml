@@ -68,10 +68,14 @@ jobs:
           grep -qi '^x-balanceador: nginx' raiz.txt
           # Tolerância a falha: com uma cópia parada, as outras duas continuam respondendo.
           docker stop "$(docker compose -f infra/local/docker-compose.yml ps -q app | head -n 1)"
-          sleep 2
-          node scripts/lb-check.js http://127.0.0.1:8080 20 | tee lb2.txt
-          grep -q "2 instâncias responderam" lb2.txt
-          ! grep -q "falha" lb2.txt
+          # O Nginx reconsulta o DNS a cada 5 s; até 3 tentativas para ele notar a cópia parada.
+          ok=0
+          for t in 1 2 3; do
+            sleep 3
+            node scripts/lb-check.js http://127.0.0.1:8080 20 | tee lb2.txt
+            if grep -q "2 instâncias responderam" lb2.txt && ! grep -q "falha" lb2.txt; then ok=1; break; fi
+          done
+          test "$ok" = 1
       - name: Registro do contêiner em caso de falha
         if: failure()
         run: |

@@ -182,9 +182,11 @@ test("contexto vindo do navegador é revalidado", () => {
   assert.deepEqual(sanitizeContext("x").filtros, {});
 });
 
-test("avaliação: acerto de intenção acima de 90% em frases fora do treino, entidades e conversas corretas", async () => {
+// Etapa 37: mais de 300 frases (com erros de digitação e gírias) e piso de 93%.
+test("avaliação: acerto de intenção acima de 93% em mais de 300 frases fora do treino, entidades e conversas corretas", async () => {
   const r = await evaluate(products);
-  assert.ok(r.acuracia >= 0.9, `acurácia ${r.acuracia}`);
+  assert.ok(r.total >= 300, `só ${r.total} frases`);
+  assert.ok(r.acuracia >= 0.93, `acurácia ${r.acuracia}`);
   for (const [intent, s] of Object.entries(r.porIntencao)) assert.ok(s.acuracia >= 0.6, `${intent}: ${s.acuracia}`);
   assert.deepEqual(r.entidades.erros, []);
   assert.deepEqual(r.dialogos.erros, []);

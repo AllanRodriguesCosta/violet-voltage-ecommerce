@@ -999,3 +999,19 @@ body.assistant-open .assistant-launcher { visibility: hidden; }
 }
 /* Tema escuro: anel claro para a bolinha preta não sumir no fundo. */
 :root[data-theme="dark"] .swatch-dot, :root[data-theme="dark"] .card-dot { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 45%); }
+
+/* Etapa 33: encomendas e parcerias */
+.request-layout { display: grid; gap: 16px; align-items: start; }
+@media (min-width: 900px) { .request-layout { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); } }
+.request-layout > .panel h2, .request-aside .panel h2 { font-size: 19px; margin: 0 0 14px; }
+.request-aside { display: grid; gap: 16px; }
+.steps-list { margin: 0 0 12px; padding-left: 20px; display: grid; gap: 8px; font-size: 14px; }
+.check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 16px; }
+.hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.request-item { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; display: grid; gap: 6px; }
+.request-item + .request-item { margin-top: 10px; }
+.request-item header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.request-item p { margin: 0; font-size: 14px; }
+.request-answer { background: var(--violet-soft); border-radius: 10px; padding: 8px 10px; }
+.assistant-actions .button.ghost { background: transparent; color: var(--violet); border: 1.5px solid var(--violet); }
+.pre-line { white-space: pre-line; }

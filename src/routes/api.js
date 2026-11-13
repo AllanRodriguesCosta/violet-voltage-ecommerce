@@ -143,11 +143,13 @@ export function apiRouter(storage, config) {
         .status(503)
         .json({ error: { message: "Armazenamento indisponível." } });
     }
-    return res.json({
+    // Sem cache: cada recarga passa de novo pelo balanceador (etapa 31).
+    return res.set("Cache-Control", "no-store").json({
       data: {
         status: "ok",
         storage: config.memory ? "memory-development" : "postgresql",
         assistente: config.gemini ? "pln-local+gemini" : "pln-local",
+        ...(config.instanceName ? { instancia: config.instanceName } : {}),
       },
     });
   });

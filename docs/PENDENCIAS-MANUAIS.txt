@@ -31,9 +31,9 @@ REGRAS PARA QUEM EXECUTAR (INCLUSIVE O CODEX)
    usado. Nao tente "consertar" mudando codigo.
 
 ----------------------------------------------------------------------
-T01 [ ] ALLAN - Publicar as etapas 17 a 30 no Render
+T01 [ ] ALLAN - Publicar as etapas 17 a 31 no Render
 ----------------------------------------------------------------------
-Depois do merge dos pull requests das etapas 17 a 30 em main:
+Depois do merge dos pull requests das etapas 17 a 31 em main:
 - As etapas 22 e 24 criam as tabelas violet_voltage.questions e
   violet_voltage.assistant_log. O
   servidor cria sozinho ao iniciar; se preferir, rode antes "npm run db:migrate"
@@ -237,4 +237,20 @@ as que ele errou ou nao entendeu, com a resposta recebida (as nao entendidas
 tambem aparecem no painel, aba Assistente). Passe a lista ao
 Copilot: ela vira novas frases de treino e de avaliacao. Nao altere os
 arquivos de src/assistant/.
+Resultado:
+
+----------------------------------------------------------------------
+T10 [ ] ALLAN/CODEX - Azure com load balancer (so se o professor pedir)
+----------------------------------------------------------------------
+Guia completo: docs/AZURE-LOAD-BALANCER.md. Resumo:
+1. portal.azure.com > Cloud Shell (Bash) > git clone do repositorio > cd.
+2. cp infra/azure/variaveis.env.example infra/azure/variaveis.env e preencha
+   (DATABASE_URL do Render; APP_NAME se for o caminho A). Nunca envie esse
+   arquivo ao GitHub.
+3. Caminho A (App Service): bash infra/azure/app-service.sh
+   Caminho B (VMs + Load Balancer): bash infra/azure/vms-load-balancer.sh
+4. npm run azure:lb-check -- URL 30  -> deve mostrar 2 instancias.
+5. Ao terminar: bash infra/azure/apagar-tudo.sh (consome credito por hora).
+Se um comando falhar, anote o comando e a mensagem (sem segredos) e passe ao
+Copilot.
 Resultado:

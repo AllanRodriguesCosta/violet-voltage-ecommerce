@@ -94,3 +94,12 @@ export async function syncCatalogPhotos(storage, { directory = repoAssetsDirecto
 
 export const syncSummary = (r) =>
   `Fotos do catálogo: ${r.created} produtos cadastrados, ${r.photosUpdated} com fotos atualizadas, ${r.unchanged} sem mudança, ${r.withoutPhoto} sem foto no repositório${r.manualPhoto ? `, ${r.manualPhoto} com foto do painel (mantida)` : ""}${r.errors.length ? `. Falhas: ${r.errors.join("; ")}` : "."}`;
+
+// Etapa 31: com várias instâncias (balanceador), só uma sincroniza por vez; as outras pulam.
+export async function runCatalogSync(storage, options) {
+  const run = () => syncCatalogPhotos(storage, options);
+  const outcome = storage.withLock ? await storage.withLock("catalog-sync", run) : { acquired: true, result: await run() };
+  return outcome.acquired
+    ? syncSummary(outcome.result)
+    : "Fotos do catálogo: outra instância já está sincronizando; esta pulou a etapa.";
+}

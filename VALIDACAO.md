@@ -1,3 +1,29 @@
+# Fase 4, etapa 31 — 13/11/2026
+
+- Testes novos em `tests/stage31.test.js` (12):
+  - nome da instância (`INSTANCE_NAME`, App Service, hostname, caracteres limpos);
+  - `TRUST_PROXY` (padrão 1 em produção e 0 fora, aceita de 0 a 5);
+  - cabeçalho `X-Served-By` em páginas, API e 404, e campo `instancia` no `/api/health` sem cache;
+  - `INSTANCE_HEADER=off`;
+  - trava entre instâncias no PostgreSQL (livre: roda e confirma; ocupada: pula sem esperar; erro: desfaz);
+  - sincronização pulada quando outra instância tem a trava;
+  - trava na migração;
+  - `lb-check` (endereço, contagem e veredito);
+  - Dockerfile;
+  - roteiros do Azure (sintaxe bash, nada de senha, `variaveis.env` fora do git, sonda, ARR desligado, VMs sem IP público, limpeza com confirmação).
+- Locais: 146/147 (o de PostgreSQL roda no CI). Lint OK.
+- Roteiros simulados com um `az` falso que registra as chamadas:
+  - o das VMs cria 2 VMs e coloca as 2 placas de rede no pool;
+  - o cloud-init gerado é YAML válido e leva as variáveis em base64 (com `DATABASE_URL` contendo `&`);
+  - o `JWT_SECRET` gerado fica salvo no `variaveis.env`;
+  - o do App Service envia as variáveis sem exibi-las.
+- Servidor real em memória com `INSTANCE_NAME=local-1`:
+  - o log mostra "(instância local-1)";
+  - `npm run azure:lb-check` contou 4 de 4 em `local-1`;
+  - SIGTERM registrou "SIGTERM recebido: encerrando a instância local-1." e o processo terminou.
+- Não executado aqui (sem Docker, shellcheck nem Azure): o CI roda shellcheck e
+  constrói e testa a imagem; a criação real no Azure fica para a T10.
+
 # Fase 4, etapa 30 — 13/11/2026
 
 - Com a autorização do Allan, 80 fotos (51 principais e 29 extras da galeria)

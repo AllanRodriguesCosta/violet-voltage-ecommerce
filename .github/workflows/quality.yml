@@ -32,3 +32,32 @@ jobs:
         run: npm run lint
       - name: Executar testes isolados
         run: npm test
+
+  # Etapa 31: a imagem usada no Azure (VMs atrás do Load Balancer) precisa construir e responder
+  # no /api/health; os roteiros de infra/azure passam pelo shellcheck.
+  container-and-infra:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Conferir roteiros do Azure (shellcheck)
+        run: shellcheck --severity=warning -x -P infra/azure infra/azure/*.sh
+      - name: Construir a imagem
+        run: docker build -t violet-voltage-ci .
+      - name: Subir o contêiner e testar /api/health
+        run: |
+          docker run -d --name vv -p 3000:3000 -e NODE_ENV=development -e DEV_MEMORY_STORAGE=true \
+            -e INSTANCE_NAME=ci-1 -e CATALOG_SYNC=off violet-voltage-ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/api/health -o health.json -D headers.txt; then break; fi
+            sleep 2
+          done
+          cat health.json
+          grep -q '"instancia":"ci-1"' health.json
+          grep -qi '^x-served-by: ci-1' headers.txt
+          test "$(docker inspect --format '{{.Config.User}}' violet-voltage-ci)" = "node"
+      - name: Registro do contêiner em caso de falha
+        if: failure()
+        run: docker logs vv || true

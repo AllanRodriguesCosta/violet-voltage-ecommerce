@@ -524,5 +524,27 @@ instrumento usado na troca fica de fora.
       no site publicado não depende mais de rodar o seed com a senha do banco:
       basta o deploy (T01).
 
+### 31. Pronto para Azure com balanceamento de carga
+
+Preparação para uma possível atividade da faculdade ("publicar no Azure e
+aplicar load balancer"). Guia completo: [AZURE-LOAD-BALANCER.md](AZURE-LOAD-BALANCER.md).
+
+- [x] `Dockerfile` (Node 24 Alpine, só dependências de produção, usuário sem
+      privilégio, HEALTHCHECK em `/api/health`) e `.dockerignore`. O CI
+      constrói a imagem e testa o `/api/health` dentro do contêiner.
+- [x] Cada instância se identifica: cabeçalho `X-Served-By` e campo `instancia`
+      no `/api/health` (sem cache). `INSTANCE_NAME`, `INSTANCE_HEADER=off` e
+      `TRUST_PROXY` configuráveis.
+- [x] Várias instâncias subindo juntas: migração e sincronização das fotos
+      usam trava no PostgreSQL (uma sincroniza, as outras pulam).
+- [x] Desligamento gracioso (SIGTERM): termina os pedidos em andamento e
+      fecha o banco.
+- [x] Roteiros em `infra/azure/` para o Cloud Shell: caminho A (App Service com
+      2+ instâncias) e caminho B (VMs + Azure Load Balancer Standard, sonda HTTP
+      `/api/health`, VMs sem IP público). Também atualização das VMs uma a uma
+      e limpeza do grupo, com confirmação.
+- [x] `npm run azure:lb-check -- URL 30` conta qual instância respondeu.
+- [ ] Rodar na assinatura do Allan quando a atividade for pedida (T10).
+
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).

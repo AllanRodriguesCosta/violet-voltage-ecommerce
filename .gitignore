@@ -11,3 +11,7 @@ Thumbs.db
 coverage/
 seed-assets/produtos-violet-voltage/
 /ROADMAP_LOCAL.txt
+
+# Etapa 31: variáveis preenchidas do Azure
+infra/azure/variaveis.env
+infra/azure/*.gerado.*

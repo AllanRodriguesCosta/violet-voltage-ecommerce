@@ -61,6 +61,7 @@ jobs:
       - name: Balanceamento local (docker compose - 3 cópias, Nginx e PostgreSQL)
         run: |
           docker compose -f infra/local/docker-compose.yml up --build -d --wait --wait-timeout 240
+          for i in $(seq 1 30); do curl -fsS -o /dev/null http://127.0.0.1:8080/api/health && break; sleep 1; done
           node scripts/lb-check.js http://127.0.0.1:8080 30 | tee lb.txt
           grep -q "3 instâncias responderam" lb.txt
           curl -fsS -D raiz.txt -o /dev/null http://127.0.0.1:8080/
@@ -76,3 +77,6 @@ jobs:
         run: |
           docker logs vv || true
           docker compose -f infra/local/docker-compose.yml logs --tail 80 || true
+          # Resumo também como anotação (aparece na página do PR sem abrir o log).
+          diag=$( { docker compose -f infra/local/docker-compose.yml ps -a; docker compose -f infra/local/docker-compose.yml logs --no-color --tail 20; cat lb.txt lb2.txt; } 2>&1 | tail -c 6000 | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')
+          echo "::error title=diagnostico::$diag"

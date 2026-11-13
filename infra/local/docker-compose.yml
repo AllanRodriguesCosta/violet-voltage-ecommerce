@@ -35,9 +35,10 @@ services:
       DATABASE_SSL: "false"
       # Mesmo segredo nas 3 cópias: o login feito numa vale nas outras.
       JWT_SECRET: ${JWT_SECRET:-segredo-local-de-teste-com-mais-de-32-caracteres}
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@violetvoltage.local}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-TrocarEsta#Senha2026}
-      ADMIN_NAME: ${ADMIN_NAME:-Administrador}
+      # Administrador opcional: defina no terminal antes de subir (vazio = loja sem administrador).
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NAME: ${ADMIN_NAME:-}
       # Atrás do Nginx: 1 proxy confiável. INSTANCE_NAME fica vazio: cada cópia usa o próprio hostname.
       TRUST_PROXY: "1"
     depends_on:

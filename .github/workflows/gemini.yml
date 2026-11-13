@@ -5,6 +5,11 @@ name: Gemini
 # Run workflow) ou em PRs que mexem no Gemini. Usa o plano gratuito: poucas chamadas, com pausa.
 on:
   workflow_dispatch:
+    inputs:
+      modelo:
+        description: "Modelo do Gemini (vazio = descobrir um que responda)"
+        required: false
+        default: ""
   pull_request:
     branches: [main]
     paths:
@@ -22,10 +27,12 @@ concurrency:
 jobs:
   validar:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      GEMINI_PAUSE_MS: "6500"
+      # Plano gratuito: no máximo ~4 chamadas por minuto e tempo limite folgado para medir a latência.
+      GEMINI_PAUSE_MS: "13000"
+      GEMINI_TIMEOUT_MS: "15000"
     steps:
       - uses: actions/checkout@v6
         with:
@@ -44,7 +51,9 @@ jobs:
           fi
           echo "::notice title=Gemini::Segredo presente."
       - name: Validar a hipótese (frases difíceis)
-        run: npm run agente:validar-gemini
+        env:
+          GEMINI_MODEL: ${{ inputs.modelo }}
+        run: npm run agente:validar-gemini -- --descobrir
       - name: Teste rápido
         if: always()
         run: sleep 30 && npm run agente:smoke

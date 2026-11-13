@@ -7,7 +7,7 @@ import { specRows } from "../../public/js/specs.js";
 import { anonymize } from "../services/assistant-log.js";
 
 export const DEFAULT_MODEL = "gemini-flash-latest";
-const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
+export const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
 const brl = (cents) => `R$ ${(cents / 100).toFixed(2).replace(".", ",")}`;
 
 export function geminiConfig(env = process.env) {
@@ -94,7 +94,11 @@ export async function askGemini(mensagem, products, config, { fetchImpl = fetch,
       }),
     });
     if (diag) diag.status = response.status;
-    if (!response.ok) return null;
+    if (!response.ok) {
+      // Só para os roteiros de validação: a mensagem de erro do Google (nunca contém a chave).
+      if (diag) diag.mensagem = String((await response.json().catch(() => null))?.error?.message || "").slice(0, 200);
+      return null;
+    }
     const data = await response.json();
     const raw = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("") || "";
     const parsed = JSON.parse(raw.replace(/^```(?:json)?\s*|\s*```$/g, ""));

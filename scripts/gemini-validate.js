@@ -5,7 +5,7 @@
 import "dotenv/config";
 import { writeFileSync, appendFileSync } from "node:fs";
 import { reply } from "../src/assistant/index.js";
-import { geminiConfig, askGemini } from "../src/assistant/gemini.js";
+import { geminiConfig, askGemini, ENDPOINT } from "../src/assistant/gemini.js";
 import { seedProducts } from "../src/services/seed-products.js";
 import { coupons } from "../src/services/pricing.js";
 import { helpEntries } from "../src/knowledge/help.js";
@@ -57,16 +57,59 @@ export function inventions(texto) {
   return out;
 }
 
+const sleep = (ms) => (ms ? new Promise((r) => setTimeout(r, ms)) : null);
+
+// Com --descobrir: lista os modelos que a chave pode usar e testa os candidatos "flash" com uma
+// pergunta curta; o primeiro que responder é usado na validação (e indicado para GEMINI_MODEL).
+export function candidates(models) {
+  const ok = models
+    .filter((m) => (m.supportedGenerationMethods || []).includes("generateContent"))
+    .map((m) => String(m.name || "").replace(/^models\//, ""))
+    .filter((n) => /flash/.test(n) && !/(preview|exp|tts|image|live|audio|thinking|embedding|8b)/.test(n));
+  const rank = (n) => (/lite/.test(n) ? 0 : 1) + (/latest/.test(n) ? 0.5 : 0);
+  return [...new Set(ok)].sort((a, b) => rank(a) - rank(b) || b.localeCompare(a));
+}
+
+async function discover(config, pause) {
+  const res = await fetch(`${ENDPOINT}?pageSize=200`, { headers: { "x-goog-api-key": config.apiKey } });
+  if (!res.ok) return { escolhido: null, testes: [], erro: `lista de modelos: HTTP ${res.status}` };
+  const lista = candidates((await res.json()).models || []);
+  const testes = [];
+  for (const model of [config.model, ...lista].filter((m, i, a) => a.indexOf(m) === i).slice(0, 6)) {
+    if (testes.length) await sleep(pause);
+    const diag = {};
+    const t0 = Date.now();
+    const r = await askGemini("vocês vendem guitarra para iniciante?", products, { ...config, model }, { diag });
+    testes.push({ model, status: diag.status ?? diag.erro, ms: Date.now() - t0, ok: Boolean(r), mensagem: diag.mensagem || "" });
+    if (r) return { escolhido: model, testes, lista };
+  }
+  return { escolhido: null, testes, lista };
+}
+
 async function main() {
-  const config = geminiConfig();
+  let config = geminiConfig();
   if (!config) {
     console.error("GEMINI_API_KEY não configurada. No CI, cadastre o segredo GEMINI_API_KEY no repositório.");
     process.exit(1);
   }
   const pause = Math.max(0, Number(process.env.GEMINI_PAUSE_MS ?? 6500));
+  if (process.argv.includes("--descobrir")) {
+    const d = await discover(config, pause);
+    const linhas = [`Modelos flash disponíveis: ${(d.lista || []).join(", ") || d.erro || "nenhum"}`, ...d.testes.map((x) => `${x.ok ? "ok" : "falhou"} ${x.model}: ${x.status} em ${x.ms} ms ${x.mensagem}`), `Escolhido: ${d.escolhido || "nenhum"}`];
+    console.log(linhas.join("\n"));
+    if (process.env.GITHUB_ACTIONS) console.log(`::notice title=Gemini modelos::${linhas.join("%0A")}`);
+    if (!d.escolhido) {
+      process.exitCode = 1;
+      return;
+    }
+    config = { ...config, model: d.escolhido };
+    // Os passos seguintes do CI (teste rápido e avaliação) usam o mesmo modelo.
+    if (process.env.GITHUB_ENV) appendFileSync(process.env.GITHUB_ENV, `GEMINI_MODEL=${d.escolhido}\n`);
+    await sleep(pause);
+  }
   const rows = [];
   for (const [i, [frase, tipo, aceitas]] of hardSet.entries()) {
-    if (i) await new Promise((r) => setTimeout(r, pause));
+    if (i) await sleep(pause);
     const local = await reply({ mensagem: frase }, { products });
     const diag = {};
     const t0 = Date.now();
@@ -86,14 +129,18 @@ async function main() {
     const hibridoOk = ok(usado, intencaoFinal);
     // Se o Gemini fosse consultado sempre (mesmo quando a PLN local acha que entendeu).
     const sempreOk = motor?.entendeu ? ok("motor", motor.intencao) : g?.texto ? ok("gerada", "gerada") : localOk;
-    rows.push({ frase, tipo, aceitas, local: local.intencao, status: diag.status ?? diag.erro ?? (g ? 200 : "sem resposta"), ms, reescrita: g?.frase || "", motor: motor?.intencao || "", usado, intencaoFinal, localOk, hibridoOk, sempreOk, alertas, texto: textoFinal.slice(0, 160), gerada: (g?.texto || "").slice(0, 200) });
+    rows.push({ frase, tipo, aceitas, local: local.intencao, status: `${diag.status ?? diag.erro ?? (g ? 200 : "sem resposta")}${diag.mensagem ? ` (${diag.mensagem.slice(0, 80)})` : ""}`, ms, reescrita: g?.frase || "", motor: motor?.intencao || "", usado, intencaoFinal, localOk, hibridoOk, sempreOk, alertas, texto: textoFinal.slice(0, 160), gerada: (g?.texto || "").slice(0, 200) });
     console.log(`${hibridoOk ? "ok " : "ERR"} [${tipo}] "${frase}" → local ${local.intencao} | gemini ${rows.at(-1).status} ${ms} ms | "${g?.frase || ""}" → motor ${motor?.intencao || "-"} | final ${usado}:${intencaoFinal}${alertas.length ? ` | ALERTA: ${alertas.join("; ")}` : ""}`);
   }
   const loja = rows.filter((r) => r.tipo === LOJA);
   const recusa = rows.filter((r) => r.tipo === RECUSA);
-  const resp = rows.filter((r) => r.status === 200);
+  const resp = rows.filter((r) => r.status === "200");
   const ms = resp.map((r) => r.ms).sort((a, b) => a - b);
-  const falhas = Object.entries(rows.filter((r) => r.status !== 200).reduce((acc, r) => ((acc[r.status] = (acc[r.status] || 0) + 1), acc), {}));
+  const falhas = Object.entries(rows.filter((r) => r.status !== "200").reduce((acc, r) => {
+      const k = r.status.split(" (")[0];
+      acc[k] = (acc[k] || 0) + 1;
+      return acc;
+    }, {}));
   const resumo = [
     `Modelo ${config.model}, tempo limite ${config.timeoutMs} ms, ${rows.length} frases difíceis (${loja.length} da loja, ${recusa.length} para recusar).`,
     `PLN local sozinha: ${loja.filter((r) => r.localOk).length}/${loja.length} pedidos da loja atendidos.`,

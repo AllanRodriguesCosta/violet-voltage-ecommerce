@@ -78,5 +78,5 @@ jobs:
           docker logs vv || true
           docker compose -f infra/local/docker-compose.yml logs --tail 80 || true
           # Resumo também como anotação (aparece na página do PR sem abrir o log).
-          diag=$( { docker compose -f infra/local/docker-compose.yml ps -a; docker compose -f infra/local/docker-compose.yml logs --no-color --tail 20; cat lb.txt lb2.txt; } 2>&1 | tail -c 6000 | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')
+          diag=$( { cat lb.txt lb2.txt; docker compose -f infra/local/docker-compose.yml ps -a --format '{{.Name}} {{.Status}}'; docker compose -f infra/local/docker-compose.yml logs --no-color --tail 6 app balanceador; } 2>&1 | head -c 3500 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
           echo "::error title=diagnostico::$diag"

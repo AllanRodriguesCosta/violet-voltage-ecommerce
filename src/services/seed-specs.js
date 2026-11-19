@@ -1,4 +1,4 @@
-// Fichas técnicas do catálogo inicial, por modelo. Valores seguem public/js/specs.js
+// Fichas técnicas do catálogo inicial, por modelo. Valores seguem shared/specs.js
 // (validados em tests/catalog-specs.test.js). Revisar contra as fotos: docs/PENDENCIAS-MANUAIS.txt.
 export const seedSpecs = {
   // Correias

@@ -7,14 +7,14 @@ import { storeFixture } from "./helpers/api-fixture.js";
 import { seedProducts } from "../src/services/seed-products.js";
 import { genres } from "../src/knowledge/genres.js";
 import { artists, sounds, colors, productColors } from "../src/knowledge/taste.js";
-import { SPEC_FIELDS } from "../public/js/specs.js";
+import { SPEC_FIELDS } from "../shared/specs.js";
 import { reply } from "../src/assistant/index.js";
 import { extractTaste, colorsOf } from "../src/assistant/taste.js";
 import { parseCustom } from "../src/assistant/custom-order.js";
 import { validCnpj } from "../src/services/requests.js";
-import { validCnpj as validCnpjClient, maskCnpj, PRODUCTS } from "../public/js/pages/partners.js";
+import { validCnpj as validCnpjClient, maskCnpj, PRODUCTS } from "../shared/partners.js";
 import { PARTNER_PRODUCTS } from "../src/services/requests.js";
-import { fromQuery } from "../public/js/pages/request.js";
+import { fromQuery } from "../shared/request.js";
 
 const products = seedProducts.map((p) => ({ ...p, id: p.rowKey, ativo: true }));
 const byId = (id) => products.find((p) => p.id === id);
@@ -224,17 +224,19 @@ test("API: ficha de parceria pública, com CNPJ válido, sem duplicar e com camp
 });
 
 test("páginas novas, menu da conta, rodapé e botão de login com retomada da conversa", async () => {
-  const [enc, par, assistant, common, app] = await Promise.all(["public/encomenda.html", "public/parceiros.html", "public/js/assistant.js", "public/js/common.js", "public/js/app.js"].map((f) => readFile(new URL(`../${f}`, import.meta.url), "utf8")));
+  const files = ["web/src/pages/Request.tsx", "web/src/pages/Partners.tsx", "web/src/components/Assistant.tsx", "web/src/components/Layout.tsx", "shared/account.js", "web/src/pages/index.ts", "web/encomenda.html", "web/parceiros.html"];
+  const [enc, par, assistant, layout, account, registry, encHtml, parHtml] = await Promise.all(files.map((f) => readFile(new URL(`../${f}`, import.meta.url), "utf8")));
   assert.match(enc, /id="request-form"/);
-  assert.match(enc, /\/js\/pages\/request\.js/);
+  assert.match(encHtml, /\/src\/entries\/encomenda\.tsx/);
   assert.match(par, /name="cnpj"/);
-  assert.match(par, /name="website"[^>]*tabindex="-1"/);
-  assert.match(app, /"\/encomenda\.html": "request"/);
-  assert.match(app, /"\/parceiros\.html": "partners"/);
-  assert.match(common, /href="\/parceiros\.html">Seja um parceiro/);
-  assert.match(common, /id: "encomendas"/);
-  assert.match(assistant, /data-assistant-login href="\/login\.html\?next=/);
-  assert.match(assistant, /data-assistant-login href="\/cadastro\.html\?next=/);
+  assert.match(par, /name="website"[^>]*tabIndex=\{-1\}/);
+  assert.match(parHtml, /\/src\/entries\/parceiros\.tsx/);
+  assert.match(registry, /encomenda: Request/);
+  assert.match(registry, /parceiros: Partners/);
+  assert.match(layout, /href="\/parceiros\.html">Seja um parceiro/);
+  assert.match(account, /id: "encomendas"/);
+  assert.match(assistant, /data-assistant-login href=\{`\/login\.html\?next=/);
+  assert.match(assistant, /data-assistant-login href=\{`\/cadastro\.html\?next=/);
   assert.match(assistant, /takePending\(\)/);
   for (const html of [enc, par]) assert.doesNotMatch(html, /demonstr|simulad|nenhuma cobrança|sem cobrança/i);
 });

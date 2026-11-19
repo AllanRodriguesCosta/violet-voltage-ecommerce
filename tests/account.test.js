@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { randomBytes, randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { addressInput, saveAddress, removeAddress, formatAddress, MAX_ADDRESSES, UFS } from "../src/services/addresses.js";
-import * as clientAddress from "../public/js/address.js";
+import * as clientAddress from "../shared/address.js";
 import { orderNotice } from "../src/services/notifications.js";
 import { MemoryStorage } from "../src/repositories/memory.js";
 import { createApp } from "../src/app.js";

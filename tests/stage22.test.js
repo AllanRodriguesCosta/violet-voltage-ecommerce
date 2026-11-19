@@ -1,13 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { storeFixture } from "./helpers/api-fixture.js";
 import { seedProducts } from "../src/services/seed-products.js";
-import { SERVICES, servicePrice, servicesFor, cleanServices } from "../public/js/services.js";
+import { SERVICES, servicePrice, servicesFor, cleanServices } from "../shared/services.js";
 import { calculate } from "../src/services/checkout.js";
 import { quote } from "../src/services/pricing.js";
-import { checkSpecs, specRows, SPEC_FIELDS } from "../public/js/specs.js";
+import { checkSpecs, specRows, SPEC_FIELDS } from "../shared/specs.js";
 import { guides } from "../src/knowledge/guides.js";
 import { glossary, glossaryId } from "../src/knowledge/glossary.js";
 import { authorName } from "../src/services/questions.js";
@@ -56,10 +57,8 @@ test("serviços: preço por categoria, garantia proporcional e validação no se
   assert.equal(t.totalCents, t.subtotalCents + services + t.freteCents - t.descontoCents);
 });
 
-test("guias e glossário: página publicada em dia e atalhos do catálogo válidos", async () => {
-  const html = await readFile(new URL("../public/guias.html", import.meta.url), "utf8");
+test("guias: atalhos do catálogo válidos e glossário ligado aos guias", () => {
   for (const g of guides) {
-    assert.ok(html.includes(`id="${g.id}"`), g.id);
     for (const [, href] of g.links) {
       const url = new URL(href, "http://x");
       if (url.pathname !== "/catalogo.html") continue;
@@ -72,10 +71,15 @@ test("guias e glossário: página publicada em dia e atalhos do catálogo válid
     }
   }
   assert.equal(new Set(glossary.map((t) => glossaryId(t.termo))).size, glossary.length, "ids únicos");
-  for (const t of glossary) {
-    assert.ok(html.includes(`id="${glossaryId(t.termo)}"`), t.termo);
-    if (t.guia) assert.ok(guides.some((g) => g.id === t.guia), t.termo);
-  }
+  for (const t of glossary) if (t.guia) assert.ok(guides.some((g) => g.id === t.guia), t.termo);
+});
+
+// A página (web/src/pages/Guides.tsx) é pré-renderizada por inteiro no build.
+const built = existsSync(new URL("../dist/guias.html", import.meta.url));
+test("guias e glossário: página publicada em dia", { skip: !built && "rode npm run build" }, async () => {
+  const html = await readFile(new URL("../dist/guias.html", import.meta.url), "utf8");
+  for (const g of guides) assert.ok(html.includes(`id="${g.id}"`), g.id);
+  for (const t of glossary) assert.ok(html.includes(`id="${glossaryId(t.termo)}"`), t.termo);
 });
 
 test("API: serviços no pedido, aviso de queda de preço e perguntas e respostas", async (t) => {

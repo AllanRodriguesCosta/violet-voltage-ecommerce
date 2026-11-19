@@ -1,9 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
 
-const publicDir = new URL("../public/", import.meta.url);
-const css = await readFile(new URL("css/style.css", publicDir), "utf8");
+// CSS da loja em web/src/styles (empacotado pelo Vite); páginas em web/*.html e, no build, dist/.
+const webDir = new URL("../web/", import.meta.url);
+const distDir = new URL("../dist/", import.meta.url);
+const css = await readFile(new URL("src/styles/style.css", webDir), "utf8");
 
 function tokens(selector) {
   const start = css.indexOf(`${selector} {`);
@@ -50,13 +53,23 @@ test("tokens de cor mantêm contraste AA nos temas claro e escuro", () => {
   }
 });
 
-test("todas as páginas aplicam o tema salvo antes das folhas de estilo", async () => {
-  const pages = (await readdir(publicDir)).filter((file) => file.endsWith(".html"));
-  assert.ok(pages.length >= 10);
+async function checkPages(dir, { built = false } = {}) {
+  const pages = (await readdir(dir)).filter((file) => file.endsWith(".html"));
+  assert.ok(pages.length >= 20);
   for (const page of pages) {
-    const html = await readFile(new URL(page, publicDir), "utf8");
+    const html = await readFile(new URL(page, dir), "utf8");
     const init = html.indexOf('<script src="/js/theme-init.js"></script>');
     assert.ok(init > 0, `${page} sem theme-init.js`);
-    assert.ok(init < html.indexOf('<link rel="stylesheet"'), `${page} carrega CSS antes do tema`);
+    const style = html.search(/<link rel="stylesheet"/);
+    // No código-fonte o Vite ainda não injetou o CSS; no build ele vem depois do tema.
+    if (built) assert.ok(style > init, `${page} carrega CSS antes do tema`);
+    else assert.ok(style === -1 || style > init, `${page} carrega CSS antes do tema`);
   }
+}
+test("todas as páginas aplicam o tema salvo antes das folhas de estilo", () => checkPages(webDir));
+test("build: tema aplicado antes do CSS empacotado", { skip: !existsSync(new URL("index.html", distDir)) && "rode npm run build" }, () => checkPages(distDir, { built: true }));
+test("theme-init.js continua um script clássico e pequeno em public/", async () => {
+  const init = await readFile(new URL("../public/js/theme-init.js", import.meta.url), "utf8");
+  assert.doesNotMatch(init, /^\s*(import|export)\b/m);
+  assert.ok(init.length < 1200);
 });

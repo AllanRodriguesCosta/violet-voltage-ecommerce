@@ -1,62 +1,60 @@
+// Formulários em React (components/Form.tsx e FormKit.tsx): a trava de envio ignora o toque
+// repetido durante o envio e libera o botão depois do sucesso ou do erro (como o bindForm anterior).
 import test from "node:test";
 import assert from "node:assert/strict";
-import { bindForm } from "../public/js/common.js";
+import { createElement } from "react";
+import { web, html } from "./helpers/web.js";
 
-function fixture(t) {
-  let submit;
-  const messages = [];
-  const button = { textContent: "Salvar", disabled: false };
-  const form = {
-    dataset: {},
-    elements: { namedItem: () => null },
-    addEventListener: (_event, fn) => { submit = fn; },
-    querySelectorAll: () => [],
-    querySelector: () => button,
-    prepend: element => messages.push(element),
-  };
-  const previous = Object.getOwnPropertyDescriptor(globalThis, "document");
-  Object.defineProperty(globalThis, "document", { configurable: true, value: {
-    createElement: () => ({ setAttribute() {} }),
-  }});
-  t.mock.method(globalThis, "FormData", function () { return new Map([["nome", "Pessoa de teste"]]); });
-  t.after(() => {
-    if (previous) Object.defineProperty(globalThis, "document", previous);
-    else delete globalThis.document;
-  });
-  return { form, button, messages, submit: () => submit({ preventDefault() {} }) };
+const { createSubmitGuard } = await web("lib/submit.ts");
+const { SubmitButton } = await web("components/FormKit.tsx");
+
+function fixture() {
+  const states = [];
+  const guard = createSubmitGuard((busy) => states.push(busy));
+  return { guard, states };
 }
 
-test("formulário ignora toque repetido durante envio e libera após sucesso", async t => {
-  const ui = fixture(t);
+test("formulário ignora toque repetido durante envio e libera após sucesso", async () => {
+  const ui = fixture();
   let finish;
   let calls = 0;
-  bindForm(ui.form, async data => {
+  const handler = async () => {
     calls++;
-    assert.equal(data.nome, "Pessoa de teste");
-    await new Promise(resolve => { finish = resolve; });
-  });
-  const pending = ui.submit();
-  assert.equal(ui.button.disabled, true);
-  await ui.submit();
+    await new Promise((resolve) => {
+      finish = resolve;
+    });
+  };
+  const pending = ui.guard.run(handler);
+  assert.equal(ui.guard.busy, true);
+  assert.deepEqual(ui.states, [true], "botão desabilitado (Aguarde…)");
+  assert.deepEqual(await ui.guard.run(handler), { status: "skipped" });
   assert.equal(calls, 1);
   finish();
-  await pending;
-  assert.equal(ui.button.disabled, false);
-  assert.equal(ui.button.textContent, "Salvar");
-  assert.equal(ui.form.dataset.busy, undefined);
+  assert.deepEqual(await pending, { status: "done" });
+  assert.equal(ui.guard.busy, false);
+  assert.deepEqual(ui.states, [true, false], "botão volta ao normal");
 });
 
-test("formulário recupera botão após erro e permite nova tentativa", async t => {
-  const ui = fixture(t);
+test("formulário recupera botão após erro e permite nova tentativa", async () => {
+  const ui = fixture();
   let calls = 0;
-  bindForm(ui.form, async () => {
+  const handler = async () => {
     calls++;
     if (calls === 1) throw new Error("Conexão indisponível");
-  });
-  await ui.submit();
-  assert.equal(ui.messages[0].textContent, "Conexão indisponível");
-  assert.equal(ui.button.disabled, false);
-  await ui.submit();
+  };
+  const first = await ui.guard.run(handler);
+  assert.equal(first.status, "failed");
+  assert.equal(first.error.message, "Conexão indisponível", "a mensagem aparece no formulário");
+  assert.equal(ui.guard.busy, false);
+  assert.deepEqual(await ui.guard.run(handler), { status: "done" });
   assert.equal(calls, 2);
-  assert.equal(ui.button.textContent, "Salvar");
+});
+
+test("botão de envio mostra Aguarde… e fica desabilitado só durante o envio", async () => {
+  const idle = await html(createElement(SubmitButton, { kit: { busy: false } }, "Salvar"));
+  assert.equal(idle, '<button type="submit">Salvar</button>');
+  const busy = await html(createElement(SubmitButton, { kit: { busy: true } }, "Salvar"));
+  assert.match(busy, /disabled=""/);
+  assert.match(busy, /class="is-busy"/);
+  assert.match(busy, />Aguarde…</);
 });

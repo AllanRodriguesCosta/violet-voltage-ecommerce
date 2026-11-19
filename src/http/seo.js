@@ -5,7 +5,7 @@ import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { compress, encoding } from "./static.js";
 import { publicProduct } from "../controllers/serialization.js";
-import { specRows } from "../../public/js/specs.js";
+import { specRows } from "../../shared/specs.js";
 
 const html = (value) => String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const brl = (cents) => (cents / 100).toFixed(2);
@@ -86,15 +86,26 @@ export function productMeta(p, base) {
   };
 }
 
-export function seoPages(storage, publicDir, origin) {
+// dirs: pastas em ordem de prioridade (dist/ do build antes de public/).
+export function seoPages(storage, dirs, origin) {
   const templates = new Map();
+  const locate = async (name) => {
+    for (const dir of [dirs].flat()) {
+      const file = path.join(dir, name);
+      try {
+        return { file, info: await stat(file) };
+      } catch {
+        // Tenta a próxima pasta.
+      }
+    }
+    throw new Error(`Modelo ausente: ${name}`);
+  };
   const template = async (name) => {
-    const file = path.join(publicDir, name);
-    const info = await stat(file);
+    const { file, info } = await locate(name);
     const cached = templates.get(name);
-    if (cached?.mtime === info.mtimeMs) return cached.text;
+    if (cached?.mtime === info.mtimeMs && cached.file === file) return cached.text;
     const text = await readFile(file, "utf8");
-    templates.set(name, { mtime: info.mtimeMs, text });
+    templates.set(name, { mtime: info.mtimeMs, file, text });
     return text;
   };
   const send = (req, res, body) => {

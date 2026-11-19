@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { storeFixture } from "./helpers/api-fixture.js";
 import { seedProducts } from "../src/services/seed-products.js";
-import { KITS, kitDiscounts, kitPrice, kitProgress } from "../public/js/kits.js";
-import { cartAdvice } from "../public/js/compat.js";
-import { compareRows, checkSpecs, needsPower } from "../public/js/specs.js";
+import { KITS, kitDiscounts, kitPrice, kitProgress } from "../shared/kits.js";
+import { cartAdvice } from "../shared/compat.js";
+import { compareRows, checkSpecs, needsPower } from "../shared/specs.js";
 import { quote } from "../src/services/pricing.js";
 
 const catalog = seedProducts.map((p) => ({ ...p, id: p.rowKey, ativo: true }));

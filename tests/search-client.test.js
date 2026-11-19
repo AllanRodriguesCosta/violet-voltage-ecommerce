@@ -1,7 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { editDistance, correctQuery, searchProducts, rememberSearch, recentSearches, clearSearches } from "../public/js/common.js";
+import { editDistance, correctQuery, searchProducts } from "../shared/catalog.js";
+import { web } from "./helpers/web.js";
 import { seedProducts } from "../src/services/seed-products.js";
+
+// Buscas recentes ficam no navegador (web/src/lib/cart.ts).
+const { rememberSearch, recentSearches, clearSearches } = await web("lib/cart.ts");
 
 const products = seedProducts.map((p) => ({ ...p, id: p.rowKey }));
 

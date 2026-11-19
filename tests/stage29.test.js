@@ -7,7 +7,7 @@ import { seedProducts } from "../src/services/seed-products.js";
 import { seedGallery, galleryFiles, galleryColors } from "../src/services/seed-gallery.js";
 import { seed, missingGalleryFiles, SeedInputError } from "../src/services/seed.js";
 import { MemoryStorage } from "../src/repositories/memory.js";
-import { photosOf, itemColor, itemImage, colorNames, productImage } from "../public/js/common.js";
+import { photosOf, itemColor, itemImage, colorNames, productImage } from "../shared/catalog.js";
 import { seedFixture, fixturePng } from "./helpers/seed-fixture.js";
 import { storeFixture } from "./helpers/api-fixture.js";
 

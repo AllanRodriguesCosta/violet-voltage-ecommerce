@@ -35,7 +35,7 @@ try {
   const item = products.find((p) => p.estoque > 2 && p.priceCents < 60000);
   await page.goto(`${BASE}/produto.html?id=${item.id}`, { waitUntil: "networkidle" });
   await page.click("#add-product button[type=submit]");
-  await page.waitForFunction(() => document.querySelector("[data-cart-count]")?.textContent === "1");
+  await page.waitForFunction(() => document.querySelector(".cart-link .count")?.textContent === "1");
   check("produto entra no carrinho", true);
   await page.goto(BASE + "/carrinho.html", { waitUntil: "networkidle" });
   await page.fill("#cart-cep", "69000-000");

@@ -3,6 +3,49 @@ VIOLET VOLTAGE - CONTEXTO PARA O CODEX (O QUE MUDOU EM 12/11/2026)
 
 Ultima atualizacao: 12/11/2026, depois do PR #20 (main 62dcdc2, CI verde).
 
+ATUALIZACAO 19/11/2026 - REFINAMENTOS DO FRONTEND REACT (ETAPA 39.6)
+---------------------------------------------------------------------
+- React fica em dist/app/react-HASH.js; assistente e visualizacao rapida
+  carregam sob demanda (lazy no Layout). Recurso global novo e pesado: usar
+  o mesmo padrao (<Widget> em web/src/components/Layout.tsx).
+- Erro em componente nao deixa mais a pagina em branco
+  (web/src/components/ErrorBoundary.tsx).
+- web/src/lib/api.ts repete leituras (GET) em queda de conexao e 502/503/504;
+  envios nunca repetem. Nao trocar isso sem pensar em pedido duplicado.
+- Foto quebrada vira ilustracao (data-fallback, web/src/lib/browser.ts).
+- Pre-carregamento de paginas pelo cabecalho Speculation-Rules (src/app.js +
+  shared/speculation.js). Script inline e bloqueado pela CSP: nao usar.
+- Testes: tests/stage39-6.test.js. Detalhes em docs/FRONTEND-REACT.md.
+- Entrega: este trabalho (39.1 a 39.6) chegou ao GitHub por um patch unico
+  aplicado pelo Allan (git am), porque o conector do GitHub estava bloqueado.
+
+ATUALIZACAO 17/11/2026 - FRONTEND EM REACT (ETAPA 39, MIGRACAO CONCLUIDA)
+-------------------------------------------------------------------------
+- O frontend inteiro esta em React 19 + TypeScript (Vite 7): etapas 39.1 a
+  39.5 feitas. LEIA docs/FRONTEND-REACT.md antes de mexer em qualquer pagina.
+- Onde fica cada coisa agora:
+  web/<pagina>.html + web/src/pages (todas as 22 paginas, inclusive ajuda,
+  termos, privacidade, 404, offline e admin), web/src/components (Layout,
+  minicarrinho, busca, comparacao, visualizacao rapida, assistente, painel),
+  web/src/lib (estado do navegador em TypeScript: api, carrinho, sessao,
+  avisos, notificacoes nao lidas), web/src/styles (CSS).
+  shared/ = regras usadas pelo servidor, pela loja e pelos testes (specs,
+  pricing, kits, compat, regions, services, cart-sync, catalog, account,
+  forms, address, orders, partners, request). O servidor importa de shared/.
+  public/ = so fontes, icones, imagens, manifesto, sw.js e js/theme-init.js.
+- O build ("npm run build") gera dist/ com o HTML pre-renderizado; o Express
+  serve dist/ e depois public/. Sem build nao ha paginas (so a API); o CI, o
+  Render, o Docker e o Azure ja rodam o build. Testes que leem paginas pulam
+  sem dist/ ("rode npm run build").
+- Nao duplicar regras de negocio: usar shared/ (via web/src/lib/shop.ts ou
+  catalog.ts no frontend).
+- Nada de window/document/localStorage durante o render (pre-render roda em
+  Node). Ler o navegador em useEffect ou nos hooks de web/src/lib/store.ts.
+- Comandos novos: npm run build, npm run dev, npm run typecheck.
+- Render: buildCommand agora e "npm ci --include=dev && npm run build &&
+  npm prune --omit=dev" (render.yaml). Se o servico no Render foi criado a
+  mao (sem Blueprint), o Allan precisa trocar o Build Command no painel.
+
 ATUALIZACAO 13/11/2026
 ----------------------
 - Etapa 26 (PR #22): assistente aberto a visitantes (login so para pedidos,
@@ -62,7 +105,7 @@ ATUALIZACAO 13/11/2026
   "profiles" (src/services/assistant-profile.js), dependencia "perfil" do
   reply(); "usar o mesmo gosto" e "esquece meu gosto" em memoryAnswer().
 - Etapa 35 (PR #31): buscas anonimas (POST /api/buscas, src/services/
-  searches.js, tabela "searches") e painel de demanda (public/js/admin.js,
+  searches.js, tabela "searches") e painel de demanda (hoje web/src/components/AdminDashboard.tsx,
   demandHTML: mais buscados, sem resultado, carrinhos esquecidos, frases do
   assistente). CI ganhou os jobs "e2e" (scripts/e2e-server.js +
   tests/e2e/smoke.mjs, Playwright) e "lighthouse" (lighthouserc.json).
@@ -71,9 +114,9 @@ ATUALIZACAO 13/11/2026
   (precisa de "npm install --no-save playwright@1").
 - Etapa 34 (PR #30): cupons no painel (src/services/coupons.js, tabela
   "coupons"; os 3 padrao de pricing.js valem sem cadastro e podem ser
-  sobrescritos), frete por regiao do CEP (public/js/regions.js, usado pelo
+  sobrescritos), frete por regiao do CEP (shared/regions.js, usado pelo
   servidor e pelo navegador), carrinho salvo na conta (GET/PUT /api/cart,
-  tabela "carts", public/js/cart-sync.js) com lembrete apos 24 h (criado ao
+  tabela "carts", shared/cart-sync.js) com lembrete apos 24 h (criado ao
   consultar /api/notifications), estoque por cor opcional (cores[].estoque;
   PATCH /api/admin/products/:id com estoqueCores). Correcao: rota
   /api/assistente agora passa as encomendas do cliente ao assistente.
@@ -87,7 +130,7 @@ ATUALIZACAO 13/11/2026
   /api/parcerias (publica), admin /api/admin/parcerias. Tabelas novas
   "requests" e "partners" (CREATE TABLE IF NOT EXISTS na migracao 001, roda
   sozinha no deploy). Login pelo assistente guarda a pergunta e responde
-  depois de entrar (public/js/assistant.js, takePending).
+  depois de entrar (hoje web/src/components/Assistant.tsx, takePending).
 - Etapa 31 (PR #27): pronto para Azure com load balancer (so se o professor
   pedir). Guia: docs/AZURE-LOAD-BALANCER.md. Dockerfile na raiz; roteiros em
   infra/azure/ (rodar no Azure Cloud Shell, com infra/azure/variaveis.env
@@ -160,12 +203,12 @@ Catalogo (src/services/seed-products.js e seed-specs.js)
 - Fotos: 51 recebidas em 13/11/2026, faltam 8 (docs/FOTOS-PENDENTES.txt).
 
 Carrinho, checkout e pedido
-- Kits: public/js/kits.js e a fonte unica (vitrine e servidor). Desconto
+- Kits: shared/kits.js e a fonte unica (vitrine e servidor). Desconto
   automatico com o kit completo; o cupom vale sobre o resto. O pedido guarda
   descontoKitsCents e kits.
-- Compatibilidade: public/js/compat.js (cabo, amplificador, fonte 9V, patch,
+- Compatibilidade: shared/compat.js (cabo, amplificador, fonte 9V, patch,
   pedalboard, correia, cordas, kit quase completo).
-- Servicos: public/js/services.js. Item do carrinho pode ter
+- Servicos: shared/services.js. Item do carrinho pode ter
   servicos: ["regulagem", "cordas", "garantia"]; o servidor valida a
   categoria e cobra por unidade; o cupom nao incide sobre servicos. O pedido
   guarda servicosCents e os servicos em cada item.

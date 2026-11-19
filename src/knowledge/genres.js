@@ -1,6 +1,6 @@
 // Base de conhecimento musical do assistente (Fase 3): para cada gênero, o que costuma
 // combinar em guitarra, amplificador e pedais. Os valores usam o vocabulário da ficha
-// técnica (public/js/specs.js); tests/catalog-specs.test.js garante essa coerência.
+// técnica (shared/specs.js); tests/catalog-specs.test.js garante essa coerência.
 // "estilo" indica a época sonora típica; "pergunta" é a próxima dúvida útil ao cliente.
 export const genres = [
   {

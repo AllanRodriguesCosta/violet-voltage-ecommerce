@@ -14,3 +14,5 @@ seed-assets/produtos-violet-voltage
 infra
 Dockerfile
 .dockerignore
+dist
+dist-ssr

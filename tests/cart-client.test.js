@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { addCart, getCart } from "../public/js/common.js";
+import { web } from "./helpers/web.js";
+
+const { addCart, getCart } = await web("lib/cart.ts");
 
 function browser(t, failWrite = false) {
   let saved = "[]";

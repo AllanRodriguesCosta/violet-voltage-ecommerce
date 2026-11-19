@@ -1,0 +1,200 @@
+{
+  "404": {
+    "title": "<title>Página não encontrada | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Página não encontrada | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "robots": "<meta name=\"robots\" content=\"noindex\" />",
+    "body": "<body>"
+  },
+  "admin": {
+    "title": "<title>Administração | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Administração | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "robots": "<meta name=\"robots\" content=\"noindex\" />",
+    "body": "<body>"
+  },
+  "ajuda": {
+    "title": "<title>Central de ajuda | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Central de ajuda da Violet Voltage: pedidos, entregas, frete grátis, parcelamento, cupons, produtos, trocas, conta e privacidade.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Central de ajuda | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Central de ajuda da Violet Voltage: pedidos, entregas, frete grátis, parcelamento, cupons, produtos, trocas, conta e privacidade.\" />",
+    "robots": null,
+    "body": "<body>"
+  },
+  "cadastro": {
+    "title": "<title>Criar conta | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Criar conta | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "robots": "<meta name=\"robots\" content=\"noindex\" />",
+    "body": "<body class=\"page-auth\">"
+  },
+  "carrinho": {
+    "title": "<title>Seu carrinho | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Seu carrinho | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "robots": "<meta name=\"robots\" content=\"noindex\" />",
+    "body": "<body>"
+  },
+  "catalogo": {
+    "title": "<title>Catálogo | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Catálogo Violet Voltage: filtre guitarras, pedais, amplificadores, cabos, correias e acessórios por marca, preço e disponibilidade.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Catálogo | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Catálogo Violet Voltage: filtre guitarras, pedais, amplificadores, cabos, correias e acessórios por marca, preço e disponibilidade.\" />",
+    "robots": null,
+    "body": "<body>"
+  },
+  "checkout": {
+    "title": "<title>Finalizar pedido | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Finalizar pedido | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "robots": "<meta name=\"robots\" content=\"noindex\" />",
+    "body": "<body>"
+  },
+  "comparar": {
+    "title": "<title>Comparar produtos | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Comparar produtos | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "robots": "<meta name=\"robots\" content=\"noindex\" />",
+    "body": "<body>"
+  },
+  "encomenda": {
+    "title": "<title>Encomendas | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Encomende uma guitarra personalizada ou um produto fora do catálogo na Violet Voltage.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Encomendas | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "robots": null,
+    "body": "<body>"
+  },
+  "favoritos": {
+    "title": "<title>Favoritos | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Favoritos | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "robots": "<meta name=\"robots\" content=\"noindex\" />",
+    "body": "<body>"
+  },
+  "guias": {
+    "title": "<title>Guias de compra e glossário | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Guias de compra Violet Voltage: primeira guitarra, captação, amplificadores, ordem dos pedais, fonte de 9V, calibre de cordas e glossário de termos.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Guias de compra e glossário | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Guias de compra Violet Voltage: primeira guitarra, captação, amplificadores, ordem dos pedais, fonte de 9V, calibre de cordas e glossário de termos.\" />",
+    "robots": null,
+    "body": "<body>"
+  },
+  "index": {
+    "title": "<title>Violet Voltage | Guitarras, pedais e amplificadores</title>",
+    "description": "<meta name=\"description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Violet Voltage | Guitarras, pedais e amplificadores\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "robots": null,
+    "body": "<body class=\"page-home\">"
+  },
+  "kits": {
+    "title": "<title>Kits com desconto | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Kits Violet Voltage com desconto: primeira guitarra, blues, metal, pedalboard e manutenção, com tudo que combina em um só clique.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Kits com desconto | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Kits Violet Voltage com desconto: primeira guitarra, blues, metal, pedalboard e manutenção, com tudo que combina em um só clique.\" />",
+    "robots": null,
+    "body": "<body>"
+  },
+  "login": {
+    "title": "<title>Entrar | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Entrar | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "robots": "<meta name=\"robots\" content=\"noindex\" />",
+    "body": "<body class=\"page-auth\">"
+  },
+  "minha-conta": {
+    "title": "<title>Minha conta | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Minha conta | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "robots": "<meta name=\"robots\" content=\"noindex\" />",
+    "body": "<body>"
+  },
+  "offline": {
+    "title": "<title>Sem conexão | Violet Voltage</title>",
+    "description": null,
+    "ogType": null,
+    "ogTitle": null,
+    "ogDescription": null,
+    "robots": "<meta name=\"robots\" content=\"noindex\" />",
+    "body": "<body class=\"offline-page\">"
+  },
+  "parceiros": {
+    "title": "<title>Parceiros e fornecedores | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Fabricantes, distribuidores e luthiers: seja parceiro da Violet Voltage.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Parceiros e fornecedores | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "robots": null,
+    "body": "<body>"
+  },
+  "pedido": {
+    "title": "<title>Pedido | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Pedido | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "robots": "<meta name=\"robots\" content=\"noindex\" />",
+    "body": "<body>"
+  },
+  "privacidade": {
+    "title": "<title>Privacidade | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Política de privacidade da Violet Voltage: dados da conta e dos pedidos, cookie de sessão, armazenamento no navegador e seus direitos.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Privacidade | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Política de privacidade da Violet Voltage: dados da conta e dos pedidos, cookie de sessão, armazenamento no navegador e seus direitos.\" />",
+    "robots": null,
+    "body": "<body>"
+  },
+  "produto": {
+    "title": "<title>Detalhes do equipamento | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Detalhes do equipamento | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Violet Voltage: guitarras, pedais, amplificadores e acessórios. Turn Up Your Tone.\" />",
+    "robots": null,
+    "body": "<body>"
+  },
+  "setup": {
+    "title": "<title>Monte seu setup | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Monte seu setup na Violet Voltage: escolha guitarra, amplificador, efeitos, cabos, correia e acessórios e veja o total com parcelas e frete grátis.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Monte seu setup | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Monte seu setup na Violet Voltage: escolha guitarra, amplificador, efeitos, cabos, correia e acessórios e veja o total com parcelas e frete grátis.\" />",
+    "robots": null,
+    "body": "<body>"
+  },
+  "termos": {
+    "title": "<title>Termos de uso | Violet Voltage</title>",
+    "description": "<meta name=\"description\" content=\"Termos de uso da Violet Voltage: conta, preços, cupons, entrega, retirada, cancelamento, trocas e avisos de estoque.\" />",
+    "ogType": "<meta property=\"og:type\" content=\"website\" />",
+    "ogTitle": "<meta property=\"og:title\" content=\"Termos de uso | Violet Voltage\" />",
+    "ogDescription": "<meta property=\"og:description\" content=\"Termos de uso da Violet Voltage: conta, preços, cupons, entrega, retirada, cancelamento, trocas e avisos de estoque.\" />",
+    "robots": null,
+    "body": "<body>"
+  }
+}

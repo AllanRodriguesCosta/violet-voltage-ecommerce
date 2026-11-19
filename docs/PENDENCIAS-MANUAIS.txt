@@ -264,3 +264,11 @@ passar ao Allan: docs/CODEX-LOAD-BALANCER.txt. Resumo:
 Se um comando falhar, anote o comando e a mensagem (sem segredos) e passe ao
 Copilot.
 Resultado:
+
+T11 [ ] ALLAN - Conferir o Build Command no Render (etapa 39, frontend React)
+    O frontend agora precisa ser gerado no deploy. O render.yaml ja traz:
+      npm ci --include=dev && npm run build && npm prune --omit=dev
+    Se o servico foi criado pelo Blueprint (render.yaml), nada a fazer.
+    Se foi criado a mao: Render > violet-voltage > Settings > Build & Deploy >
+    Build Command, colar a linha acima e salvar. Depois do proximo deploy,
+    abrir o site e conferir que a pagina inicial carrega normalmente.

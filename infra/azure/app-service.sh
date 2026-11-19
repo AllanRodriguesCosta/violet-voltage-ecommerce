@@ -20,10 +20,12 @@ passo "Aplicativo web $APP_NAME ($APP_RUNTIME)"
 az webapp show -g "$RG" -n "$APP_NAME" -o none 2>/dev/null ||
   az webapp create -g "$RG" -p "$PLANO" -n "$APP_NAME" --runtime "$APP_RUNTIME" -o none
 
+# Etapa 39: NPM_CONFIG_PRODUCTION=false faz o build do Azure (Oryx) instalar o Vite e rodar
+# "npm run build", que gera o frontend React em dist/.
 passo "Variáveis da aplicação (valores não são exibidos)"
 mapfile -t AJUSTES < <(variaveis_app)
 az webapp config appsettings set -g "$RG" -n "$APP_NAME" -o none --settings \
-  "${AJUSTES[@]}" SCM_DO_BUILD_DURING_DEPLOYMENT=true WEBSITES_CONTAINER_START_TIME_LIMIT=600
+  "${AJUSTES[@]}" SCM_DO_BUILD_DURING_DEPLOYMENT=true NPM_CONFIG_PRODUCTION=false WEBSITES_CONTAINER_START_TIME_LIMIT=600
 
 passo "Health check em /api/health, sem afinidade de sessão, só HTTPS"
 az webapp config set -g "$RG" -n "$APP_NAME" -o none --startup-file "npm start" \

@@ -37,24 +37,24 @@ conexão do banco. A autenticação continua própria, sem Supabase Auth.
 | `src/services/account.js` | Troca de senha, forma de pagamento preferida, cópia dos dados e exclusão da conta pelo cliente |
 | `src/knowledge/genres.js` | Base de conhecimento musical por gênero, usada pelo assistente |
 | `src/assistant/` | Assistente de compras: pré-processamento, classificador Naive Bayes, entidades, recomendação, setup, dúvidas, contexto e avaliação ([ASSISTENTE.md](ASSISTENTE.md)) |
-| `public/js/assistant.js` | Painel do assistente (aberto a visitantes desde a etapa 26) |
+| `web/src/components/Assistant.tsx` | Painel do assistente (aberto a visitantes desde a etapa 26) |
 | `scripts/assistant-eval.js` | `npm run agente:eval`: acerto por intenção em frases fora do treino |
 | `src/repositories/factory.js`, `postgres.js` | Seleção de backend e persistência PostgreSQL |
 | `src/repositories/memory.js` | Armazenamento volátil de desenvolvimento e testes |
 | `src/http/static.js` | Compressão Brotli/gzip de arquivos e JSON e cache HTTP por tipo de arquivo |
 | `src/utils/startup-error.js` | Mensagem de falha na inicialização sem segredos |
 | `migrations/001-postgres.sql` | Estrutura idempotente do schema privado, incluindo `alerts` e `notifications` |
-| `public/js/common.js` | API cliente, sessão, formulários, carrinho, favoritos, avisos, layout comum e menu da conta ("Olá, Nome", atalhos e Sair) |
-| `public/js/app.js` | Entrada: tema, cabeçalho, minicarrinho, busca e carregamento da página |
-| `public/js/theme-init.js`, `theme.js` | Tema aplicado antes da primeira pintura; seletores claro, escuro e automático |
-| `public/js/motion.js`, `quickview.js` | Voo até o carrinho, voltar ao topo, sombra do cabeçalho e visualização rápida |
-| `public/js/pages/` | Home, catálogo, montador de setup, favoritos, produto, carrinho, checkout, conta (seções por endereço `#`) e acesso |
-| `public/js/components.js`, `drawer.js`, `search.js`, `icons.js` | Cards, minicarrinho e aviso de item adicionado, sugestões de busca e ícones SVG |
-| `public/js/admin.js` | Painel administrativo |
-| `public/js/specs.js` | Esquema da ficha técnica, validação e textos (compartilhado com o servidor) |
+| `web/src/lib/` | Estado do navegador em TypeScript: API cliente (`api.ts`), carrinho, favoritos e buscas recentes (`cart.ts`), sessão, avisos, comparação, notificações não lidas, minicarrinho, tema |
+| `web/src/components/Layout.tsx` | Cabeçalho, menu da conta ("Olá, Nome", atalhos e Sair), rodapé, navegação inferior e recursos globais |
+| `public/js/theme-init.js`, `web/src/lib/theme.ts` | Tema aplicado antes da primeira pintura; seletores claro, escuro e automático |
+| `web/src/lib/motion.ts`, `components/QuickView.tsx` | Voo até o carrinho e visualização rápida |
+| `web/src/pages/` | Todas as páginas (início, catálogo, produto, montador, carrinho, checkout, conta, ajuda, painel...) |
+| `web/src/components/CartDrawer.tsx`, `SearchBox.tsx`, `CompareTray.tsx` | Minicarrinho e aviso de item adicionado, sugestões de busca e barra de comparação |
+| `web/src/pages/Admin.tsx`, `components/AdminDashboard.tsx` | Painel administrativo |
+| `shared/` | Regras compartilhadas com o servidor: ficha técnica (`specs.js`), preços, kits, compatibilidade, regiões, serviços, catálogo, pedidos |
 | `public/fonts/` | Fonte Geist (licença OFL) servida pelo próprio site |
-| `public/sw.js`, `manifest.webmanifest`, `offline.html`, `icons/` | Service worker de rede primeiro, manifesto, página sem conexão e ícones do app |
-| `public/css/` | Base visual, componentes e regras responsivas |
+| `public/sw.js`, `manifest.webmanifest`, `icons/` e `web/offline.html` | Service worker de rede primeiro, manifesto, ícones do app e página sem conexão |
+| `web/src/styles/` | Base visual, componentes e regras responsivas |
 | `tests/` | Testes de domínio, HTTP, PostgreSQL e cliente simulado |
 | `.github/workflows/quality.yml` | CI de lint e testes em cada push e pull request |
 
@@ -137,7 +137,7 @@ prazos de entrega, relacionados, vistos recentemente, compartilhamento,
 schema.org `Product` (sem avaliações). Produto inválido tem retorno
 ao catálogo.
 
-Ficha técnica (etapa 17): o esquema por categoria fica em `public/js/specs.js` e
+Ficha técnica (etapa 17): o esquema por categoria fica em `shared/specs.js` e
 é o mesmo para loja, painel e servidor. Todo produto pode ter estilo (vintage,
 moderno ou atemporal), gêneros indicados (vazio significa versátil) e campos da
 categoria, como formato, captação, ponte e timbre das guitarras ou tecnologia,
@@ -174,9 +174,9 @@ vai para o primeiro item novo); atalhos por estilo musical na home, com a
 contagem de itens indicados; filtro "Estilo musical" no montador de setup
 (`?genero=`), que mostra os itens indicados primeiro e depois os versáteis, sem
 esconder o que já foi escolhido; e "Compre junto" escolhido pela ficha
-(`bundlePicks` em `public/js/pages/product.js`): cabo de instrumento para
+(`bundlePicks` em `shared/catalog.js`): cabo de instrumento para
 guitarra e amplificador, cabo patch e pedalboard ou afinador para pedal de efeito,
-afinidade de gênero e estilo (`affinity` em `public/js/specs.js`) e orçamento de
+afinidade de gênero e estilo (`affinity` em `shared/specs.js`) e orçamento de
 até 1,5 vez o preço do produto. Os relacionados da mesma categoria também
 priorizam a afinidade.
 
@@ -198,15 +198,15 @@ nenhum dado de cartão é coletado. Pedido e estoque compartilham transação
 serializável no PostgreSQL. Repetir requestId do mesmo cliente devolve o pedido
 já registrado. Falhar ao limpar o carrinho depois do sucesso não oculta o pedido.
 
-Etapa 21: kits com desconto (`public/js/kits.js`, fonte única da vitrine e do
+Etapa 21: kits com desconto (`shared/kits.js`, fonte única da vitrine e do
 servidor; desconto automático com o kit completo, cada unidade em um kit só,
-cupom sobre o restante), comparador de 2 a 4 produtos (`public/js/compare.js`,
+cupom sobre o restante), comparador de 2 a 4 produtos (`web/src/lib/compare.ts`,
 tabela com `compareRows` da ficha) e avisos de compatibilidade no carrinho
-(`public/js/compat.js`: cabo, amplificador, fonte de 9V pela alimentação na
+(`shared/compat.js`: cabo, amplificador, fonte de 9V pela alimentação na
 ficha dos pedais, cabos patch, pedalboard, correia, cordas e kit quase
 completo), com sugestão do catálogo e botão de adicionar.
 
-Etapa 22: serviços por item (`public/js/services.js`: regulagem, troca de
+Etapa 22: serviços por item (`shared/services.js`: regulagem, troca de
 cordas e garantia estendida), validados e cobrados pelo servidor, fora do
 cupom. Guias de compra e glossário (`src/knowledge/guides.js` e `glossary.js`)
 geram `/guias.html`. Ficha das guitarras com mão, cordas, captadores, trastes

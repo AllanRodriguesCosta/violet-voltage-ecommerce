@@ -1,6 +1,6 @@
 // Etapa 33: base de conhecimento de gosto pessoal, para montar setups e indicar equipamentos
 // sem depender só do orçamento. Três fontes, todas com o vocabulário da ficha técnica
-// (public/js/specs.js), conferido em tests/stage33.test.js:
+// (shared/specs.js), conferido em tests/stage33.test.js:
 // - artistas e bandas: o gênero e o equipamento pelo qual cada um é conhecido;
 // - tipos de som descritos por quem não fala termos técnicos ("pesado", "suave", "espacial");
 // - cores: a de cada produto vem das fotos do catálogo (tabela abaixo) ou do nome do modelo.

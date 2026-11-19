@@ -6,7 +6,11 @@ import { readFile } from "node:fs/promises";
 import { storeFixture } from "./helpers/api-fixture.js";
 import { searchTerm, logSearch, searchSummary } from "../src/services/searches.js";
 import { MemoryStorage } from "../src/repositories/memory.js";
-import { demandHTML } from "../public/js/admin.js";
+import { createElement } from "react";
+import { web, html as markup } from "./helpers/web.js";
+
+// Painel em React: o bloco de demanda (O que mais procuram, buscas sem resultado...).
+const { Demand } = await web("components/AdminDashboard.tsx");
 
 const read = (f) => readFile(new URL(`../${f}`, import.meta.url), "utf8");
 
@@ -56,7 +60,7 @@ test("API: /buscas é pública e anônima; o resumo do painel traz buscas, carri
   assert.equal((await call("/admin/buscas", { method: "GET", cookie: ana })).status, 403);
   assert.equal((await call("/admin/buscas", { method: "DELETE", cookie: boss })).status, 200);
   assert.equal((await storage.list("searches")).length, 0);
-  const html = demandHTML(s);
+  const html = await markup(createElement(Demand, { s }));
   assert.match(html, /O que mais procuram/);
   assert.match(html, /“theremin”/);
   assert.match(html, /role="img"/);
@@ -64,7 +68,7 @@ test("API: /buscas é pública e anônima; o resumo do painel traz buscas, carri
 
 test("CI: roteiro de navegador e Lighthouse; catálogo envia a busca; privacidade explica", async () => {
   const [workflow, smoke, server, lhci, catalog, privacy, gitignore] = await Promise.all(
-    [".github/workflows/quality.yml", "tests/e2e/smoke.mjs", "scripts/e2e-server.js", "lighthouserc.json", "public/js/pages/catalog.js", "public/privacidade.html", ".gitignore"].map(read),
+    [".github/workflows/quality.yml", "tests/e2e/smoke.mjs", "scripts/e2e-server.js", "lighthouserc.json", "web/src/pages/Catalog.tsx", "web/src/pages/Privacy.tsx", ".gitignore"].map(read),
   );
   assert.match(workflow, /\n  e2e:\n/);
   assert.match(workflow, /node tests\/e2e\/smoke\.mjs/);

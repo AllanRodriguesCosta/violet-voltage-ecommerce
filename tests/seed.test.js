@@ -10,7 +10,7 @@ import { seed, SeedInputError } from "../src/services/seed.js";
 import { seedProducts, ORIGINAL_SEED_COUNT, expansionProducts } from "../src/services/seed-products.js";
 const N = seedProducts.length;
 import { createApp } from "../src/app.js";
-import { productImage } from "../public/js/common.js";
+import { productImage } from "../shared/catalog.js";
 import { seedFixture, fixturePng } from "./helpers/seed-fixture.js";
 
 test("catálogo seed: IDs sequenciais únicos, arquivos e modelos únicos, preços e estoques", () => {
@@ -260,7 +260,7 @@ test("arquivos públicos não contêm avisos de pagamento simulado", async () =>
         await scan(path);
         continue;
       }
-      if (!/\.(html|js|css|svg)$/.test(entry.name)) continue;
+      if (!/\.(html|js|css|svg|tsx?)$/.test(entry.name)) continue;
       assert.doesNotMatch(
         await readFile(path, "utf8"),
         /demonstr|simulad|nenhuma\s+cobrança|sem\s+cobrança|nenhum\s+valor\s+foi\s+cobrado/i,
@@ -268,5 +268,5 @@ test("arquivos públicos não contêm avisos de pagamento simulado", async () =>
       );
     }
   }
-  await scan(fileURLToPath(new URL("../public/", import.meta.url)));
+  for (const dir of ["../public/", "../web/", "../shared/"]) await scan(fileURLToPath(new URL(dir, import.meta.url)));
 });

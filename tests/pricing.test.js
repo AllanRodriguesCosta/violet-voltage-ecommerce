@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { randomBytes, randomUUID } from "node:crypto";
 import { once } from "node:events";
 import * as server from "../src/services/pricing.js";
-import * as client from "../public/js/pricing.js";
+import * as client from "../shared/pricing.js";
 import { MemoryStorage } from "../src/repositories/memory.js";
 import { createApp } from "../src/app.js";
 

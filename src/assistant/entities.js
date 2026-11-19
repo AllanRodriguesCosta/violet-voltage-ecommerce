@@ -2,7 +2,7 @@
 // tecnologia, sonoridade, uso, nível, marca, faixa de preço, ordem e produto citado.
 import { normalize } from "./text.js";
 import { genres } from "../knowledge/genres.js";
-import { SPEC_FIELDS } from "../../public/js/specs.js";
+import { SPEC_FIELDS } from "../../shared/specs.js";
 
 const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const word = (s) => new RegExp(`(?<![a-z0-9])${escape(s).replace(/ /g, "[\\s-]+")}(?![a-z0-9])`);

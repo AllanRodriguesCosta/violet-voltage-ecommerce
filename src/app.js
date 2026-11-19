@@ -6,7 +6,13 @@ import { apiRouter } from "./routes/api.js";
 import { AppError, categories } from "./utils/validation.js";
 import { compressedStatic, compressJson, cacheControl } from "./http/static.js";
 import { seoPages } from "./http/seo.js";
+import { SPECULATION_RULES } from "../shared/speculation.js";
+import { existsSync } from "node:fs";
 const publicDir = fileURLToPath(new URL("../public", import.meta.url));
+// Etapa 39: as páginas (React) saem do build (dist/, gerado por "npm run build"); fontes,
+// ícones, imagens, manifesto e service worker ficam em public/.
+const distDir = fileURLToPath(new URL("../dist", import.meta.url));
+const staticDirs = existsSync(distDir) ? [distDir, publicDir] : [publicDir];
 export function createApp(storage, config) {
   const app = express();
   app.disable("x-powered-by");
@@ -27,6 +33,14 @@ export function createApp(storage, config) {
       },
       strictTransportSecurity: config.production ? undefined : false,
     }),
+  );
+  // Pré-carregamento das páginas ao parar o cursor num link (shared/speculation.js).
+  app.use((req, res, next) => {
+    if (req.method === "GET" && !req.path.startsWith("/api/") && /(?:\.html|\/|^[^.]*)$/.test(req.path)) res.set("Speculation-Rules", '"/speculation-rules.json"');
+    next();
+  });
+  app.get("/speculation-rules.json", (_req, res) =>
+    res.set({ "Content-Type": "application/speculationrules+json", "Cache-Control": "public, max-age=3600" }).send(JSON.stringify(SPECULATION_RULES)),
   );
   app.use(express.json({ limit: "64kb" }));
   app.use(cookieParser());
@@ -81,17 +95,23 @@ export function createApp(storage, config) {
         `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((u) => `<url><loc>${xml(u.loc)}</loc>${u.lastmod ? `<lastmod>${xml(u.lastmod)}</lastmod>` : ""}</url>`).join("")}</urlset>\n`,
       );
   });
-  app.use(seoPages(storage, publicDir, origin));
-  app.use(compressedStatic(publicDir));
-  app.use(
-    express.static(publicDir, {
-      setHeaders: (res, file) => {
-        res.set("Cache-Control", cacheControl(file));
-        if (/\.(?:html|css|js|svg|json|webmanifest|txt|xml)$/i.test(file)) res.set("Vary", "Accept-Encoding");
-      },
-    }),
-  );
-  app.use((_req, res) => res.status(404).sendFile(`${publicDir}/404.html`));
+  app.use(seoPages(storage, staticDirs, origin));
+  for (const dir of staticDirs) {
+    app.use(compressedStatic(dir));
+    app.use(
+      express.static(dir, {
+        setHeaders: (res, file) => {
+          res.set("Cache-Control", cacheControl(file));
+          if (/\.(?:html|css|js|svg|json|webmanifest|txt|xml)$/i.test(file)) res.set("Vary", "Accept-Encoding");
+        },
+      }),
+    );
+  }
+  // Página 404 do build; sem build (só a API em desenvolvimento), uma resposta simples.
+  app.use((_req, res) => {
+    if (existsSync(`${distDir}/404.html`)) return res.status(404).set("Cache-Control", "no-cache").sendFile(`${distDir}/404.html`);
+    res.status(404).type("text").send("Página não encontrada. Rode npm run build para gerar o site.");
+  });
   app.use((err, _req, res, _next) => {
     const status =
       err.code === "LIMIT_FILE_SIZE" || err.type === "entity.too.large"

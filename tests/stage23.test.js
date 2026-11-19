@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { storeFixture } from "./helpers/api-fixture.js";
 import { summary } from "../src/services/orders.js";
 import { withMeta } from "../src/http/seo.js";
@@ -32,7 +33,9 @@ test("SEO: metadados escapados e JSON-LD sem quebrar o HTML", () => {
   assert.ok(!out.includes("</script><b>"), "JSON-LD não fecha a tag");
 });
 
-test("SEO: produto, categoria e início com Open Graph, canônico e dados estruturados", async (t) => {
+// Os modelos das páginas saem do build (dist/); sem ele não há página para receber o SEO.
+const built = existsSync(new URL("../dist/produto.html", import.meta.url));
+test("SEO: produto, categoria e início com Open Graph, canônico e dados estruturados", { skip: !built && "rode npm run build" }, async (t) => {
   const { url, call, admin } = await storeFixture(t);
   const site = url.replace(/\/api$/, "");
   const page = async (path, headers = {}) => {

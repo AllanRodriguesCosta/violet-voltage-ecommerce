@@ -19,3 +19,7 @@ lighthouse-relatorios/
 .lighthouseci/
 # Etapa 38: relatórios da validação do Gemini
 gemini-relatorio.*
+
+# Etapa 39: build do frontend React (gerado por npm run build)
+dist/
+dist-ssr/

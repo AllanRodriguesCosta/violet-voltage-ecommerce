@@ -5,9 +5,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { storeFixture } from "./helpers/api-fixture.js";
 import { seedProducts } from "../src/services/seed-products.js";
-import { REGIONS, regionFor, cepFromText, regionalPrice, regionalPrazo } from "../public/js/regions.js";
+import { REGIONS, regionFor, cepFromText, regionalPrice, regionalPrazo } from "../shared/regions.js";
 import { quote, deliveryOptions, coupons } from "../src/services/pricing.js";
-import { mergeCarts, createCartSync } from "../public/js/cart-sync.js";
+import { mergeCarts, createCartSync } from "../shared/cart-sync.js";
 import { remindAbandoned } from "../src/services/carts.js";
 import { usable, couponState } from "../src/services/coupons.js";
 import { reply } from "../src/assistant/index.js";
@@ -190,14 +190,17 @@ test("assistente: encomendas do cliente chegam pela API; cupons ativos vêm do p
 });
 
 test("telas: CEP no carrinho, endereço do checkout no frete, aba de cupons e estoque por cor", async () => {
-  const read = (f) => readFile(new URL(`../public/${f}`, import.meta.url), "utf8");
-  const [cart, checkout, admin, adminHtml, product, common, help] = await Promise.all(["js/pages/cart.js", "js/pages/checkout.js", "js/admin.js", "admin.html", "js/pages/product.js", "js/common.js", "ajuda.html"].map(read));
+  const read = (f) => readFile(new URL(`../${f}`, import.meta.url), "utf8");
+  const files = ["web/src/pages/Cart.tsx", "web/src/pages/Checkout.tsx", "web/src/pages/Admin.tsx", "web/src/pages/Product.tsx", "web/src/lib/session.tsx", "web/src/lib/cart.ts", "src/knowledge/help.js"];
+  const [cart, checkout, admin, product, session, cartLib, help] = await Promise.all(files.map(read));
   assert.match(cart, /Calcular frete pelo CEP/);
-  assert.match(checkout, /currentCep\(\)/);
-  assert.match(adminHtml, /data-tab="coupons"/);
+  assert.match(checkout, /cepOf\(s\)/, "o frete do checkout usa o CEP do endereço escolhido");
+  assert.match(admin, /\["coupons", "Cupons"\]/);
+  assert.match(admin, /data-tab=\{id\}/);
   assert.match(admin, /\/admin\/cupons/);
   assert.match(product, /Esgotado na cor/);
-  assert.match(common, /cartSync\.start\(user\)/);
+  assert.match(session, /startCartSync\(user\)/);
+  assert.match(cartLib, /cartSync\.start\(user\)/);
   assert.doesNotMatch(help, /Cupons ativos: VOLTAGE10/, "a ajuda não fixa a lista de cupons");
-  for (const page of ["carrinho.html", "checkout.html"]) assert.match(await read(page), /modulepreload" href="\/js\/regions\.js"/);
+  for (const page of [cart, checkout]) assert.match(page, /from "\.\.\/\.\.\/\.\.\/shared\/regions\.js"/);
 });

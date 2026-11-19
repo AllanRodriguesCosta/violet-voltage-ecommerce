@@ -15,7 +15,7 @@ Siga [o guia Supabase + Render](docs/COLOCAR-NO-AR.md). O backend agora usa Post
 
 ## Arquitetura
 
-Node.js 24, Express 5, JavaScript ES modules e frontend HTML/CSS/JavaScript sem frameworks. Um serviço Express atende páginas e API. Autenticação própria com bcrypt e JWT em cookie HttpOnly; não exige Supabase Auth nem chaves Supabase no navegador.
+Node.js 24, Express 5 e JavaScript ES modules no backend; frontend em **React 19 + TypeScript** com Vite 7 (migração página a página, com pré-render; ver [docs/FRONTEND-REACT.md](docs/FRONTEND-REACT.md)). Um serviço Express atende páginas e API; rode `npm run build` antes de `npm start` para gerar o frontend. Autenticação própria com bcrypt e JWT em cookie HttpOnly; não exige Supabase Auth nem chaves Supabase no navegador.
 
 PostgreSQL persiste produtos, clientes, pedidos e imagens no schema privado `violet_voltage`. Registros usam JSONB para preservar o contrato dos repositórios, com chaves e versões em colunas e restrições SQL. Esta migração não remodela todo o domínio em tabelas relacionais. As imagens usam `bytea`: as 22 fontes originais somam aproximadamente 3,28 MB; com as 81 fotos principais e as 29 fotos extras da galeria (até 1 MB cada), o banco continua bem abaixo do limite do plano gratuito do Supabase. A rota `/api/images/:id` serve os arquivos sem expor a conexão.
 
@@ -31,7 +31,9 @@ Checkout recalcula valores em centavos no servidor. Estoque e pedido são gravad
 | `migrations/001-postgres.sql` | Estrutura idempotente, sem apagar registros |
 | `src/routes/api.js` | API ativa |
 | `src/services/` | Preços, checkout, pedidos, administrador e seed |
-| `public/` | Interface |
+| `web/` | Interface em React 19 + TypeScript (Vite, pré-render em `dist/`): páginas, componentes e estado do navegador ([FRONTEND-REACT.md](docs/FRONTEND-REACT.md)) |
+| `shared/` | Regras usadas pelo servidor e pela loja: ficha técnica, preços, kits, compatibilidade, frete por região, serviços, catálogo, pedidos |
+| `public/` | Arquivos estáticos: fontes, ícones, imagens, manifesto, service worker e `js/theme-init.js` |
 | `tests/` | Regras, HTTP e PostgreSQL via PGlite |
 
 A aplicação usa `memory.js` (desenvolvimento e testes) ou `postgres.js` (produção). O antigo adaptador Azure e seus SDKs foram removidos; nenhuma credencial Azure é necessária.
@@ -134,7 +136,7 @@ Sucesso: `{ "data": ... }`. Erro: `{ "error": { "message": "...", "field": "..."
 | GET | `/api/admin/questions` | Admin; pendentes primeiro |
 | PATCH | `/api/admin/questions/:id` | Admin; `resposta` (publica e notifica) ou `ocultar: true` |
 
-Filtros: `q` (também busca na ficha técnica), `marca`, `modelo`, `categoria`, `min`, `max` (centavos). Produtos trazem `ficha` (objeto ou `null`), validada pelo esquema de `public/js/specs.js` quando enviada pelo painel. Checkout: `items: [{id, quantidade, servicos?}]` (`servicos`: "regulagem", "cordas", "garantia", conforme a categoria; regras em `public/js/services.js`), `pagamento`, `entrega`, `endereco`, `requestId` e, opcionalmente, `cupom` e `parcelas` (cartão). A cotação recebe `items`, `entrega` e `cupom` e devolve subtotal, desconto de kits (`descontoKitsCents`, `kits`; regras em `public/js/kits.js`), frete, desconto do cupom (sobre o valor já com os kits), total, parcelas máximas e opções de entrega. Valores enviados pelo navegador são ignorados; repetir um pedido persistido com o mesmo identificador devolve esse pedido.
+Filtros: `q` (também busca na ficha técnica), `marca`, `modelo`, `categoria`, `min`, `max` (centavos). Produtos trazem `ficha` (objeto ou `null`), validada pelo esquema de `shared/specs.js` quando enviada pelo painel. Checkout: `items: [{id, quantidade, servicos?}]` (`servicos`: "regulagem", "cordas", "garantia", conforme a categoria; regras em `shared/services.js`), `pagamento`, `entrega`, `endereco`, `requestId` e, opcionalmente, `cupom` e `parcelas` (cartão). A cotação recebe `items`, `entrega` e `cupom` e devolve subtotal, desconto de kits (`descontoKitsCents`, `kits`; regras em `shared/kits.js`), frete, desconto do cupom (sobre o valor já com os kits), total, parcelas máximas e opções de entrega. Valores enviados pelo navegador são ignorados; repetir um pedido persistido com o mesmo identificador devolve esse pedido.
 
 ## Limites
 

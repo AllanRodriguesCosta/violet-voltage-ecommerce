@@ -1,6 +1,6 @@
 // O contexto da conversa vai e volta pelo navegador. Tudo que chega é revalidado aqui:
 // só chaves conhecidas, valores das listas do esquema e limites de tamanho.
-import { GENEROS, ESTILOS, NIVEIS, USOS, SPEC_FIELDS } from "../../public/js/specs.js";
+import { GENEROS, ESTILOS, NIVEIS, USOS, SPEC_FIELDS } from "../../shared/specs.js";
 import { categories } from "../utils/validation.js";
 import { ARTISTAS, SONS, CORES } from "./taste.js";
 

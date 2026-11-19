@@ -254,7 +254,7 @@ pagamento. Decisões:
 
 ### 17. Ficha técnica e base de conhecimento
 
-- [x] Esquema de ficha técnica por categoria (`public/js/specs.js`), único para
+- [x] Esquema de ficha técnica por categoria (`shared/specs.js`), único para
       loja, painel e servidor: estilo (vintage, moderno, atemporal), gêneros
       indicados e campos próprios (formato, captação, ponte e timbre das
       guitarras; tecnologia, potência, falantes e sonoridade dos amplificadores;
@@ -332,11 +332,11 @@ instrumento usado na troca fica de fora.
       produto, barra flutuante, tabela com a ficha lado a lado, linhas
       diferentes destacadas, "mostrar só as diferenças", menor preço sinalizado
       e link compartilhável (`/comparar.html?ids=`).
-- [x] Kits com desconto (`public/js/kits.js`, fonte única da vitrine e do
+- [x] Kits com desconto (`shared/kits.js`, fonte única da vitrine e do
       servidor): 5 kits; com o kit completo no carrinho o desconto entra sozinho
       na cotação e no pedido, cada unidade conta para um kit só e o cupom vale
       sobre o restante. Página `/kits.html` e kits na home.
-- [x] Compatibilidade no carrinho (`public/js/compat.js`): guitarra sem cabo ou
+- [x] Compatibilidade no carrinho (`shared/compat.js`): guitarra sem cabo ou
       sem amplificador, pedais sem fonte de 9V (fonte simples ou isolada),
       pedais sem cabos patch, pedalboard, patch sozinho, correia e cordas
       reserva, e kit a 1 ou 2 itens de completar, sempre com sugestão do
@@ -349,7 +349,7 @@ instrumento usado na troca fica de fora.
 
 ### 22. Serviços, guias, filtros do segmento, alerta de preço e perguntas
 
-- [x] Serviços no carrinho (`public/js/services.js`, fonte única): regulagem por
+- [x] Serviços no carrinho (`shared/services.js`, fonte única): regulagem por
       luthier e troca de cordas para guitarras, garantia estendida de 12 meses
       (8% do item, mínimo R$ 29,90) para guitarras, amplificadores e pedais.
       Validados e cobrados pelo servidor por unidade; o cupom não incide sobre
@@ -601,7 +601,7 @@ Para ensaiar e demonstrar sem gastar crédito. Visão geral:
       cliente". Os três cupons padrão continuam valendo sem cadastro e podem ser desativados ou
       limitados. Desativado, vencido ou esgotado sai do checkout, da ajuda e do assistente na
       hora (`src/services/coupons.js`, tabela `coupons`). Uso contado a cada pedido.
-- [x] **Frete por região do CEP** (`public/js/regions.js`, o mesmo arquivo no navegador e no
+- [x] **Frete por região do CEP** (`shared/regions.js`, o mesmo arquivo no navegador e no
       servidor): o primeiro dígito do CEP define a região, com fator sobre o frete base e dias a
       mais no prazo. Carrinho tem "Calcular frete pelo CEP"; o checkout usa o CEP do endereço
       escolhido (o CEP dentro do endereço vale mais que o enviado à parte). Sem CEP, valem os
@@ -694,3 +694,63 @@ Para ensaiar e demonstrar sem gastar crédito. Visão geral:
 
 Passo a passo de publicação: [COLOCAR-NO-AR.md](COLOCAR-NO-AR.md). Contexto:
 [estudo de caso](ESTUDO-DE-CASO.md). Evidências: [validação](../VALIDACAO.md).
+
+## Fase 5 — Frontend em React + TypeScript (pedido de 17/11/2026)
+
+### 39. Migração do frontend para React (em etapas)
+- **Decisão:** migração completa, em TypeScript, página a página. Cada endereço continua sendo um
+  arquivo `.html` (Vite com várias entradas) com **pré-render** e hidratação, em vez de um site de
+  página única com React Router: preserva URLs, SEO do servidor, sitemap e a leitura do site pelo
+  Agent_generator.
+- **39.1 (feito):** Vite 7 + React 19 + TypeScript; `npm run build` (Vite + pré-render em
+  `dist/`), `npm run dev`, `npm run typecheck`; Express serve `dist/` antes de `public/`, com cache
+  longo para arquivos com hash; Render, Dockerfile (estágio de build), Azure App Service
+  (`NPM_CONFIG_PRODUCTION=false`) e CI (typecheck + build antes dos testes, E2E e Lighthouse)
+  geram o frontend. Layout inteiro em React (cabeçalho, menu "Olá" com teclado, menu do celular,
+  busca, rodapé, navegação inferior, tema com revelação circular, voltar ao topo), cartões de
+  produto e de kit, botões de favorito, comparar e "Avise-me" em React, e a página inicial.
+  Testes: `tests/stage39.test.js`; roteiro de navegador (12 verificações) sem erros de console.
+- **39.2 (feito):** catálogo (busca fixa, "Você quis dizer", filtros de categoria, marca, ficha,
+  preço e estoque, ordenação, "Mostrar mais", painel de filtros no celular; estado no endereço com
+  `history.replaceState`), produto (galeria por cor com setas, miniaturas, arrastar, teclado, lupa e
+  tela cheia; `?cor=`; estoque por cor; quantidade; Comprar agora; barra fixa; Compre junto;
+  perguntas; relacionados e vistos recentemente; avisos de estoque e de preço), comparar (`?ids=`)
+  e favoritos em React, com pré-render e SEO do servidor nos mesmos modelos. Regras de busca,
+  ficha, "Compre junto" e carrinho continuam nos módulos de `public/js` (em `shared/` desde a 39.5). Testes:
+  `tests/stage39-2.test.js`.
+- **39.3 (feito):** carrinho, checkout, comprovante do pedido, Minha conta (todas as seções, com
+  rotas pelo `#`), login e cadastro em React, pré-renderizados (as páginas privadas mostram só o
+  carregamento no HTML inicial). Formulários com `components/Form.tsx` (mesmas mensagens em
+  português, `aria-invalid`/`aria-describedby`, "Aguarde…" e erro do servidor ao lado do campo);
+  `components/Private.tsx` cuida da sessão (login com `next` seguro e painel de falha). Regras de
+  carrinho, frete, kits, serviços e pedidos continuam nos módulos compartilhados. Testes:
+  `tests/stage39-3.test.js` e o roteiro `tests/e2e/conta.mjs` (70 verificações).
+- **39.4 (feito):** montador de setup, kits, encomenda, parceiros e guias em React
+  (`web/src/pages/Setup.tsx`, `Kits.tsx`, `Request.tsx`, `Partners.tsx`, `Guides.tsx`). Guias e
+  glossário saem inteiros no HTML pré-renderizado, gerados de `src/knowledge` (mesma fonte do
+  assistente). Formulários com `components/FormKit.tsx`. Testes: `tests/stage39-4.test.js`;
+  roteiro de navegador `tests/e2e/react-etapa4.mjs` (40 verificações, sem erros de console).
+- **39.5 (feito):** ajuda (gerada de `src/knowledge/help.js`, inteira no HTML pré-renderizado),
+  termos, privacidade, 404 (o servidor envia `dist/404.html` para endereços desconhecidos),
+  offline (sem Layout nem JavaScript; o service worker guarda a página e o CSS dela) e o painel
+  administrativo (indicadores, produtos com ficha, estoque por cor e imagem, clientes, pedidos com
+  status e trocas, perguntas, encomendas, parcerias, cupons e frases do assistente) em React.
+  Recursos globais em React no lugar do JavaScript antigo: minicarrinho e aviso de item adicionado
+  com o produto voando até o carrinho, sugestões da busca com teclado e buscas recentes, barra de
+  comparação, visualização rápida, avisos de estoque e de preço, assistente (voz, cartões, ações,
+  login com retomada da pergunta, conversa na aba) e contador de notificações ao vivo
+  (`web/src/lib/notifications.ts`). Regras usadas pelo servidor e pelos testes foram para
+  `shared/`; o estado do navegador virou TypeScript em `web/src/lib/`; CSS em `web/src/styles/`.
+  `public/*.html` e `public/js` saíram (fica só `public/js/theme-init.js`). Testes:
+  `tests/stage39-5.test.js` (e os testes antigos apontando para o React, `shared/` ou `dist/`);
+  roteiro `tests/e2e/react-etapa5.mjs` (88 verificações, sem erros de console).
+- **39.6 (feito):** refinamentos do frontend React. React, React DOM e scheduler num arquivo próprio
+  (`app/react-HASH.js`, reaproveitado do cache entre publicações); assistente e visualização rápida
+  carregados sob demanda (`lazy`), fora do pacote principal (que caiu de ~89 kB para ~22 kB gzip,
+  fora o React); isolamento de erros (`components/ErrorBoundary.tsx`: página com aviso e
+  "Recarregar", recurso global que quebra some sozinho); leituras da API (GET) tentam de novo em
+  queda de conexão e 502/503/504 — útil quando o Render "acorda" o servidor — e envios nunca se
+  repetem; foto que falha vira a ilustração da categoria (`data-fallback`); aviso quando a conexão
+  cai e volta; pré-carregamento das páginas ao parar o cursor num link (cabeçalho
+  `Speculation-Rules`, regras em `shared/speculation.js`, sem liberar script inline na CSP).
+  Testes: `tests/stage39-6.test.js`; roteiros de navegador sem mudança e sem erros de console.

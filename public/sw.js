@@ -1,23 +1,19 @@
 // Service worker da Violet Voltage: rede primeiro, para cada publicação aparecer na hora.
 // Sem conexão, usa a última cópia guardada da página ou do arquivo; páginas nunca
 // abertas mostram /offline.html. A API não passa por aqui.
-const CACHE = "vv-v1";
-const CORE = [
-  "/offline.html",
-  "/css/style.css",
-  "/css/ui.css",
-  "/js/theme-init.js",
-  "/fonts/geist-latin.woff2",
-  "/assets/favicon.svg",
-  "/icons/icon-192.png",
-];
+// O CSS vem do build (dist/app/*.css, nome com hash): na instalação, os arquivos citados por
+// /offline.html também são guardados, para a página sem conexão aparecer com o visual da loja.
+const CACHE = "vv-v2";
+const CORE = ["/offline.html", "/js/theme-init.js", "/fonts/geist-latin.woff2", "/assets/favicon.svg", "/icons/icon-192.png"];
+async function install() {
+  const cache = await caches.open(CACHE);
+  await cache.addAll(CORE);
+  const page = await (await cache.match("/offline.html")).text();
+  const assets = [...page.matchAll(/(?:href|src)="(\/app\/[^"]+\.(?:css|js))"/g)].map((m) => m[1]);
+  await cache.addAll([...new Set(assets)]);
+}
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE)
-      .then((cache) => cache.addAll(CORE))
-      .then(() => self.skipWaiting()),
-  );
+  event.waitUntil(install().then(() => self.skipWaiting()));
 });
 self.addEventListener("activate", (event) => {
   event.waitUntil(

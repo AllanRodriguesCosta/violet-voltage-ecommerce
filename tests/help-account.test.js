@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { randomBytes, randomUUID } from "node:crypto";
 import { once } from "node:events";
@@ -13,8 +14,12 @@ import { bootstrapAdmin } from "../src/services/bootstrap.js";
 
 const html = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-test("Central de Ajuda: a página publicada corresponde à fonte única", async () => {
-  const page = await readFile(new URL("../public/ajuda.html", import.meta.url), "utf8");
+// A página (web/src/pages/Help.tsx) é gerada da fonte única e pré-renderizada por inteiro no build.
+const built = existsSync(new URL("../dist/ajuda.html", import.meta.url));
+test("Central de Ajuda: a página publicada corresponde à fonte única", { skip: !built && "rode npm run build" }, async () => {
+  const page = await readFile(new URL("../dist/ajuda.html", import.meta.url), "utf8");
+  const source = await readFile(new URL("../web/src/pages/Help.tsx", import.meta.url), "utf8");
+  assert.match(source, /from "\.\.\/\.\.\/\.\.\/src\/knowledge\/help\.js"/, "página gerada de src/knowledge/help.js");
   for (const g of helpGroups) {
     assert.ok(page.includes(`id="${g.id}"`) && page.includes(`href="#${g.id}"`), g.id);
     for (const [i, item] of g.itens.entries()) {

@@ -8,7 +8,9 @@
   },
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
+    "build": "vite build && vite build --ssr src/prerender.tsx --outDir ../dist-ssr && node scripts/prerender.js",
+    "dev": "node scripts/dev.js",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "node --test",
     "lint": "eslint .",
     "seed": "node scripts/seed.js",
@@ -31,12 +33,19 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
-    "pg": "^8.23.1"
+    "pg": "^8.23.1",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.15",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.2.0",
     "eslint": "^10.11.0",
     "globals": "^16.4.0",
-    "prettier": "^3.9.8"
+    "prettier": "^3.9.8",
+    "typescript": "~5.8.3",
+    "vite": "^7.3.5"
   }
 }

@@ -1,30 +1,33 @@
+// Estados padronizados em React (components/State.tsx e LoadError em Private.tsx) e mensagens
+// de validação em português (shared/forms.js).
 import test from "node:test";
 import assert from "node:assert/strict";
-import { stateHTML, emptyState, errorState } from "../public/js/components.js";
-import { fieldMessage } from "../public/js/common.js";
+import { createElement } from "react";
+import { fieldMessage } from "../shared/forms.js";
+import { web, html } from "./helpers/web.js";
 
-test("estados padronizados usam o nível de título pedido e alerta só em falhas", () => {
-  const empty = emptyState({ title: "Nada por aqui." });
+const { State } = await web("components/State.tsx");
+const { LoadError } = await web("components/Private.tsx");
+
+test("estados padronizados usam o nível de título pedido e alerta só em falhas", async () => {
+  const empty = await html(createElement(State, { title: "Nada por aqui." }));
   assert.match(empty, /<h2>Nada por aqui\.<\/h2>/);
   assert.doesNotMatch(empty, /role="alert"/);
-  const nested = emptyState({ title: "Sem pedidos.", level: 3 });
+  const nested = await html(createElement(State, { title: "Sem pedidos.", level: 3 }));
   assert.match(nested, /<h3>Sem pedidos\.<\/h3>/);
-  const error = stateHTML({ tone: "error", title: "Falhou.", level: 1 });
+  const error = await html(createElement(State, { tone: "error", title: "Falhou.", level: 1 }));
   assert.match(error, /class="empty state-error" role="alert"/);
   assert.match(error, /<h1>Falhou\.<\/h1>/);
 });
 
-test("estado de erro escapa a mensagem e oferece nova tentativa e saída quando pedidas", () => {
-  const container = { innerHTML: "", querySelector: () => null };
-  errorState(container, new Error("<b>indisponível</b>"), null, { back: { href: "/catalogo.html", label: "Voltar ao catálogo" } });
-  assert.match(container.innerHTML, /&lt;b&gt;indisponível&lt;\/b&gt;/);
-  assert.doesNotMatch(container.innerHTML, /data-retry/);
-  assert.match(container.innerHTML, /href="\/catalogo\.html"/);
-  let listened = false;
-  const withRetry = { innerHTML: "", querySelector: () => ({ addEventListener: () => (listened = true) }) };
-  errorState(withRetry, new Error("Falha"), () => {});
-  assert.match(withRetry.innerHTML, /data-retry/);
-  assert.equal(listened, true);
+test("estado de erro escapa a mensagem e oferece nova tentativa e saída quando pedidas", async () => {
+  const back = await html(createElement(LoadError, { error: new Error("<b>indisponível</b>"), back: { href: "/catalogo.html", label: "Voltar ao catálogo" } }));
+  assert.match(back, /&lt;b&gt;indisponível&lt;\/b&gt;/);
+  assert.doesNotMatch(back, /data-retry/);
+  assert.match(back, /href="\/catalogo\.html"/);
+  const withRetry = await html(createElement(LoadError, { error: new Error("Falha"), retry: () => {} }));
+  assert.match(withRetry, /data-retry/);
+  assert.match(withRetry, /Tentar novamente/);
 });
 
 test("mensagens de validação em português, com mensagem própria quando informada", () => {

@@ -3,8 +3,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { storeFixture } from "./helpers/api-fixture.js";
-import { accountSections, safeNext, initials } from "../public/js/common.js";
-import { routeFromHash, paymentText } from "../public/js/pages/account.js";
+import { accountSections, safeNext, initials } from "../shared/account.js";
+import { routeFromHash, paymentText } from "../shared/account.js";
 
 test("forma de pagamento preferida: valida, guarda só método e parcelas e vale na sessão", async (t) => {
   const { call, register } = await storeFixture(t);
@@ -42,17 +42,20 @@ test("excluir a conta apaga a forma de pagamento preferida", async (t) => {
   assert.equal(stored.pagamento, null);
 });
 
+// Minha conta é uma página privada em React (web/src/pages/Account.tsx): as seções são conferidas no
+// componente, que gera cada uma com view("<id>", ...) e data-view.
 test("menu da conta: cada atalho leva a uma seção que existe na página", async () => {
-  const html = await readFile(new URL("../public/minha-conta.html", import.meta.url), "utf8");
+  const source = await readFile(new URL("../web/src/pages/Account.tsx", import.meta.url), "utf8");
   for (const s of accountSections) {
-    if (s.href.startsWith("/minha-conta.html#")) assert.match(html, new RegExp(`id="${s.id}"[^>]*data-view`), s.label);
-    else if (s.href !== "/minha-conta.html") await readFile(new URL(`../public${s.href}`, import.meta.url));
+    if (s.href.startsWith("/minha-conta.html#")) assert.match(source, new RegExp(`view\\(\\s*"${s.id}"`), s.label);
+    else if (s.href !== "/minha-conta.html") await readFile(new URL(`../web${s.href.replace(/#.*$/, "")}`, import.meta.url));
   }
   const menu = accountSections.filter((s) => s.menu).map((s) => s.label);
   for (const label of ["Meus pedidos", "Dados e segurança", "Métodos de pagamento", "Preciso de ajuda"]) assert.ok(menu.includes(label), label);
-  assert.match(html, /id="seguranca"/, "links antigos para #seguranca continuam valendo");
-  assert.match(html, /<nav class="account-nav" id="account-nav" aria-label="Seções da conta">/);
-  assert.equal((html.match(/data-view /g) || []).length, accountSections.filter((s) => s.nav).length);
+  assert.match(source, /id="seguranca"/, "links antigos para #seguranca continuam valendo");
+  assert.match(source, /<nav className="account-nav" id="account-nav" aria-label="Seções da conta">/);
+  assert.match(source, /<section className=\{className\} id=\{id\} data-view /);
+  assert.equal((source.match(/\bview\(\s*"[\w-]+"/g) || []).length, accountSections.filter((s) => s.nav).length);
 });
 
 test("rotas da página e retorno depois do login", () => {

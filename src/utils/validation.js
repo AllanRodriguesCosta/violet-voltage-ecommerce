@@ -1,4 +1,4 @@
-import { checkSpecs } from "../../public/js/specs.js";
+import { checkSpecs } from "../../shared/specs.js";
 export class AppError extends Error {
   constructor(status, message, field) {
     super(message);

@@ -1,4 +1,5 @@
 import test from "node:test";
+import { existsSync } from "node:fs";
 import assert from "node:assert/strict";
 import { randomBytes, randomUUID } from "node:crypto";
 import { once } from "node:events";
@@ -236,30 +237,16 @@ test("API: autenticação, administração, estoque, imagens e páginas", async 
       (await request("/health")).body.data.storage,
       "memory-development",
     );
-    for (const page of [
-      "/",
-      "/produto.html",
-      "/carrinho.html",
-      "/checkout.html",
-      "/login.html",
-      "/cadastro.html",
-      "/minha-conta.html",
-      "/admin.html",
-      "/catalogo.html",
-      "/favoritos.html",
-      "/ajuda.html",
-      "/fonts/geist-latin.woff2",
-      "/js/pages/catalog.js",
-      "/css/style.css",
-      "/css/ui.css",
-      "/js/app.js",
-      "/js/common.js",
-      "/js/admin.js",
-      "/assets/hero.svg",
-    ]) {
+    // Páginas saem do build (dist/); fontes, ícones, imagens, manifesto e service worker de public/.
+    const built = existsSync(new URL("../dist/index.html", import.meta.url));
+    const pages = ["/", "/produto.html", "/carrinho.html", "/checkout.html", "/login.html", "/cadastro.html", "/minha-conta.html", "/admin.html", "/catalogo.html", "/favoritos.html", "/ajuda.html", "/termos.html", "/privacidade.html", "/offline.html"];
+    for (const page of [...(built ? pages : []), "/fonts/geist-latin.woff2", "/js/theme-init.js", "/sw.js", "/manifest.webmanifest", "/assets/hero.svg"]) {
       const r = await fetch(base + page);
       assert.equal(r.status, 200, page);
     }
+    for (const legacy of ["/js/app.js", "/js/common.js", "/js/admin.js", "/js/pages/catalog.js", "/css/style.css"])
+      assert.equal((await fetch(base + legacy)).status, 404, `${legacy} saiu na etapa 39.5`);
+    if (built) assert.match(await (await fetch(base + "/nao-existe")).text(), /Essa nota não existe/);
     assert.equal((await fetch(base + "/nao-existe")).status, 404);
     const robots = await (await fetch(base + "/robots.txt")).text();
     assert.match(robots, /Disallow: \/admin\.html/);

@@ -3,7 +3,7 @@
 // regras) e, se falhar, demorar ou estourar o limite, a resposta local continua valendo.
 // Sem SDK: fetch nativo. A chave vem só do ambiente (GEMINI_API_KEY) e nunca é registrada.
 import { helpEntries } from "../knowledge/help.js";
-import { specRows } from "../../public/js/specs.js";
+import { specRows } from "../../shared/specs.js";
 import { anonymize } from "../services/assistant-log.js";
 
 // Etapa 38: validado no CI com a chave real (gemini-flash-latest estava sem cota no plano gratuito).

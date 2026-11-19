@@ -1,7 +1,7 @@
 // Recomendação pelo catálogo real: filtros obrigatórios (categoria, preço, marca, tipo,
 // formato...) e pontuação pela ficha técnica e pela base de conhecimento de gêneros.
 import { genres } from "../knowledge/genres.js";
-import { UTILITY_EFFECTS, fitsGenre } from "../../public/js/specs.js";
+import { UTILITY_EFFECTS, fitsGenre } from "../../shared/specs.js";
 import { tasteScore, hasTaste, colorMatches } from "./taste.js";
 
 export const GROUP = { Guitarras: "guitarras", Amplificadores: "amplificadores", Pedais: "pedais" };

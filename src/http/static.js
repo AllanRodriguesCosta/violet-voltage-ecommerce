@@ -6,6 +6,8 @@ import { brotliCompressSync, gzipSync, constants } from "node:zlib";
 // cada visita (uma nova publicação aparece na hora; sem mudança, a resposta é 304);
 // fonte e imagens ficam guardadas por mais tempo.
 export function cacheControl(file) {
+  // Arquivos do build com hash no nome (dist/app/nome-HASH.js) nunca mudam: cache longo.
+  if (/[\\/]app[\\/][^\\/]+-[\w-]{8}\.(?:js|css)$/.test(file)) return "public, max-age=31536000, immutable";
   if (/\.(?:html|css|js|webmanifest)$/i.test(file)) return "no-cache";
   if (/\.woff2$/i.test(file)) return "public, max-age=2592000";
   if (/\.(?:svg|png|jpe?g|webp|ico)$/i.test(file)) return "public, max-age=604800";

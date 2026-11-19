@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { api } from "../public/js/common.js";
+import { web } from "./helpers/web.js";
+
+const { api } = await web("lib/api.ts");
 
 test("API cliente rejeita sucesso malformado e permite nova tentativa válida", async t => {
   let calls = 0;

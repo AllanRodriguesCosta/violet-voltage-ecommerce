@@ -1,6 +1,6 @@
 import { AppError, integer } from "../utils/validation.js";
-import { kitDiscounts } from "../../public/js/kits.js";
-import { regionFor, regionalPrice, regionalPrazo } from "../../public/js/regions.js";
+import { kitDiscounts } from "../../shared/kits.js";
+import { regionFor, regionalPrice, regionalPrazo } from "../../shared/regions.js";
 
 // Regras comerciais únicas para cotação e pedido. Valores em centavos.
 export const shipping = { padrao: 2500, expressa: 4500, retirada: 0 };

@@ -3,7 +3,8 @@ services:
     name: violet-voltage
     runtime: node
     plan: free
-    buildCommand: npm ci
+    # Etapa 39: o build do React precisa das dependências de desenvolvimento (Vite, TypeScript).
+    buildCommand: npm ci --include=dev && npm run build && npm prune --omit=dev
     startCommand: npm start
     healthCheckPath: /api/health
     numInstances: 1

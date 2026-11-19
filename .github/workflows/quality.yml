@@ -30,6 +30,10 @@ jobs:
         run: npm ci
       - name: Analisar código
         run: npm run lint
+      - name: Checar tipos (React + TypeScript)
+        run: npm run typecheck
+      - name: Gerar o frontend (Vite + pré-render)
+        run: npm run build
       - name: Executar testes isolados
         run: npm test
 
@@ -49,6 +53,7 @@ jobs:
       - name: Instalar dependências e o Playwright
         run: |
           npm ci
+          npm run build
           npm install --no-save playwright@1
           npx playwright install --with-deps chromium
       - name: Subir a loja e rodar o roteiro
@@ -59,6 +64,11 @@ jobs:
             sleep 1
           done
           node tests/e2e/smoke.mjs
+          # Etapa 39: roteiros das páginas em React (conta e compra, montador e formulários,
+          # recursos globais: minicarrinho, busca, assistente, painel, 404 e offline).
+          node tests/e2e/conta.mjs
+          node tests/e2e/react-etapa4.mjs
+          node tests/e2e/react-etapa5.mjs
 
   # Etapa 35: Lighthouse nas páginas principais. Acessibilidade e boas práticas abaixo de 90
   # reprovam; desempenho e SEO só avisam (o servidor do CI não representa o site publicado).
@@ -73,8 +83,8 @@ jobs:
         with:
           node-version: "24"
           cache: npm
-      - name: Instalar dependências
-        run: npm ci
+      - name: Instalar dependências e gerar o frontend
+        run: npm ci && npm run build
       - name: Lighthouse CI
         run: npx --yes @lhci/cli@0.15.x autorun
       - name: Guardar relatórios

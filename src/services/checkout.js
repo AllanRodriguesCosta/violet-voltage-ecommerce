@@ -3,9 +3,9 @@ import { AppError, integer, text } from "../utils/validation.js";
 import { quote, installments, shipping } from "./pricing.js";
 import { activeRules, checkCustomerUse, countUse } from "./coupons.js";
 // O CEP do próprio endereço vale mais que o enviado à parte (não dá para pagar frete de outra região).
-import { cepFromText, cepDigits } from "../../public/js/regions.js";
+import { cepFromText, cepDigits } from "../../shared/regions.js";
 import { clearCart } from "./carts.js";
-import { SERVICES, servicePrice } from "../../public/js/services.js";
+import { SERVICES, servicePrice } from "../../shared/services.js";
 export { shipping };
 // IDs pedidos pelo cliente, para buscar só os produtos necessários.
 export const itemIds = (items) =>
@@ -35,7 +35,7 @@ export function calculate(items, products) {
       return { id, nome: SERVICES[id].nome, priceCents: servicePrice(id, p) };
     });
     // Cor: só as do produto. Sem escolha (ou com uma cor que saiu de linha), vale a cor padrão,
-    // a mesma que o carrinho mostra (itemColor em public/js/common.js).
+    // a mesma que o carrinho mostra (itemColor em shared/catalog.js).
     const cores = Array.isArray(p.cores) ? p.cores.map((c) => c.nome) : [];
     if (item.cor !== undefined && item.cor !== null && (typeof item.cor !== "string" || item.cor.length > 30))
       throw new AppError(400, "Cor inválida.");

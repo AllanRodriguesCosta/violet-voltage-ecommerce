@@ -19,7 +19,7 @@ import { activeRules, activeList, allCoupons, createCoupon, updateCoupon, public
 import { getSavedCart, saveCart, remindAbandoned, abandonedStats } from "../services/carts.js";
 import { logSearch, searchSummary, clearSearches } from "../services/searches.js";
 import { profileDeps } from "../services/assistant-profile.js";
-import { cepDigits } from "../../public/js/regions.js";
+import { cepDigits } from "../../shared/regions.js";
 import { updateOrderStatus, summary, requestExchange, answerExchange, exchangeWindow } from "../services/orders.js";
 import { addressInput, saveAddress, removeAddress } from "../services/addresses.js";
 import {
@@ -33,7 +33,7 @@ import {
   priceWatchers,
 } from "../services/notifications.js";
 import { publicProduct, publicOrder } from "../controllers/serialization.js";
-import { specText } from "../../public/js/specs.js";
+import { specText } from "../../shared/specs.js";
 import { reply } from "../assistant/index.js";
 import { askGemini, limiter } from "../assistant/gemini.js";
 import { card as assistantCard } from "../assistant/actions.js";

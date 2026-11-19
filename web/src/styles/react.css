@@ -1,0 +1,3 @@
+/* Etapa 39: o React monta a página dentro de #root; display: contents mantém o
+   cabeçalho fixo (sticky) e o restante do layout exatamente como antes. */
+#root { display: contents; }

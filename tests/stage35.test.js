@@ -12,7 +12,7 @@ import { web, html as markup } from "./helpers/web.js";
 // Painel em React: o bloco de demanda (O que mais procuram, buscas sem resultado...).
 const { Demand } = await web("components/AdminDashboard.tsx");
 
-const read = (f) => readFile(new URL(`../${f}`, import.meta.url), "utf8");
+const read = async (f) => (await readFile(new URL(`../${f}`, import.meta.url), "utf8")).replace(/\r\n/g, "\n");
 
 test("termo de busca: normalizado e sem dado pessoal", () => {
   assert.equal(searchTerm("  Stratocaster  SSS!! "), "stratocaster sss");

@@ -12,7 +12,7 @@ import { bundlePicks } from "../shared/catalog.js";
 import heads from "./helpers/heads.json" with { type: "json" };
 
 const root = new URL("../", import.meta.url);
-const read = (f) => readFile(new URL(f, root), "utf8");
+const read = async (f) => (await readFile(new URL(f, root), "utf8")).replace(/\r\n/g, "\n");
 const built = existsSync(new URL("dist/catalogo.html", root));
 const PAGES = { catalogo: "Catalog", produto: "Product", comparar: "Compare", favoritos: "Wishlist" };
 

@@ -4,6 +4,7 @@ import { once } from "node:events";
 import { readFile, readdir } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import { hostname } from "node:os";
+import { fileURLToPath } from "node:url";
 import { MemoryStorage } from "../src/repositories/memory.js";
 import { PostgresStorage } from "../src/repositories/postgres.js";
 import { createApp } from "../src/app.js";
@@ -12,7 +13,7 @@ import { runCatalogSync } from "../src/services/catalog-sync.js";
 import { healthUrl, tally, report, instanceOf } from "../scripts/lb-check.js";
 
 const root = new URL("../", import.meta.url);
-const text = (path) => readFile(new URL(path, root), "utf8");
+const text = async (path) => (await readFile(new URL(path, root), "utf8")).replace(/\r\n/g, "\n");
 const memoryEnv = { DEV_MEMORY_STORAGE: "true" };
 
 async function serve(t, config) {
@@ -152,7 +153,7 @@ test("roteiros do Azure: sintaxe bash válida, variáveis fora do git e nenhum s
   const scripts = (await readdir(dir)).filter((f) => f.endsWith(".sh"));
   assert.deepEqual(scripts.sort(), ["apagar-tudo.sh", "app-service.sh", "atualizar-vms.sh", "comum.sh", "vms-load-balancer.sh"]);
   for (const file of scripts) {
-    const result = spawnSync("bash", ["-n", new URL(file, dir).pathname]);
+    const result = spawnSync("bash", ["-n", fileURLToPath(new URL(file, dir))]);
     assert.equal(result.status, 0, `${file}: ${result.stderr}`);
     const body = await text(`infra/azure/${file}`);
     assert.match(body, /set -euo pipefail/, file);

@@ -106,7 +106,7 @@ test("pré-carregamento: regras pelo cabeçalho, sem script inline, fora de API/
     assert.equal(page.headers.get("speculation-rules"), '"/speculation-rules.json"');
     assert.doesNotMatch(page.headers.get("content-security-policy") || "", /unsafe-inline'[^;]*script|script-src[^;]*unsafe-inline/);
     const rules = await fetch(`${base}/speculation-rules.json`);
-    assert.equal(rules.headers.get("content-type"), "application/speculationrules+json");
+    assert.equal(rules.headers.get("content-type").split(";")[0].trim(), "application/speculationrules+json");
     assert.deepEqual(await rules.json(), SPECULATION_RULES);
     const apiRes = await fetch(`${base}/api/products`);
     assert.equal(apiRes.headers.get("speculation-rules"), null);
